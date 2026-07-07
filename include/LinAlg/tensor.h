@@ -64,6 +64,34 @@ namespace LinAlg {
                 return false;
             }
 
+            static void batching(Tensor& A_view, Tensor& B_view, int not_matching = 0) {
+                int A_rank {A_view.get_rank()};
+                int B_rank {B_view.get_rank()};
+                
+                Tensor<T>& max_ref {A_rank > B_rank ? A_view : B_view};
+                Tensor<T>& min_ref {A_rank > B_rank ? B_view : A_view};
+
+                int max_rank {max_ref.get_rank()};
+                int min_rank {min_ref.get_rank()};
+
+                for(int i {min_rank - 1 - not_matching}, j {max_rank - 1 - not_matching}; i >= 0; --i, --j) {
+                    if(max_ref.m_shape[j] != min_ref.m_shape[i]){
+                        throw std::invalid_argument(
+                            "Cannot perform a batching on two tensors of shape" + 
+                            static_cast<std::string>(A_view) + 
+                            " and " + 
+                            static_cast<std::string>(B_view) + 
+                            " the extents of their existing batch axises must match"
+                        );
+                    }
+                }
+
+                min_ref.m_strides.insert(min_ref.m_strides.begin(), max_rank - min_rank, 0);
+                min_ref.m_shape.insert(min_ref.m_shape.begin(),
+                                       max_ref.m_shape.begin(),
+                                       max_ref.m_shape.begin() + max_rank - min_rank);
+            }
+
         public:
             Tensor(const std::vector<int>& shape, T init = 0);
 
@@ -92,8 +120,69 @@ namespace LinAlg {
             const T& operator[](const std::vector<int>& indecies) const;
             T& operator[](const std::vector<int>& indecies);
 
-            friend Tensor operator*(const Tensor& A, const Tensor& B);
-            Tensor& operator*=(const Tensor& A);
+            friend Tensor operator*(const Tensor& A, const Tensor& B) {
+                Tensor<T> A_view {A};
+                Tensor<T> B_view {B};
+
+                int A_rank {A.get_rank()};
+                int B_rank {B.get_rank()};
+
+                int max_rank {A_rank > B_rank ? A_rank : B_rank};
+                int min_rank {A_rank > B_rank ? B_rank : A_rank};
+
+                if(min_rank < 2){
+                    throw std::invalid_argument(
+                        "Cannot perform matrix multiplication on Tensors of shape " + 
+                        static_cast<std::string>(A) + 
+                        " and " + 
+                        static_cast<std::string>(B) +
+                        " since one of them has rank < 2"
+                    );
+                }
+
+                if(A_view.m_shape[A_rank - 1] != B_view.m_shape[B_rank - 2]){
+                    throw std::invalid_argument(
+                        "Cannot perform matrix multiplication on Tensors of shape " + 
+                        static_cast<std::string>(A) + 
+                        " and " + 
+                        static_cast<std::string>(B) + 
+                        " the extent of the last axis on A must match the extent of the next to last axis on B"
+                    );
+                }
+
+                batching(A_view, B_view, 2);
+
+                std::vector<int> shape {A_view.m_shape};
+                shape[max_rank - 1] = B_view.m_shape.back();
+                Tensor<T> C {shape};
+
+                std::vector<int> indecies(max_rank, 0);
+                std::vector<int> A_indecies(max_rank, 0);
+                std::vector<int> B_indecies(max_rank, 0);
+
+                do {
+                    for(int i {}; i < max_rank; ++i){
+                        A_indecies[i] = indecies[i];
+                        B_indecies[i] = indecies[i];
+                    }
+
+                    T sum {};
+                    for(int i {}; i < A_view.m_shape.back(); ++i){
+                        A_indecies[max_rank - 1] = i;
+                        B_indecies[max_rank - 2] = i;
+
+                        sum += A_view[A_indecies] * B_view[B_indecies];
+                    }
+
+                    C[indecies] = sum;
+                } while(next_index(indecies, C.m_shape));
+
+                return C;
+            }
+            Tensor& operator*=(const Tensor& A) {
+                (*this) = (*this) * A;
+                return *this;
+            }
 
             friend bool operator==(const Tensor& A, const Tensor& B);
             friend bool operator!=(const Tensor& A, const Tensor& B);
@@ -258,38 +347,9 @@ namespace LinAlg {
 
         int rank {A_rank > B_rank ? A_rank : B_rank};
 
-        std::vector<int> max_shape;
+        Tensor<T>::batching(A_view, B_view);
 
-        {
-            Tensor<T>& max_ref {A_rank == rank ? A_view : B_view};
-            Tensor<T>& min_ref {A_rank == rank ? B_view : A_view};
-
-            int min_rank {min_ref.get_rank()};
-
-            for(int i {min_rank - 1}, j {rank - 1}; i >= 0; --i, --j) {
-                if(max_ref.m_shape[j] != min_ref.m_shape[i]){
-                    throw std::invalid_argument(
-                        "Cannot perform a pairwise operation on two tensors of shape" + 
-                        static_cast<std::string>(A) + 
-                        " and " + 
-                        static_cast<std::string>(B) + 
-                        " the extents of their existing dimensions must match"
-                    );
-                }
-            }
-
-            std::vector<int> strides(rank - min_rank, 0);
-            for(int i {}; i < min_rank; ++i){
-                strides.push_back(min_ref.m_strides[i]);
-            }
-
-            min_ref.m_strides = strides;
-            min_ref.m_shape = max_ref.m_shape;
-
-            max_shape = max_ref.m_shape;
-        }
-
-        Tensor<T> C {max_shape};
+        Tensor<T> C {A_view.m_shape};
 
         std::vector<int> indecies(rank, 0);
 
