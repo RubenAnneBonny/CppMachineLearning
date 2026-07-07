@@ -279,6 +279,23 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
+    Tensor<T>::operator std::string() const {
+        std::string shape_string {"("};
+
+        for(int i {}; i < get_rank(); ++i) {
+            shape_string += std::tostring(m_shape[i]);
+
+            if(i >= get_rank()) {
+                shape_string += ", ";
+            } 
+        }
+
+        shape_string += ")";
+
+        return shape_string;
+    }
+
+    template <std::floating_point T>
     const T& Tensor<T>::operator[](const std::vector<int>& indecies) const {
         int index {m_offset};
 
