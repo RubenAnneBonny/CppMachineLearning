@@ -4,6 +4,10 @@
 #include <memory>
 #include <vector>
 #include <Rand/random.h>
+#include <string>
+#include <stdexcept>
+#include <concepts>
+#include <cstddef>
 
 namespace LinAlg {
     template <std::floating_point T>
@@ -27,13 +31,13 @@ namespace LinAlg {
             std::vector<int> m_strides;
 
             int get_rank() const {
-                return static_cast<int>(shape.size());
+                return static_cast<int>(m_shape.size());
             }
 
             int num_elements() const {
                 int elements {1};
 
-                for(int i {}; i < get_dim(); ++i) {
+                for(int i {}; i < get_rank(); ++i) {
                     elements *= m_shape[i];
                 }
 
@@ -42,15 +46,26 @@ namespace LinAlg {
 
             void calculate_strides() {
                 m_strides.clear();
-                m_strides.assign(num_elements(), 1);
+                m_strides.assign(get_rank(), 1);
 
-                for(int j {get_dim() - 2}; j >= 0; ++j) {
+                for(int j {get_rank() - 2}; j >= 0; --j) {
                     m_strides[j] = m_strides[j + 1] * m_shape[j + 1];
                 }
             }
 
+            static bool next_index(std::vector<int>& indecies, const std::vector<int>& shape) {
+                for(int i {static_cast<int>(shape.size()) - 1}; i >= 0; --i) {
+                    if(++indecies[i] < shape[i]) {
+                        return true;
+                    }
+                    indecies[i] = 0;
+                }
+
+                return false;
+            }
+
         public:
-            Tensor(const std::vector<int>& shape, T init);
+            Tensor(const std::vector<int>& shape, T init = 0);
 
             void normal(Rand::Random<T>& random, T mean, T stddev);
 
@@ -69,8 +84,8 @@ namespace LinAlg {
             template <typename Fn>
             void elementwise(Fn fn);
 
-            template <typename Fn>
-            friend Tensor<t> pairwise<T, Fn>(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
+            template <std::floating_point U, typename Fn>
+            friend Tensor<U> pairwise(const Tensor<U>& A, const Tensor<U>& B, Fn fn);
 
             operator std::string() const;
 
@@ -102,30 +117,35 @@ namespace LinAlg {
         : m_shape {shape}
         , m_storage {std::make_shared<std::vector<T>>(num_elements(), init)}
         , m_offset {}
-        , m_strides {calculate_strides()}
-    {}
+        , m_strides {}
+    {
+        calculate_strides();
+    }
 
     template <std::floating_point T>
     void Tensor<T>::normal(Rand::Random<T>& random, T mean, T stddev) {
-        for(int i {m_offset}; i < num_elements(); ++i) {
-            m_storage[i] = random.normal(mean, stddev);
-        }
+        std::vector<int> indecies(get_rank(), 0);
+        do {
+            (*this)[indecies] = random.normal(mean, stddev);
+        } while(next_index(indecies, m_shape));
     }
 
     template <std::floating_point T>
     void Tensor<T>::uniform(Rand::Random<T>& random, T low, T high) {
-        for(int i {m_offset}; i < num_elements(); ++i) {
-            m_storage[i] = random.uniform(low, high);
-        }
+        std::vector<int> indecies(get_rank(), 0);
+        do {
+            (*this)[indecies] = random.uniform(low, high);
+        } while(next_index(indecies, m_shape));
     }
 
     template <std::floating_point T>
     Tensor<T> Tensor<T>::copy() const {
         Tensor<T> A {m_shape};
-        
-        for(int i {m_offset}; i < num_elements(); ++i){
-            A.m_storage[i - m_offset] = m_storage[i];
-        }
+
+        std::vector<int> indecies(get_rank(), 0);
+        do {
+            A[indecies] = (*this)[indecies];
+        } while(next_index(indecies, m_shape));
 
         return A;
     }
@@ -148,22 +168,24 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::unsqueeze(int axis) {
-        int strides {get_rank()};
+        int strides {num_elements()};
 
         if(axis > get_rank() || axis < 0){
-            "Cannot unsqueeze Tensor of shape " +
-            static_cast<std::string>(*this) + 
-            " in axis " + 
-            std::to_string(axis) + 
-            " since its outside the tensors rank"
+            throw std::invalid_argument(
+                "Cannot unsqueeze Tensor of shape " +
+                static_cast<std::string>(*this) + 
+                " in axis " + 
+                std::to_string(axis) + 
+                " since its outside the tensors rank"
+            );
         }
 
         if(axis > 0) {
             strides = m_strides[axis - 1]; 
         }
 
-        m_shape.insert(m_shape.begin() + axis);
-        m_strides.insert(m_strides.begin() + axis);
+        m_shape.insert(m_shape.begin() + axis, 1);
+        m_strides.insert(m_strides.begin() + axis, strides);
     }
 
     template <std::floating_point T>
@@ -206,17 +228,24 @@ namespace LinAlg {
 
         Tensor A {*this};
 
-        int temp {A.m_shape[rank - 1]};
+        int temp_shape {A.m_shape[rank - 1]};
         A.m_shape[rank - 1] = A.m_shape[rank - 2];
-        A.m_shape[rank - 2] = temp;
+        A.m_shape[rank - 2] = temp_shape;
+
+        int temp_stride {A.m_strides[rank - 1]};
+        A.m_strides[rank - 1] = A.m_strides[rank - 2];
+        A.m_strides[rank - 2] = temp_stride;
+
+        return A;
     }
 
     template <std::floating_point T>
     template <typename Fn>
     void Tensor<T>::elementwise(Fn fn) {
-        for(int i {m_offset}; i < num_elements(); ++i) {
-            m_storage[i] = fn(m_storage);
-        }
+        std::vector<int> indecies(get_rank(), 0);
+        do {
+            (*this)[indecies] = fn((*this)[indecies]);
+        } while(next_index(indecies, m_shape));
     }
 
     template <std::floating_point T, typename Fn>
@@ -229,7 +258,7 @@ namespace LinAlg {
 
         int rank {A_rank > B_rank ? A_rank : B_rank};
 
-        Tensor<T> C;
+        std::vector<int> max_shape;
 
         {
             Tensor<T>& max_ref {A_rank == rank ? A_view : B_view};
@@ -257,23 +286,16 @@ namespace LinAlg {
             min_ref.m_strides = strides;
             min_ref.m_shape = max_ref.m_shape;
 
-            C = Tensor<T>{max_ref.m_shape};
+            max_shape = max_ref.m_shape;
         }
+
+        Tensor<T> C {max_shape};
 
         std::vector<int> indecies(rank, 0);
 
-        for(int i {}; i < C.num_elements(); ++i) {
+        do {
             C[indecies] = fn(A_view[indecies], B_view[indecies]);
-
-            int index {rank - 1};
-
-            while(++indecies[index] == A_view.m_shape[index]){
-                indecies[index] = 0;
-                if(--index < 0) {
-                    break;
-                }
-            }
-        }
+        } while(next_index(indecies, C.m_shape));
 
         return C;
     }
@@ -283,9 +305,9 @@ namespace LinAlg {
         std::string shape_string {"("};
 
         for(int i {}; i < get_rank(); ++i) {
-            shape_string += std::tostring(m_shape[i]);
+            shape_string += std::to_string(m_shape[i]);
 
-            if(i >= get_rank()) {
+            if(i < get_rank() - 1) {
                 shape_string += ", ";
             } 
         }
@@ -299,13 +321,12 @@ namespace LinAlg {
     const T& Tensor<T>::operator[](const std::vector<int>& indecies) const {
         int index {m_offset};
 
-        for(int i {}; i < indecies; ++i) {
+        for(int i {}; i < get_rank(); ++i) {
             index += indecies[i] * m_strides[i];
         }
 
-        return index;
+        return (*m_storage)[index];
     }
-
     template <std::floating_point T>
     T& Tensor<T>::operator[](const std::vector<int>& indecies) {
         const Tensor& self = *this;
