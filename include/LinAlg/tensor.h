@@ -9,14 +9,14 @@ namespace LinAlg {
     template <std::floating_point T>
     class Tensor;
 
+    template <std::floating_point T, typename Fn>
+    Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
+
     template <std::floating_point T>
     Tensor<T> pairwise_mult(const Tensor<T>& A, const Tensor<T>& B);
 
     template <std::floating_point T>
     Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B);
-
-    template <std::floating_point T, typename Fn>
-    Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
 
     template <std::floating_point T>
     class Tensor {
@@ -138,7 +138,7 @@ namespace LinAlg {
             );
         }
 
-        Tensor A = *this;
+        Tensor A {*this};
         A.m_offset += i * m_strides[0];
         A.m_shape.erase(A.m_shape.begin());
         A.m_strides.erase(A.m_strides.begin());
@@ -204,11 +204,78 @@ namespace LinAlg {
             );
         }
 
-        Tensor A = *this;
+        Tensor A {*this};
 
         int temp {A.m_shape[rank - 1]};
         A.m_shape[rank - 1] = A.m_shape[rank - 2];
         A.m_shape[rank - 2] = temp;
+    }
+
+    template <std::floating_point T>
+    template <typename Fn>
+    void Tensor<T>::elementwise(Fn fn) {
+        for(int i {m_offset}; i < num_elements(); ++i) {
+            m_storage[i] = fn(m_storage);
+        }
+    }
+
+    template <std::floating_point T, typename Fn>
+    Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn) {
+        Tensor<T> A_view {A};
+        Tensor<T> B_view {B};
+
+        int A_rank {A.get_rank()};
+        int B_rank {B.get_rank()};
+
+        int rank {A_rank > B_rank ? A_rank : B_rank};
+
+        Tensor<T> C;
+
+        {
+            Tensor<T>& max_ref {A_rank == rank ? A_view : B_view};
+            Tensor<T>& min_ref {A_rank == rank ? B_view : A_view};
+
+            int min_rank {min_ref.get_rank()};
+
+            for(int i {min_rank - 1}, j {rank - 1}; i >= 0; --i, --j) {
+                if(max_ref.m_shape[j] != min_ref.m_shape[i]){
+                    throw std::invalid_argument(
+                        "Cannot perform a pairwise operation on two tensors of shape" + 
+                        static_cast<std::string>(A) + 
+                        " and " + 
+                        static_cast<std::string>(B) + 
+                        " the extents of their existing dimensions must match"
+                    );
+                }
+            }
+
+            std::vector<int> strides(rank - min_rank, 0);
+            for(int i {}; i < min_rank; ++i){
+                strides.push_back(min_ref.m_strides[i]);
+            }
+
+            min_ref.m_strides = strides;
+            min_ref.m_shape = max_ref.m_shape;
+
+            C = Tensor<T>{max_ref.m_shape};
+        }
+
+        std::vector<int> indecies(rank, 0);
+
+        for(int i {}; i < C.num_elements(); ++i) {
+            C[indecies] = fn(A_view[indecies], B_view[indecies]);
+
+            int index {rank - 1};
+
+            while(++indecies[index] == A_view.m_shape[index]){
+                indecies[index] = 0;
+                if(--index < 0) {
+                    break;
+                }
+            }
+        }
+
+        return C;
     }
 
     template <std::floating_point T>
