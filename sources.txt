@@ -1,0 +1,54 @@
+  ML math
+
+  - "The Matrix Calculus You Need For Deep Learning" — Parr & Howard — https://explained.ai/matrix-calculus/ (article) — Closes the one gap between your KTH calc/linalg and backprop: the conventions for
+  gradients of vector/matrix expressions.
+  - 3Blue1Brown — "Neural Networks" series — YouTube (video) — Skip his essence-of-calc/linalg series; the NN-specific episodes on gradient descent and backprop are a good visual framing.
+  - Goodfellow, Bengio & Courville — Deep Learning — https://www.deeplearningbook.org/ (book) — Part I math, Part II algorithms. Rigorous reference.
+  - StatQuest — YouTube (video) — Per-topic lookups (softmax, cross-entropy, Adam) when you want one concept fast.
+
+  Building ML / autograd from scratch
+
+  - Karpathy — "building micrograd" — YouTube (video) — The single most relevant video; an autodiff engine from scratch.
+  - Karpathy — "Neural Networks: Zero to Hero" (playlist) — YouTube (video) — Continues into "makemore" and especially "Becoming a backprop ninja" (hand-deriving every matrix gradient).
+  - Joel Grus — "Building a Deep Learning Library from Scratch" — YouTube (video) — Live-codes a small NN library; good for seeing a library's moving parts.
+  - CS231n — "Backpropagation, Intuitions" — https://cs231n.github.io/optimization-2/ (article) — Backprop as computational graphs.
+
+  C++ (beyond competitive basics)
+
+  - learncpp.com — https://www.learncpp.com/ (article/tutorial) — Best free written C++ resource. Read it fast.
+  - The Cherno — "C++" series — YouTube (video) — Practical modern C++: classes, pointers/references, const, smart pointers, operator overloading, move semantics.
+  - cppreference.com — https://en.cppreference.com/ (reference) — Authoritative standard-library/language reference.
+  - "CppCon: Back to Basics" talks — YouTube (video) — One topic each (move semantics, RAII, templates); high quality, search by topic.
+  - Eigen documentation — https://eigen.tuxfamily.org/ (reference) — The standard C++ linear-algebra library; worth reading for API/design even if you write your own.
+
+  Optimizing & parallelism
+
+  Foundations / mindset
+  - Chandler Carruth — "Efficiency with Algorithms, Performance with Data Structures" (CppCon 2014) — YouTube (video) — The canonical talk on why C++ is fast and how data layout drives performance.
+  Start here.
+  - Chandler Carruth — "Tuning C++: Benchmarks, CPUs, and Compilers!" (CppCon 2015) — YouTube (video) — How to actually measure, and how the hardware behaves.
+  - "What Every Programmer Should Know About Memory" — Ulrich Drepper (article/paper) — Cache behavior; the foundation of all numerical performance.
+
+  Compiler & SIMD (vectorization within a core)
+  - Matt Godbolt — "What Has My Compiler Done for Me Lately?" (CppCon 2017) — YouTube (video) — Watching the compiler auto-vectorize your code.
+  - Compiler Explorer — https://godbolt.org/ (tool) — Paste code, see the generated assembly; the best way to see whether your loops vectorized. Use -O3 -march=native.
+  - Agner Fog's optimization manuals — https://www.agner.org/optimize/ (reference) — The authoritative deep reference on SIMD, intrinsics, and micro-optimization. Dense; use as needed.
+
+  Multithreading (across cores)
+  - Tim Mattson — "Introduction to OpenMP" (27-part series) — YouTube (video) — The definitive OpenMP course; OpenMP is the easiest way to parallelize your matrix loops.
+  - CppCon "Back to Basics: Concurrency" talks — YouTube (video) — std::thread, std::async, mutexes, atomics, race conditions.
+  - "C++ Concurrency in Action" — Anthony Williams (book) — The standard book on C++ threading if you want depth.
+
+  Numerical / matrix-multiply specifically
+  - "Anatomy of High-Performance Matrix Multiplication" — Goto & van de Geijn (paper) — How optimized matmul (GEMM) actually works: blocking, cache tiling.
+  - BLISlab / "How to Optimize GEMM" tutorial — https://github.com/flame/how-to-optimize-gemm (article + code) — A hands-on walkthrough taking a naive matmul to near-BLAS speed step by step. Perfect
+  companion to the paper.
+  - OpenBLAS / Intel MKL docs (reference) — The production matmul libraries you'd call instead of rolling your own.
+
+  GPU (the real ceiling)
+  - "GPU MODE" lecture series (formerly CUDA MODE) — YouTube (video) — Modern, practical CUDA + deep-learning-kernel lectures.
+  - NVIDIA "CUDA C++ Programming Guide" — https://docs.nvidia.com/cuda/ (reference) — Official reference.
+  - "Programming Massively Parallel Processors" — Kirk & Hwu (book) — The standard CUDA textbook.
+
+  Profiling (measure before optimizing)
+  - perf (Linux) / Intel VTune / Valgrind–Callgrind (tools) — Find the actual hot spots; never optimize by guessing.

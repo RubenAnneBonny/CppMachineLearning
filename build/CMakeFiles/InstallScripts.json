@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/ruben/Github/CppMachineLearning/build/cmake_install.cmake",
+		"C:/Users/ruben/Github/CppMachineLearning/build/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,9 @@
+# ninja log v7
+46	553	8048155192422774	tests/CMakeFiles/matrix_test.dir/LinAlg/matrix_test.cpp.obj	95edca71013be3db
+48	191	8048155366774242	tests/matrix_test.exe	43ef8d85c75d787
+33	664	8050388446822179	tests/CMakeFiles/tensor_test.dir/LinAlg/tensor_test.cpp.obj	7335d206471f579d
+665	858	8050388453196823	tests/tensor_test.exe	ea10d795c38306b3
+32	139	8048865373916765	tests/CMakeFiles/std_func_test.dir/Func/std_func_test.cpp.obj	235c41a550c764ec
+139	275	8048865374948869	tests/std_func_test.exe	35415870e2230396
+22	763	8049557660756152	tests/CMakeFiles/random_test.dir/Rand/random_test.cpp.obj	18ad285d92cc2ef6
+40	356	8049562664568820	tests/random_test.exe	85deb69017831ca8
