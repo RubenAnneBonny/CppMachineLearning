@@ -299,7 +299,7 @@ namespace LinAlg {
             }
             Tensor& operator+=(T a) {
                 auto addition{
-                    [b](T a)
+                    [a](T b)
                     {
                         return a + b;
                     }
@@ -330,9 +330,9 @@ namespace LinAlg {
             friend Tensor operator*(T b, const Tensor& A) {
                 return A * b;
             }
-            Tensor& operator*=(T b) {
+            Tensor& operator*=(T a) {
                 auto multiplication{
-                    [b](T a)
+                    [a](T b)
                     {
                         return a * b;
                     }
@@ -515,7 +515,7 @@ namespace LinAlg {
 
         do {
             C[indecies] = fn(A_view[indecies], B_view[indecies]);
-        } while(next_index(indecies, C.m_shape));
+        } while(Tensor<T>::next_index(indecies, C.m_shape));
 
         return C;
     }

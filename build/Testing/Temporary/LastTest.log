@@ -1,17 +1,17 @@
-Start testing: Jul 06 13:01 W. Europe Daylight Time
+Start testing: Jul 08 21:47 W. Europe Daylight Time
 ----------------------------------------------------------
 1/3 Testing: std_func_test
 1/3 Test: std_func_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/std_func_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"std_func_test" start time: Jul 06 13:01 W. Europe Daylight Time
+"std_func_test" start time: Jul 08 21:47 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
 Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"std_func_test" end time: Jul 06 13:01 W. Europe Daylight Time
+"std_func_test" end time: Jul 08 21:47 W. Europe Daylight Time
 "std_func_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -19,14 +19,14 @@ Test Passed.
 2/3 Test: tensor_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/tensor_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"tensor_test" start time: Jul 06 13:01 W. Europe Daylight Time
+"tensor_test" start time: Jul 08 21:47 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.02 sec
+Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"tensor_test" end time: Jul 06 13:01 W. Europe Daylight Time
+"tensor_test" end time: Jul 08 21:47 W. Europe Daylight Time
 "tensor_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -34,15 +34,15 @@ Test Passed.
 3/3 Test: random_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/random_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"random_test" start time: Jul 06 13:01 W. Europe Daylight Time
+"random_test" start time: Jul 08 21:47 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.04 sec
+Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"random_test" end time: Jul 06 13:01 W. Europe Daylight Time
+"random_test" end time: Jul 08 21:47 W. Europe Daylight Time
 "random_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Jul 06 13:01 W. Europe Daylight Time
+End testing: Jul 08 21:47 W. Europe Daylight Time
