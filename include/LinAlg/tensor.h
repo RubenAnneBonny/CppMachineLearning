@@ -103,14 +103,14 @@ namespace LinAlg {
 
             Tensor row(int i) const;
 
-            void unsqueeze(int axis = 0);
+            Tensor unsqueeze(int axis = 0);
 
-            void squeeze(int axis = 0);
+            Tensor squeeze(int axis = 0);
 
             Tensor t() const;
 
             template <typename Fn>
-            void elementwise(Fn fn);
+            Tensor& elementwise(Fn fn);
 
             template <std::floating_point U, typename Fn>
             friend Tensor<U> pairwise(const Tensor<U>& A, const Tensor<U>& B, Fn fn);
@@ -184,13 +184,55 @@ namespace LinAlg {
                 return *this;
             }
 
-            friend bool operator==(const Tensor& A, const Tensor& B);
-            friend bool operator!=(const Tensor& A, const Tensor& B);
+            friend bool operator==(const Tensor& A, const Tensor& B) {
+                if(A.get_rank() != B.get_rank()) {
+                    return false;
+                }
 
-            friend Tensor operator+(const Tensor& A, const Tensor& B);
+                for(int i {}; i < A.get_rank(); ++i) {
+                    if(A.m_shape[i] != B.m_shape[i]){
+                        return false;
+                    }
+                }
+
+                std::vector<int> indecies(A.get_rank(), 0);
+
+                do {
+                    if(A[indecies] != B[indecies]) {
+                        return false;
+                    }
+                } while(next_index(indecies, A.m_shape));
+
+                return true;
+            }
+            friend bool operator!=(const Tensor& A, const Tensor& B) {
+                return !(A == B);
+            }
+
+            friend Tensor operator+(const Tensor& A, const Tensor& B) {
+                auto addition{
+                [](T a, T b)
+                {
+                    return a + b;
+                }
+                };
+
+                return pairwise(A, B, addition);
+            }
             friend Tensor<T> pairwise_add<T>(const Tensor<T>& A, const Tensor<T>& B);
 
-            friend Tensor operator+(const Tensor& A, T b);
+            friend Tensor operator+(const Tensor& A, T b) {
+                auto addition{
+                    [b](T a)
+                    {
+                        return a + b;
+                    }
+                };
+
+                Tensor<T> C {A.copy()};
+
+                return C.elementwise(A, b);
+            }
             friend Tensor operator+(T b, const Tensor& A);
             Tensor& operator+=(T a);
 
@@ -256,10 +298,10 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    void Tensor<T>::unsqueeze(int axis) {
-        int strides {num_elements()};
+    Tensor<T> Tensor<T>::unsqueeze(int axis) {
+        int strides {A.num_elements()};
 
-        if(axis > get_rank() || axis < 0){
+        if(axis > A.get_rank() || axis < 0){
             throw std::invalid_argument(
                 "Cannot unsqueeze Tensor of shape " +
                 static_cast<std::string>(*this) + 
@@ -269,16 +311,20 @@ namespace LinAlg {
             );
         }
 
+        Tensor<T> A {*this};
+
         if(axis > 0) {
-            strides = m_strides[axis - 1]; 
+            strides = A.m_strides[axis - 1]; 
         }
 
-        m_shape.insert(m_shape.begin() + axis, 1);
-        m_strides.insert(m_strides.begin() + axis, strides);
+        A.m_shape.insert(A.m_shape.begin() + axis, 1);
+        A.m_strides.insert(A.m_strides.begin() + axis, strides);
+
+        return A;
     }
 
     template <std::floating_point T>
-    void Tensor<T>::squeeze(int axis) {
+    Tensor<T> Tensor<T>::squeeze(int axis) {
         if(axis >= get_rank() || axis < 0){
             throw std::invalid_argument(
                 "Cannot squeeze Tensor of shape " +
@@ -299,8 +345,12 @@ namespace LinAlg {
             );
         }
 
-        m_shape.erase(m_shape.begin() + axis);
-        m_strides.erase(m_strides.begin() + axis);
+        Tensor<T> A {*this};
+
+        A.m_shape.erase(A.m_shape.begin() + axis);
+        A.m_strides.erase(A.m_strides.begin() + axis);
+
+        return A;
     }
 
     template <std::floating_point T>
@@ -330,11 +380,14 @@ namespace LinAlg {
 
     template <std::floating_point T>
     template <typename Fn>
-    void Tensor<T>::elementwise(Fn fn) {
+    Tensor<T>& Tensor<T>::elementwise(Fn fn) {
         std::vector<int> indecies(get_rank(), 0);
+
         do {
             (*this)[indecies] = fn((*this)[indecies]);
         } while(next_index(indecies, m_shape));
+
+        return *this;
     }
 
     template <std::floating_point T, typename Fn>
@@ -391,6 +444,11 @@ namespace LinAlg {
     T& Tensor<T>::operator[](const std::vector<int>& indecies) {
         const Tensor& self = *this;
         return const_cast<T&>(self[indecies]);
+    }
+
+    template <std::floating_point T>
+    Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B) {
+        return A + B;
     }
 }
 
