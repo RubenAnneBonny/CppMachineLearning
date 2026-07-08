@@ -125,13 +125,13 @@ namespace LinAlg {
             /// @return A tensor-view of the unsqueezed tensor
             /// @throws std::invalid_argument if tensor rank is 1
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
-            Tensor unsqueeze(int axis = 0);
+            Tensor unsqueeze(int axis = 0) const;
 
             /// @brief Removes an axis with extent 1
             /// @param axis Which axis to remove
             /// @return A tensor-view of the squeezed tensor
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
-            Tensor squeeze(int axis = 0);
+            Tensor squeeze(int axis = 0) const;
 
             /// @brief Transposes the last two axises of the tensor
             /// @return A tensor-view of the transposed tensor
@@ -146,7 +146,7 @@ namespace LinAlg {
             Tensor& elementwise(Fn fn);
 
             /// @brief Creates tensor where each element is the result of a function between two tensors, uses batching
-            /// @tparam Fn A type of function that takes only one parameter of type T
+            /// @tparam Fn A type of function that takes two parameters of type T
             /// @tparam U The same type as T
             /// @param A The first tensor
             /// @param B The second tensor
@@ -298,8 +298,14 @@ namespace LinAlg {
                 return A + b;
             }
             Tensor& operator+=(T a) {
-                (*this) = (*this) + a;
-                return *this;
+                auto addition{
+                    [b](T a)
+                    {
+                        return a + b;
+                    }
+                };
+
+                return elementwise(addition);
             }
 
             /// @brief Performs pairwise multiplication
@@ -325,8 +331,14 @@ namespace LinAlg {
                 return A * b;
             }
             Tensor& operator*=(T b) {
-                (*this) = (*this) * b;
-                return *this;
+                auto multiplication{
+                    [b](T a)
+                    {
+                        return a * b;
+                    }
+                };
+
+                return elementwise(multiplication);
             }
     };
 
@@ -397,7 +409,7 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    Tensor<T> Tensor<T>::unsqueeze(int axis) {
+    Tensor<T> Tensor<T>::unsqueeze(int axis) const {
         Tensor<T> A {*this};
 
         if(axis > A.get_rank() || axis < 0){
@@ -419,7 +431,7 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    Tensor<T> Tensor<T>::squeeze(int axis) {
+    Tensor<T> Tensor<T>::squeeze(int axis) const {
         if(axis >= get_rank() || axis < 0){
             throw std::invalid_argument(
                 "Cannot squeeze Tensor of shape " +
