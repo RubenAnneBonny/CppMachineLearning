@@ -93,33 +93,85 @@ namespace LinAlg {
             }
 
         public:
+            /// @brief Constructor
+            /// @param shape The shape of the Tensor
+            /// @param init The value to initialize all elements to
             Tensor(const std::vector<int>& shape, T init = 0);
 
+            /// @brief Randomizes all elements ~N(mean, stddev)
+            /// @param random An instance of the random class
+            /// @param mean The mean of the elements
+            /// @param stddev The standard deviation of all elements
             void normal(Rand::Random<T>& random, T mean, T stddev);
 
+            /// @brief Randomizes all elements ~U(low, high)
+            /// @param random An instance of the random class
+            /// @param low The lower bound of the elements
+            /// @param high The upper bound of the elements
             void uniform(Rand::Random<T>& random, T low, T high);
             
+            /// @brief Creates a deep copy of the tensor
+            /// @return Returns a copy of the tensor
             Tensor copy() const;
 
+            /// @brief Creates a view of the one of the tensor by removing first axis
+            /// @param i The index of the sub-tensor to create a view of
+            /// @return The tensor-view
+            /// @throws std::invalid_argument if i is outside extent of first axis
             Tensor row(int i) const;
 
+            /// @brief Add an extra axis with extent 1
+            /// @param axis Before which axis to add the new
+            /// @return A tensor-view of the unsqueezed tensor
+            /// @throws std::invalid_argument if tensor rank is 1
+            /// @throws std::invalid_argument if axis is outside the rank of the tensor
             Tensor unsqueeze(int axis = 0);
 
+            /// @brief Removes an axis with extent 1
+            /// @param axis Which axis to remove
+            /// @return A tensor-view of the squeezed tensor
+            /// @throws std::invalid_argument if axis is outside the rank of the tensor
             Tensor squeeze(int axis = 0);
 
+            /// @brief Transposes the last two axises of the tensor
+            /// @return A tensor-view of the transposed tensor
+            /// @throws std::invalid_argument if rank of tensor is less than 2
             Tensor t() const;
 
+            /// @brief Performs a function on each element of the tensor
+            /// @tparam Fn A type of function that takes only one parameter of type T
+            /// @param fn The lambda function to perform on each element
+            /// @return A reference to this tensor
             template <typename Fn>
             Tensor& elementwise(Fn fn);
 
+            /// @brief Creates tensor where each element is the result of a function between two tensors, uses batching
+            /// @tparam Fn A type of function that takes only one parameter of type T
+            /// @tparam U The same type as T
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @param fn The lambda function to perform on the tensors
+            /// @return A new tensor, the result
+            /// @throws std::invalid_argument if batching cannot be performed
             template <std::floating_point U, typename Fn>
             friend Tensor<U> pairwise(const Tensor<U>& A, const Tensor<U>& B, Fn fn);
 
+            /// @brief Allows static_cast<std::string>(tensor), returns string that displays shape nicely
             operator std::string() const;
 
+            /// @brief Allows accessing elements in the tensor
+            /// @param indecies The indecies of each axis to retrive element at
+            /// @return A reference to the element
             const T& operator[](const std::vector<int>& indecies) const;
             T& operator[](const std::vector<int>& indecies);
 
+            /// @brief Performs matrix multiplication, uses batching
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @return The result of the operation
+            /// @throws std::invalid_argument if batching cannot be performed
+            /// @throws std::invalid_argument if the rank of either A or B is less than 2
+            /// @throws std::invalid_argument if the extent of the last axis of A dont match the extent of next to last axis of B
             friend Tensor operator*(const Tensor& A, const Tensor& B) {
                 Tensor<T> A_view {A};
                 Tensor<T> B_view {B};
@@ -184,6 +236,10 @@ namespace LinAlg {
                 return *this;
             }
 
+            /// @brief Checks for equality between two tensors
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @return True if equal, false otherwise
             friend bool operator==(const Tensor& A, const Tensor& B) {
                 if(A.get_rank() != B.get_rank()) {
                     return false;
@@ -209,6 +265,11 @@ namespace LinAlg {
                 return !(A == B);
             }
 
+            /// @brief Performs pairwise addition
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @return A new tensor, the result of the operation
+            /// @throws std::invalid_argument if batching cannot be performed
             friend Tensor operator+(const Tensor& A, const Tensor& B) {
                 auto addition{
                 [](T a, T b)
@@ -231,16 +292,42 @@ namespace LinAlg {
 
                 Tensor<T> C {A.copy()};
 
-                return C.elementwise(A, b);
+                return C.elementwise(addition);
             }
-            friend Tensor operator+(T b, const Tensor& A);
-            Tensor& operator+=(T a);
+            friend Tensor operator+(T b, const Tensor& A) {
+                return A + b;
+            }
+            Tensor& operator+=(T a) {
+                (*this) = (*this) + a;
+                return *this;
+            }
 
+            /// @brief Performs pairwise multiplication
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @return A new tensor the result of the operation
+            /// @throws std::invalid_argument if batching cannot be
             friend Tensor<T> pairwise_mult<T>(const Tensor<T>& A, const Tensor<T>& B);
 
-            friend Tensor operator*(const Tensor& A, T b);
-            friend Tensor operator*(T b, const Tensor& A);
-            Tensor& operator*=(T b);
+            friend Tensor operator*(const Tensor& A, T b) {
+                auto multiplication{
+                    [b](T a)
+                    {
+                        return a * b;
+                    }
+                };
+
+                Tensor<T> C {A.copy()};
+
+                return C.elementwise(multiplication);
+            }
+            friend Tensor operator*(T b, const Tensor& A) {
+                return A * b;
+            }
+            Tensor& operator*=(T b) {
+                (*this) = (*this) * b;
+                return *this;
+            }
     };
 
     template <std::floating_point T>
@@ -285,7 +372,19 @@ namespace LinAlg {
     Tensor<T> Tensor<T>::row(int i) const {
         if(get_rank() == 1){
             throw std::invalid_argument(
-                "Cannot use .row on Tensor with only 1 dimension"
+                "Cannot use .row on tensor with rank 1"
+            );
+        }
+
+        if(i < 0 || i >= get_rank()) {
+            throw std::invalid_argument(
+                "Cannot get row " + 
+                std::to_string(i) + 
+                " of tensor " + 
+                static_cast<std::string>(*this) + 
+                " since " + 
+                std::to_string(i) + 
+                " is outside the extent of the first axis"
             );
         }
 
@@ -299,7 +398,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T> Tensor<T>::unsqueeze(int axis) {
-        int strides {A.num_elements()};
+        Tensor<T> A {*this};
 
         if(axis > A.get_rank() || axis < 0){
             throw std::invalid_argument(
@@ -311,11 +410,7 @@ namespace LinAlg {
             );
         }
 
-        Tensor<T> A {*this};
-
-        if(axis > 0) {
-            strides = A.m_strides[axis - 1]; 
-        }
+        int strides {axis == 0 ? m_strides[0] * m_shape[0] : m_strides[axis - 1]};
 
         A.m_shape.insert(A.m_shape.begin() + axis, 1);
         A.m_strides.insert(A.m_strides.begin() + axis, strides);
@@ -449,6 +544,18 @@ namespace LinAlg {
     template <std::floating_point T>
     Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B) {
         return A + B;
+    }
+
+    template <std::floating_point T>
+    Tensor<T> pairwise_mult(const Tensor<T>& A, const Tensor<T>& B) {
+        auto multiplication{
+            [](T a, T b)
+            {
+                return a * b;
+            }
+        };
+
+        return pairwise(A, B, multiplication);
     }
 }
 
