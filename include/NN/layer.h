@@ -8,6 +8,18 @@
 #include <Func/function.h>
 
 namespace NN {
+    template <std::floating_point T>
+    class Parameter {
+        public:
+            LinAlg::Tensor<T> value;
+            LinAlg::Tensor<T> grad;
+
+            Parameter(const std::vector<int>& shape) 
+                : value {shape}
+                , grad {shape}
+            {}
+    };
+    
     template <std::floating_point T,
               Func::Function<T> F,
               Func::Activation_function<T> A>
@@ -16,15 +28,26 @@ namespace NN {
             int m_num_nodes;
             int m_num_input_nodes;
             int m_num_weights;
-            std::vector<F> m_nodes;
-            A m_activation;
             LinAlg::Tensor<T> m_store_input;
+            Parameter weights;
         
         public:
-            Layer(int num_input_nodes);
+            Layer(int num_input_nodes, int nodes);
 
-            
+            LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X);
+
+            LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& X);    
     };
+
+    template <std::floating_point T,
+              Func::Function<T> F,
+              Func::Activation_function<T> A>
+    Layer<T, F, A>::Layer(int num_input_nodes, int num_nodes) 
+        : m_num_nodes {num_nodes}
+        , m_num_input_nodes {num_input_nodes}
+        , m_num_weights {num_nodes * F::num_weights(num_input_nodes)}
+        , weights {{num_nodes, num_input_nodes}}
+    {}
 }
 
 #endif

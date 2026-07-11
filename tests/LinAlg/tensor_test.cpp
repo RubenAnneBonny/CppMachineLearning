@@ -202,6 +202,21 @@ void t_test() {
     assert(B == B_exp && "Transposing does not work");
 }
 
+void row_test() {
+    LinAlg::Tensor<float> A {{2, 2, 3}, 1};
+
+    A[{0, 0, 1}] = 2;
+    A[{0, 1, 2}] = 3;
+    A[{1, 1, 0}] = -2;
+
+    LinAlg::Tensor<float> B {A.row(1)};
+    LinAlg::Tensor<float> B_exp {{2, 3}, 1};
+
+    B_exp[{1, 0}] = -2;
+
+    assert(B == B_exp && "Tensor viewing with the row function does not work");
+}
+
 int main(){
     access_operator_test();
     equality_operator_test();
@@ -214,6 +229,7 @@ int main(){
     unsqueeze_test();
     squeeze_test();
     t_test();
+    row_test();
 
     return 0;
 }

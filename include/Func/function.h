@@ -12,21 +12,17 @@ namespace Func{
     concept Function = 
         // Should zero-initilize all weight, T should be the input size, ie the nodes in previos layer
         std::constructible_from<F, T> &&
-        requires(F f, const LinAlg::Tensor<T>& X, int i, 
+        requires(F f, const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, 
                  Rand::Random<T>& random, T mean, T stddev,
-                 T low, T high) {
-            // Should set weights using normal distrobution
-            {f.normal(random, mean, stddev)};
-            // Should set weights using uniform distrobution
-            {f.uniform(random, low, high)};
+                 T low, T high, T input_size) {
             // Takes in tensor of shape (...batch, 1, input layer size) and outputs result of function
-            {f.function(X)} -> std::same_as<LinAlg::Tensor<T>>;
+            {f.function(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
             // Takes in tensor of shape (...batch, 1, input layer size) and outputs tensor (1, nodes) the result of the derivate each input function
-            {f.derivate(X)} -> std::same_as<LinAlg::Tensor<T>>;
+            {f.function_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
             // Takes in tensor of shape (...batch, 1, input layer size) and returns the derivate of the function with respective to each weight in order of get_weight()
-            {f.derivate_all_weights(X)} -> std::same_as<LinAlg::Tensor<T>>;
+            {f.weights_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
             // Returns the number of weights
-            {f.num_weights()} -> std::same_as<T>;
+            {F::num_weights(input_size)} -> std::same_as<T>;
         };
 
     template <typename F, typename T>
