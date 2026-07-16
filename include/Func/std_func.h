@@ -82,7 +82,7 @@ namespace Func{
     class No_Activation {
         public: 
             static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
-                return X;
+                return X.copy();
             }
     
             static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {

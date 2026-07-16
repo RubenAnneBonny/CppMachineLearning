@@ -112,7 +112,7 @@ namespace LinAlg {
 
             /// @brief Returns the extent of an axis
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
-            int get_extent(int axis) {
+            int get_extent(int axis) const {
                 if(axis < 0 || axis > get_rank()) {
                     throw std::invalid_argument(
                         "Cannot get extent on axis " + 

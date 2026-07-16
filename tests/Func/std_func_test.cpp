@@ -1,28 +1,82 @@
-// #include <Func/std_func.h>
+#include <Func/std_func.h>
+#include <LinAlg/tensor.h>
+#include <cassert>
 
-// #include <cassert>
+void linear_test() {
+    int size = Func::Linear<float>::num_weights(3);
 
-// void linear_test(){
-//     Func::Linear lin {0};
+    assert(size == 4 && "num_weights of Linear is faulty");
 
-//     lin.set_weight(0, 1);
-//     lin.set_weight(1, 2);
+    LinAlg::Tensor<float> X {{1, 3}, 3};
+    X[{0, 1}] = 8;
+    X[{0, 2}] = -3;
 
-//     assert(lin.func(4) == 6 && "Linear function does not work");
+    LinAlg::Tensor<float> weights {{1, 4}, 1};
+    weights[{0, 0}] = 5;
+    weights[{0, 2}] = -2;
+    weights[{0, 3}] = -2;
 
-//     Func::Linear lin_2 {0};
+    float func = Func::Linear<float>::function(X, weights, 3);
 
-//     assert(lin_2.func(13) == 0 && "Linear function does not work");
-// }
+    assert(func == 27 && "function for linear does not work");
 
-// void ReLU_test(){
-//     Func::ReLU r {};
+    LinAlg::Tensor<float> dF {Func::Linear<float>::function_grad(X, weights, 3)};
+    LinAlg::Tensor<float> dF_exp {{1, 3}};
+    for(int i {}; i < 3; ++i) {
+        dF_exp[{0, i}] = weights[{0, i}];
+    }
 
-//     assert(r.func(5) == 5 && "ReLU function does not work");
-//     assert(r.func(-2) == 0 && "ReLU function does not work");
-// }
+    assert(dF == dF_exp && "function_grad for linear does not work");
+
+    LinAlg::Tensor<float> dW {Func::Linear<float>::weights_grad(X, weights, 3)};
+    LinAlg::Tensor<float> dW_exp {{1, 4}};
+    for(int i {}; i < 3; ++i) {
+        dW_exp[{0, i}] = X[{0, i}];
+    }
+    dW_exp[{0, 3}] = 1;
+
+    assert(dW == dW_exp && "weights_grad for linear does not work");
+}
+
+void relu_test() {
+    LinAlg::Tensor<float> X {{1, 3}, 2};
+
+    X[{0, 0}] = -1;
+    X[{0, 2}] = 0;
+
+    LinAlg::Tensor<float> A {Func::ReLU<float>::activate(X)};
+    LinAlg::Tensor<float> A_exp {{1, 3}};
+    A_exp[{0, 1}] = 2;
+
+    assert(A == A_exp && "ReLU activate does not work");
+
+    LinAlg::Tensor<float> D {Func::ReLU<float>::derivate(X)};
+    LinAlg::Tensor<float> D_exp {{1, 3}};
+
+    D_exp[{0, 1}] = 1;
+
+    assert(D == D_exp && "ReLU derivate does not work");
+}
+
+void no_activation_test() {
+    LinAlg::Tensor<float> X {{1, 3}};
+    X[{0, 0}] = 1;
+    X[{0, 1}] = -7;
+
+    LinAlg::Tensor<float> A {Func::No_Activation<float>::activate(X)};
+
+    assert(X == A && "No activation activate does not work");
+
+    LinAlg::Tensor<float> D {Func::No_Activation<float>::derivate(X)};
+    LinAlg::Tensor<float> D_exp {{1, 3}, 1};
+
+    assert(D == D_exp && "No activation derivate does not work");
+}
 
 int main(){
+    linear_test();
+    relu_test();
+    no_activation_test();
 
     return 0;
 }
