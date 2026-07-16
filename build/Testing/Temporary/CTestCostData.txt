@@ -1,5 +1,5 @@
 matrix_test 78 0.000394367
-tensor_test 142 9.5762e-05
-std_func_test 129 8.10171e-05
-random_test 126 8.94984e-05
+tensor_test 145 0.000462168
+std_func_test 132 9.04508e-05
+random_test 129 0.000132745
 ---

@@ -10,33 +10,37 @@
 namespace Func{
     template <typename F, typename T>
     concept Function = 
-        // Should zero-initilize all weight, T should be the input size, ie the nodes in previos layer
-        std::constructible_from<F, T> &&
-        requires(F f, const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, 
-                 Rand::Random<T>& random, T mean, T stddev,
-                 T low, T high, T input_size) {
-            // Takes in tensor of shape (...batch, 1, input layer size) and outputs result of function
-            {f.function(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
-            // Takes in tensor of shape (...batch, 1, input layer size) and outputs tensor (1, nodes) the result of the derivate each input function
-            {f.function_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
-            // Takes in tensor of shape (...batch, 1, input layer size) and returns the derivate of the function with respective to each weight in order of get_weight()
-            {f.weights_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
-            // Returns the number of weights
-            {F::num_weights(input_size)} -> std::same_as<T>;
+        requires(F f, const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, int input_size) {
+            /// @brief Returns the number of weights for the function, based on input size
+            {F::num_weights(input_size)} -> std::same_as<int>;
+            /// @brief Based on input and weights, calculates the output of the function
+            /// @param X Input tensor of shape (1, input size)
+            /// @param weights Tensor of shape (1, num_weights)
+            /// @return Scalar
+            {F::function(X, weights, input_size)} -> std::same_as<T>;
+            /// @brief Calculates the gradient of the function, based on input
+            /// @param X Input tensor of shape (1, input size)
+            /// @param weights Tensor of shape (1, num_weights)
+            /// @returns Tensor of shape (1, input_size)
+            {F::function_grad(X, weights, input_size)} -> std::same_as<LinAlg::Tensor<T>>;
+            /// @brief Calculates the gradient of the function, based on weights
+            /// @param X Input tensor of shape (1, input size)
+            /// @param weights Tensor of shape (1, num_weights)
+            /// @return Tensor of shape (1, num_weights)
+            {F::weights_grad(X, weights, input_size)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 
     template <typename F, typename T>
     concept Activation_function = 
-        std::constructible_from<F> &&
         requires(F f, const LinAlg::Tensor<T>& X) {
-            // Forward pass through the activation function
-            // Input size (...batch, 1, layer size)
-            // Output size (...batch, 1, layer size)
-            {f.activate(X)} -> std::same_as<LinAlg::Tensor<T>>;
-            // Derivate each function
-            // Input size (...batch, 1, layer size)
-            // Output size (...batch, 1 layer size)
-            {f.derivate(X)} -> std::same_as<LinAlg::Tensor<T>>;
+            /// @brief Forward pass through the activation function
+            /// @param X Tensor of shape (1, nodes)
+            /// @return Tensor of shape (1, nodes)
+            {F::activate(X)} -> std::same_as<LinAlg::Tensor<T>>;
+            /// @brief Calculate gradient of Activation
+            /// @param X Tensor of shape (1, nodes)
+            /// @return Tensor of shape (1, nodes)
+            {F::derivate(X)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 }
 

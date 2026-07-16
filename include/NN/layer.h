@@ -14,10 +14,18 @@ namespace NN {
             LinAlg::Tensor<T> value;
             LinAlg::Tensor<T> grad;
 
-            Parameter(const std::vector<int>& shape) 
-                : value {shape}
-                , grad {shape}
+            Parameter(const std::vector<int>& shape, int init = 0) 
+                : value {shape, init}
+                , grad {shape, init}
             {}
+
+            void uniform(const Rand::Random<T>& random, T low, T high) {
+                value.uniform(random, low, high);
+            }
+
+            void normal(const Rand::Random<T>& random, T mean, T stddev) {
+                value.normal(random, mean, stddev);
+            }
     };
     
     template <std::floating_point T,
@@ -25,29 +33,93 @@ namespace NN {
               Func::Activation_function<T> A>
     class Layer {
         private:
-            int m_num_nodes;
-            int m_num_input_nodes;
-            int m_num_weights;
-            LinAlg::Tensor<T> m_store_input;
-            Parameter weights;
+            int m_nodes;
+            int m_input_nodes;
+            LinAlg::Tensor<T> m_store_X;
+            LinAlg::Tensor<T> m_store_Y;
+            Parameter<T> m_weights;
         
         public:
-            Layer(int num_input_nodes, int nodes);
+            /// @brief Constructor
+            /// @param num_input_nodes Nodes in previous layer
+            /// @param nodes Nodes in this layer
+            /// @param init The value to initialize all weights to
+            Layer(int num_input_nodes, int nodes, int init = 0);
 
+            /// @brief Randomly sets all weights ~U(low, high)
+            void uniform(const Rand::Random<T>& random, T low, T high) {
+                m_weights.uniform(random, low, high);
+            }
+
+            /// @brief Randomly sets all weights ~N(mean, stddev)
+            void normal(const Rand::Random<T>& random, T mean, T stddev) {
+                m_weights.normal(random, mean, stddev);
+            }
+
+            /// @brief Performs a forward pass through the layer
+            /// @param X Input tensor of shape (1, input nodes)
+            /// @return Tensor of shape (1, nodes)
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X);
 
-            LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& X);    
+            /// @brief Performs backpropagation through the layer
+            /// @param X Backpropagation tensor of shape (1, nodes) from next layer
+            /// @return Tensor of shape (1, input size)
+            LinAlg::Tensor<T> backpropagation(const LinAlg::Tensor<T>& X);    
     };
 
     template <std::floating_point T,
               Func::Function<T> F,
               Func::Activation_function<T> A>
-    Layer<T, F, A>::Layer(int num_input_nodes, int num_nodes) 
-        : m_num_nodes {num_nodes}
-        , m_num_input_nodes {num_input_nodes}
-        , m_num_weights {num_nodes * F::num_weights(num_input_nodes)}
-        , weights {{num_nodes, num_input_nodes}}
+    Layer<T, F, A>::Layer(int input_nodes, int nodes, int init) 
+        : m_nodes {nodes}
+        , m_input_nodes {input_nodes}
+        , m_store_X {{1, input_nodes}}
+        , m_store_Y {{1, nodes}}
+        , m_weights {{nodes, F::num_weights(input_nodes)}}
     {}
-}
+
+    template <std::floating_point T,
+              Func::Function<T> F,
+              Func::Activation_function<T> A>
+    LinAlg::Tensor<T> Layer<T, F, A>::forward_pass(const LinAlg::Tensor<T>& X) {
+        LinAlg::Tensor<T> Y {{1, m_nodes}};
+
+        for(int i {}; i < m_nodes; ++i) {
+            Y[{0, i}] = F::function(X, m_weights.value.row(i).unsqueeze(), m_input_nodes);
+        }
+
+        m_store_Y = Y;
+        m_store_X = X.copy();
+
+        return A::activate(Y);
+    }
+
+    template <std::floating_point T,
+              Func::Function<T> F,
+              Func::Activation_function<T> A>
+    LinAlg::Tensor<T> Layer<T, F, A>::backpropagation(const LinAlg::Tensor<T>& X) {
+        LinAlg::Tensor<T> dZ {LinAlg::pairwise_mult(X, A::derivate(m_store_Y))};
+
+        for(int i {}; i < m_nodes; ++i) {
+            LinAlg::Tensor<T> dW_i {F::weights_grad(m_store_X, m_weights.value.row(i).unsqueeze(), m_input_nodes)};
+
+            for(int j {}; j < F::num_weights(m_input_nodes); ++j) {
+                m_weights.grad[{i, j}] += dZ[{0, i}] * dW_i[{0, j}];
+            }
+        }
+
+        LinAlg::Tensor<T> Y {{m_nodes, m_input_nodes}};
+
+        for(int i {}; i < m_nodes; ++i) {
+            LinAlg::Tensor<T> dF {F::function_grad(m_store_X, m_weights.value.row(i).unsqueeze(), m_input_nodes)};
+
+            for(int j {}; j < m_input_nodes; ++j) {
+                Y[{i, j}] = dF[{0, j}];
+            }
+        }
+
+        return dZ * Y;
+    }
+}  
 
 #endif

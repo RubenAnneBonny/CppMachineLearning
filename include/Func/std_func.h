@@ -8,110 +8,88 @@
 namespace Func{
     template <typename T>
     class Linear {
-        private:
-            LinAlg::Tensor<T> m_weights;
-            LinAlg::Tensor<T> m_bias;
-
         public:
-            Linear(T input_layer_size)
-                : m_weights {{input_layer_size, 1}}
-                , m_bias {{1, 1}, 1}
-            {
+            static int num_weights(int input_size) {
+                return input_size + 1;
             }
 
-            void normal(Rand::Random<T>& random, T mean, T stddev){
-                m_weights.normal(random, mean, stddev);
-                m_bias.normal(random, mean, stddev);
-            }
-
-            void uniform(Rand::Random<T>& random, T low, T high){
-                m_weights.uniform(random.uniform(low, high));
-                m_bias.uniform(random.uniform(low, high));
-            }
-
-            LinAlg::Tensor<T> function(const LinAlg::Tensor<T>& X){
-                LinAlg::Tensor<T> A {(x * m_weights) + m_bias};
-
-                return A;
-            }
-
-            LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X){
-                return m_weights.t();
-            }
-
-            LinAlg::Tensor<T> derivate_all_weights(const LinAlg::Tensor<T>& X){
-                int input_layer_size {m_weights.get_dim_at_index(m_weights.get_dim() - 1)};
-
-                LinAlg::Tensor<T> A {{1, input_layer_size + 1}, 1};
-
-                for(int i {}; i < input_layer_size; ++i){
-                    A.unsafe_access({0, i}) = X.unsafe_access({0, i});
+            static T function(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int input_size) {
+                T result {};
+                
+                for(int i {}; i < input_size; ++i) {
+                    result += X[{0, i}] * weights[{0, i}];
                 }
 
-                return A;
+                return result + weights[{0, input_size}];
             }
-   
-            T num_weights() {
-                return m_weights.num_elements() + 1;
+    
+            static LinAlg::Tensor<T> function_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int input_size) {
+                LinAlg::Tensor<T> grad {{1, input_size}};
+
+                for(int i {}; i < input_size; ++i) {
+                    grad[{0, i}] = weights[{0, i}];
+                }
+
+                return grad;
+            }
+
+            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int input_size) {
+                LinAlg::Tensor<T> grad {{1, input_size + 1}};
+
+                for(int i {}; i < input_size; ++i) {
+                    grad[{0, i}] = X[{0, i}];
+                }
+
+                grad[{0, input_size}] = 1;
+
+                return grad;
             }
     };
 
     template <typename T>
     class ReLU {
         public:
-            ReLU() 
-            {
-            }
-
-            LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X){
+            static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
                 auto relu{
-                    [](T a)
-                    {
-                        return (a < 0 ? 0 : a);
-                    }
+                [](T a)
+                {
+                    return (a > 0 ? a : 0);
+                }
                 };
 
-                Tensor<T> B {X};
+                LinAlg::Tensor<T> activated {X.copy()};
+                activated.elementwise(relu);
 
-                A.elementwise_operation(relu);
-
-                return A;
-            } 
-
-            LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X){
-                auto relu_prime{
-                    [](T a)
-                    {
-                        return (a < 0 ? 0 : 1);
-                    }
+                return activated;
+            }
+    
+            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+                auto relu_grad{
+                [](T a)
+                {
+                    return (a > 0 ? 1 : 0);
+                }
                 };
 
-                Tensor<T> A {X};
+                LinAlg::Tensor<T> grad {X.copy()};
+                grad.elementwise(relu_grad);
 
-                A.elementwise_operation(relu_prime);
-
-                return B;
+                return grad;
             }
     };
 
     template <typename T>
     class No_Activation {
         public: 
-            No_Activation()
-            {
-            }
-
-            LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X){
-                LinAlg::Tensor<T> A {X};
-
-                return A;
+            static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
+                return X;
             }
     
-            LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X){
-                LinAlg::Tensor<T> A {X.get_dim_list, 1};
+            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+                LinAlg::Tensor<T> grad {{1, X.get_extent(1)}, 1};
 
-                return A;
-            }       
+                return grad;
+            }
     };
 }
 

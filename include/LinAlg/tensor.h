@@ -109,6 +109,22 @@ namespace LinAlg {
             /// @param low The lower bound of the elements
             /// @param high The upper bound of the elements
             void uniform(Rand::Random<T>& random, T low, T high);
+
+            /// @brief Returns the extent of an axis
+            /// @throws std::invalid_argument if axis is outside the rank of the tensor
+            int get_extent(int axis) {
+                if(axis < 0 || axis > get_rank()) {
+                    throw std::invalid_argument(
+                        "Cannot get extent on axis " + 
+                        std::to_string(axis) + 
+                        " on tensor " + 
+                        static_cast<std::string>(*this) + 
+                        " since it doesnt have that axis"
+                    );
+                }
+
+                return m_shape[axis];
+            }
             
             /// @brief Creates a deep copy of the tensor
             /// @return Returns a copy of the tensor
@@ -388,7 +404,7 @@ namespace LinAlg {
             );
         }
 
-        if(i < 0 || i >= get_rank()) {
+        if(i < 0 || i >= m_shape[0]) {
             throw std::invalid_argument(
                 "Cannot get row " + 
                 std::to_string(i) + 
