@@ -123,7 +123,7 @@ namespace LinAlg {
                     );
                 }
 
-                return m_shape[axis];
+                return m_shape[static_cast<std::size_t>(axis)];
             }
             
             /// @brief Creates a deep copy of the tensor
@@ -561,7 +561,7 @@ namespace LinAlg {
             index += indecies[i] * m_strides[i];
         }
 
-        return (*m_storage)[index];
+        return (*m_storage)[static_cast<std::size_t>(index)];
     }
     template <std::floating_point T>
     T& Tensor<T>::operator[](const std::vector<int>& indecies) {

@@ -16,11 +16,11 @@ void linear_test() {
     weights[{0, 2}] = -2;
     weights[{0, 3}] = -2;
 
-    float func = Func::Linear<float>::function(X, weights, 3);
+    float func = Func::Linear<float>::function(X, weights);
 
     assert(func == 27 && "function for linear does not work");
 
-    LinAlg::Tensor<float> dF {Func::Linear<float>::function_grad(X, weights, 3)};
+    LinAlg::Tensor<float> dF {Func::Linear<float>::function_grad(X, weights)};
     LinAlg::Tensor<float> dF_exp {{1, 3}};
     for(int i {}; i < 3; ++i) {
         dF_exp[{0, i}] = weights[{0, i}];
@@ -28,7 +28,7 @@ void linear_test() {
 
     assert(dF == dF_exp && "function_grad for linear does not work");
 
-    LinAlg::Tensor<float> dW {Func::Linear<float>::weights_grad(X, weights, 3)};
+    LinAlg::Tensor<float> dW {Func::Linear<float>::weights_grad(X, weights)};
     LinAlg::Tensor<float> dW_exp {{1, 4}};
     for(int i {}; i < 3; ++i) {
         dW_exp[{0, i}] = X[{0, i}];

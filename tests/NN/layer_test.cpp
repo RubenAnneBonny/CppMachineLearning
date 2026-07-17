@@ -2,7 +2,6 @@
 #include <NN/layer.h>
 #include <Func/std_func.h>
 #include <LinAlg/tensor.h>
-#include <iostream>
 
 void forward_pass_test() {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3, 3};

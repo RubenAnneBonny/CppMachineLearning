@@ -86,7 +86,7 @@ namespace NN {
         LinAlg::Tensor<T> Y {{1, m_nodes}};
 
         for(int i {}; i < m_nodes; ++i) {
-            Y[{0, i}] = F::function(X, weights.value.row(i).unsqueeze(), m_input_nodes);
+            Y[{0, i}] = F::function(X, weights.value.row(i).unsqueeze());
         }
 
         m_store_Y = Y;
@@ -102,7 +102,7 @@ namespace NN {
         LinAlg::Tensor<T> dZ {LinAlg::pairwise_mult(dY, A::derivate(m_store_Y))};
 
         for(int i {}; i < m_nodes; ++i) {
-            LinAlg::Tensor<T> dW_i {F::weights_grad(m_store_X, weights.value.row(i).unsqueeze(), m_input_nodes)};
+            LinAlg::Tensor<T> dW_i {F::weights_grad(m_store_X, weights.value.row(i).unsqueeze())};
 
             for(int j {}; j < F::num_weights(m_input_nodes); ++j) {
                 weights.grad[{i, j}] += dZ[{0, i}] * dW_i[{0, j}];
@@ -112,7 +112,7 @@ namespace NN {
         LinAlg::Tensor<T> Y {{m_nodes, m_input_nodes}};
 
         for(int i {}; i < m_nodes; ++i) {
-            LinAlg::Tensor<T> dF {F::function_grad(m_store_X, weights.value.row(i).unsqueeze(), m_input_nodes)};
+            LinAlg::Tensor<T> dF {F::function_grad(m_store_X, weights.value.row(i).unsqueeze())};
 
             for(int j {}; j < m_input_nodes; ++j) {
                 Y[{i, j}] = dF[{0, j}];
