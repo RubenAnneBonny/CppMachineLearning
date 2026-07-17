@@ -29,12 +29,12 @@ namespace NN {
             Layer(int num_input_nodes, int nodes, T init = 0);
 
             /// @brief Randomly sets all weights ~U(low, high)
-            void uniform(const Rand::Random<T>& random, T low, T high) {
+            void uniform(Rand::Random<T>& random, T low, T high) {
                 weights.uniform(random, low, high);
             }
 
             /// @brief Randomly sets all weights ~N(mean, stddev)
-            void normal(const Rand::Random<T>& random, T mean, T stddev) {
+            void normal(Rand::Random<T>& random, T mean, T stddev) {
                 weights.normal(random, mean, stddev);
             }
 
@@ -82,10 +82,12 @@ namespace NN {
     LinAlg::Tensor<T> Layer<T, F, A>::backward_pass(const LinAlg::Tensor<T>& dY) {
         LinAlg::Tensor<T> dZ {LinAlg::pairwise_mult(dY, A::derivate(m_store_Y))};
 
+        int num_weights {F::num_weights(m_input_nodes)};
+
         for(int i {}; i < m_nodes; ++i) {
             LinAlg::Tensor<T> dW_i {F::weights_grad(m_store_X, weights.value.row(i).unsqueeze())};
 
-            for(int j {}; j < F::num_weights(m_input_nodes); ++j) {
+            for(int j {}; j < num_weights; ++j) {
                 weights.grad[{i, j}] += dZ[{0, i}] * dW_i[{0, j}];
             }
         }

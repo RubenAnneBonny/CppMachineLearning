@@ -26,6 +26,7 @@ namespace NN {
             Model(Loss loss_fn, Opt optimizer)
                 : m_loss_fn {loss_fn}
                 , m_optimizer {optimizer}
+                , m_store_prediction {{1, 1}}
             {}
 
             template <Func::Function<T> F,
@@ -41,13 +42,13 @@ namespace NN {
             }
 
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X) {
-                LinAlg::Tensor<T> out {X.copy()};
+                LinAlg::Tensor<T> out {X};
 
                 for(auto& layer : m_layers) {
                     out = layer->forward_pass(out);
                 }
 
-                m_store_prediction = out.copy();
+                m_store_prediction = out;
 
                 return out;
             }
@@ -70,6 +71,10 @@ namespace NN {
                 for(auto it {m_layers.rbegin()}; it != m_layers.rend(); ++it) {
                     dY = (*it)->backward_pass(dY);
                 }
+            }
+
+            void step() {
+                m_optimizer.step();
             }
     };
 } 

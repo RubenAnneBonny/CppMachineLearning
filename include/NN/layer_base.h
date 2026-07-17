@@ -27,7 +27,7 @@ namespace NN {
         
         public:
             Layer_holder(L layer) 
-                : m_layer {layer}
+                : m_layer {std::move(layer)}
             {}
 
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X) override {
@@ -39,7 +39,7 @@ namespace NN {
             }
 
             Parameter<T>& parameters() override {
-                return m_layer.weigths;
+                return m_layer.weights;
             }
     };
 }

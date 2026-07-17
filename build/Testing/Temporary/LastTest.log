@@ -1,17 +1,17 @@
-Start testing: Jul 17 21:22 W. Europe Daylight Time
+Start testing: Jul 18 01:39 W. Europe Daylight Time
 ----------------------------------------------------------
 1/5 Testing: std_func_test
 1/5 Test: std_func_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/std_func_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"std_func_test" start time: Jul 17 21:22 W. Europe Daylight Time
+"std_func_test" start time: Jul 18 01:39 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.03 sec
+Test time =   0.05 sec
 ----------------------------------------------------------
 Test Passed.
-"std_func_test" end time: Jul 17 21:22 W. Europe Daylight Time
+"std_func_test" end time: Jul 18 01:39 W. Europe Daylight Time
 "std_func_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -19,14 +19,14 @@ Test Passed.
 2/5 Test: tensor_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/tensor_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"tensor_test" start time: Jul 17 21:22 W. Europe Daylight Time
+"tensor_test" start time: Jul 18 01:39 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.02 sec
+Test time =   0.05 sec
 ----------------------------------------------------------
 Test Passed.
-"tensor_test" end time: Jul 17 21:22 W. Europe Daylight Time
+"tensor_test" end time: Jul 18 01:39 W. Europe Daylight Time
 "tensor_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -34,14 +34,14 @@ Test Passed.
 3/5 Test: layer_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/layer_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"layer_test" start time: Jul 17 21:22 W. Europe Daylight Time
+"layer_test" start time: Jul 18 01:39 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.03 sec
+Test time =   0.05 sec
 ----------------------------------------------------------
 Test Passed.
-"layer_test" end time: Jul 17 21:22 W. Europe Daylight Time
+"layer_test" end time: Jul 18 01:39 W. Europe Daylight Time
 "layer_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -49,14 +49,14 @@ Test Passed.
 4/5 Test: std_opt_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/std_opt_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"std_opt_test" start time: Jul 17 21:22 W. Europe Daylight Time
+"std_opt_test" start time: Jul 18 01:39 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
 Test time =   0.05 sec
 ----------------------------------------------------------
 Test Passed.
-"std_opt_test" end time: Jul 17 21:22 W. Europe Daylight Time
+"std_opt_test" end time: Jul 18 01:39 W. Europe Daylight Time
 "std_opt_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -64,15 +64,15 @@ Test Passed.
 5/5 Test: random_test
 Command: "C:/Users/ruben/Github/CppMachineLearning/build/tests/random_test.exe"
 Directory: C:/Users/ruben/Github/CppMachineLearning/build/tests
-"random_test" start time: Jul 17 21:22 W. Europe Daylight Time
+"random_test" start time: Jul 18 01:39 W. Europe Daylight Time
 Output:
 ----------------------------------------------------------
 <end of output>
 Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"random_test" end time: Jul 17 21:22 W. Europe Daylight Time
+"random_test" end time: Jul 18 01:39 W. Europe Daylight Time
 "random_test" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Jul 17 21:22 W. Europe Daylight Time
+End testing: Jul 18 01:39 W. Europe Daylight Time

@@ -15,11 +15,11 @@ namespace NN {
                 , grad {shape}
             {}
 
-            void uniform(const Rand::Random<T>& random, T low, T high) {
+            void uniform(Rand::Random<T>& random, T low, T high) {
                 value.uniform(random, low, high);
             }
 
-            void normal(const Rand::Random<T>& random, T mean, T stddev) {
+            void normal(Rand::Random<T>& random, T mean, T stddev) {
                 value.normal(random, mean, stddev);
             }
 

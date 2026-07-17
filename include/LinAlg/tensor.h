@@ -115,7 +115,7 @@ namespace LinAlg {
 
             /// @brief Sets all elements to value
             /// @param value The value to set all elements to
-            void set_all_elements(int value);
+            void set_all_elements(T value);
 
             /// @brief Returns the extent of an axis
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
@@ -256,7 +256,23 @@ namespace LinAlg {
                 return C;
             }
             Tensor& operator*=(const Tensor& A) {
-                (*this) = (*this) * A;
+                Tensor<T> C {(*this) * A};
+
+                if(C.m_shape != m_shape) {
+                    throw std::invalid_argument(
+                        "Cannot perform *= between tensors of shape " + 
+                        static_cast<std::string>(*this) + 
+                        " and " + 
+                        static_cast<std::string>(A) + 
+                        " since it would change its shape"
+                    );
+                }
+
+                std::vector<int> indecies(get_rank(), 0);
+                do {
+                    (*this)[{indecies}] = C[indecies];
+                } while(next_index(indecies, m_shape));
+
                 return *this;
             }
 
@@ -503,7 +519,7 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    void Tensor<T>::set_all_elements(int value) {
+    void Tensor<T>::set_all_elements(T value) {
         std::vector<int> indecies(get_rank(), 0);
         do {
             (*this)[indecies] = value;
