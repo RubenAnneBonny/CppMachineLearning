@@ -3,9 +3,11 @@
 48	191	8048155366774242	tests/matrix_test.exe	43ef8d85c75d787
 30	813	8059358380676978	tests/CMakeFiles/tensor_test.dir/LinAlg/tensor_test.cpp.obj	7335d206471f579d
 813	954	8059358388567569	tests/tensor_test.exe	ea10d795c38306b3
-42	720	8059362177883450	tests/CMakeFiles/std_func_test.dir/Func/std_func_test.cpp.obj	235c41a550c764ec
-721	885	8059362184657925	tests/std_func_test.exe	35415870e2230396
+49	912	8059930982583087	tests/CMakeFiles/std_func_test.dir/Func/std_func_test.cpp.obj	235c41a550c764ec
+912	1199	8059930991210488	tests/std_func_test.exe	35415870e2230396
 22	763	8049557660756152	tests/CMakeFiles/random_test.dir/Rand/random_test.cpp.obj	18ad285d92cc2ef6
 40	356	8049562664568820	tests/random_test.exe	85deb69017831ca8
-45	686	8059362243351071	tests/CMakeFiles/std_func_test.dir/Func/std_func_test.cpp.obj	235c41a550c764ec
-687	851	8059362249815760	tests/std_func_test.exe	35415870e2230396
+52	868	8059964710698939	tests/CMakeFiles/layer_test.dir/NN/layer_test.cpp.obj	9afebf03717c237c
+868	1007	8059964718859401	tests/layer_test.exe	354b87778d11e333
+31	846	8059965620019641	tests/CMakeFiles/layer_test.dir/NN/layer_test.cpp.obj	9afebf03717c237c
+847	976	8059965628172905	tests/layer_test.exe	354b87778d11e333
