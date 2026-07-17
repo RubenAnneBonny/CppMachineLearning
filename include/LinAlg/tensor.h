@@ -113,6 +113,10 @@ namespace LinAlg {
             /// @param high The upper bound of the elements
             void uniform(Rand::Random<T>& random, T low, T high);
 
+            /// @brief Sets all elements to value
+            /// @param value The value to set all elements to
+            void set_all_elements(int value);
+
             /// @brief Returns the extent of an axis
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
             int get_extent(int axis) const {
@@ -495,6 +499,14 @@ namespace LinAlg {
         std::vector<int> indecies(get_rank(), 0);
         do {
             (*this)[indecies] = random.uniform(low, high);
+        } while(next_index(indecies, m_shape));
+    }
+
+    template <std::floating_point T>
+    void Tensor<T>::set_all_elements(int value) {
+        std::vector<int> indecies(get_rank(), 0);
+        do {
+            (*this)[indecies] = value;
         } while(next_index(indecies, m_shape));
     }
 

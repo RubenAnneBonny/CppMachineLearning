@@ -22,6 +22,10 @@ namespace NN {
             void normal(const Rand::Random<T>& random, T mean, T stddev) {
                 value.normal(random, mean, stddev);
             }
+
+            void zero_grad() {
+                grad.set_all_elements(0);
+            }
     };
 }
 
