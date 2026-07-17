@@ -10,5 +10,7 @@ add_test(tensor_test "C:/Users/ruben/Github/CppMachineLearning/build/tests/tenso
 set_tests_properties(tensor_test PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;10;add_test;C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;0;")
 add_test(layer_test "C:/Users/ruben/Github/CppMachineLearning/build/tests/layer_test.exe")
 set_tests_properties(layer_test PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;10;add_test;C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;0;")
+add_test(std_opt_test "C:/Users/ruben/Github/CppMachineLearning/build/tests/std_opt_test.exe")
+set_tests_properties(std_opt_test PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;10;add_test;C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;0;")
 add_test(random_test "C:/Users/ruben/Github/CppMachineLearning/build/tests/random_test.exe")
 set_tests_properties(random_test PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;10;add_test;C:/Users/ruben/Github/CppMachineLearning/tests/CMakeLists.txt;0;")

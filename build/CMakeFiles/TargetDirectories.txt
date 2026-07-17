@@ -4,6 +4,7 @@ C:/Users/ruben/Github/CppMachineLearning/build/CMakeFiles/rebuild_cache.dir
 C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/std_func_test.dir
 C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/tensor_test.dir
 C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/layer_test.dir
+C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/std_opt_test.dir
 C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/random_test.dir
 C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/test.dir
 C:/Users/ruben/Github/CppMachineLearning/build/tests/CMakeFiles/edit_cache.dir

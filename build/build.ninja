@@ -181,6 +181,41 @@ build tests/layer_test.exe: CXX_EXECUTABLE_LINKER__layer_test_ tests/CMakeFiles/
   TARGET_SUPPORT_DIR = tests\CMakeFiles\layer_test.dir
 
 # =============================================================================
+# Object build statements for EXECUTABLE target std_opt_test
+
+
+#############################################
+# Order-only phony target for std_opt_test
+
+build cmake_object_order_depends_target_std_opt_test: phony || .
+
+build tests/CMakeFiles/std_opt_test.dir/NN/std_opt_test.cpp.obj: CXX_COMPILER__std_opt_test_unscanned_ C$:/Users/ruben/Github/CppMachineLearning/tests/NN/std_opt_test.cpp || cmake_object_order_depends_target_std_opt_test
+  DEP_FILE = tests\CMakeFiles\std_opt_test.dir\NN\std_opt_test.cpp.obj.d
+  FLAGS = -std=gnu++20
+  INCLUDES = -IC:/Users/ruben/Github/CppMachineLearning/include
+  OBJECT_DIR = tests\CMakeFiles\std_opt_test.dir
+  OBJECT_FILE_DIR = tests\CMakeFiles\std_opt_test.dir\NN
+  TARGET_SUPPORT_DIR = tests\CMakeFiles\std_opt_test.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target std_opt_test
+
+
+#############################################
+# Link the executable tests\std_opt_test.exe
+
+build tests/std_opt_test.exe: CXX_EXECUTABLE_LINKER__std_opt_test_ tests/CMakeFiles/std_opt_test.dir/NN/std_opt_test.cpp.obj
+  LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = tests\CMakeFiles\std_opt_test.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = tests\std_opt_test.exe
+  TARGET_IMPLIB = tests\libstd_opt_test.dll.a
+  TARGET_PDB = std_opt_test.exe.dbg
+  TARGET_SUPPORT_DIR = tests\CMakeFiles\std_opt_test.dir
+
+# =============================================================================
 # Object build statements for EXECUTABLE target random_test
 
 
@@ -265,6 +300,10 @@ build std_func_test: phony tests/std_func_test.exe
 
 build std_func_test.exe: phony tests/std_func_test.exe
 
+build std_opt_test: phony tests/std_opt_test.exe
+
+build std_opt_test.exe: phony tests/std_opt_test.exe
+
 build tensor_test: phony tests/tensor_test.exe
 
 build tensor_test.exe: phony tests/tensor_test.exe
@@ -284,7 +323,7 @@ build all: phony tests/all
 #############################################
 # Folder: C:/Users/ruben/Github/CppMachineLearning/build/tests
 
-build tests/all: phony tests/std_func_test.exe tests/tensor_test.exe tests/layer_test.exe tests/random_test.exe
+build tests/all: phony tests/std_func_test.exe tests/tensor_test.exe tests/layer_test.exe tests/std_opt_test.exe tests/random_test.exe
 
 # =============================================================================
 # Built-in targets

@@ -6,28 +6,9 @@
 #include <Rand/random.h>
 #include <LinAlg/tensor.h>
 #include <Func/function.h>
+#include <NN/parameter.h>
 
-namespace NN {
-    template <std::floating_point T>
-    class Parameter {
-        public:
-            LinAlg::Tensor<T> value;
-            LinAlg::Tensor<T> grad;
-
-            Parameter(const std::vector<int>& shape, T init = 0) 
-                : value {shape, init}
-                , grad {shape}
-            {}
-
-            void uniform(const Rand::Random<T>& random, T low, T high) {
-                value.uniform(random, low, high);
-            }
-
-            void normal(const Rand::Random<T>& random, T mean, T stddev) {
-                value.normal(random, mean, stddev);
-            }
-    };
-    
+namespace NN {    
     template <std::floating_point T,
               Func::Function<T> F,
               Func::Activation_function<T> A>

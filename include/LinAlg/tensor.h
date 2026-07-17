@@ -23,6 +23,9 @@ namespace LinAlg {
     Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B);
 
     template <std::floating_point T>
+    Tensor<T> pairwise_sub(const Tensor<T>& A, const Tensor<T>& B);
+
+    template <std::floating_point T>
     class Tensor {
         private:
             std::vector<int> m_shape;
@@ -113,7 +116,7 @@ namespace LinAlg {
             /// @brief Returns the extent of an axis
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
             int get_extent(int axis) const {
-                if(axis < 0 || axis > get_rank()) {
+                if(axis < 0 || axis >= get_rank()) {
                     throw std::invalid_argument(
                         "Cannot get extent on axis " + 
                         std::to_string(axis) + 
@@ -139,13 +142,14 @@ namespace LinAlg {
             /// @brief Add an extra axis with extent 1
             /// @param axis Before which axis to add the new
             /// @return A tensor-view of the unsqueezed tensor
-            /// @throws std::invalid_argument if tensor rank is 1
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
             Tensor unsqueeze(int axis = 0) const;
 
             /// @brief Removes an axis with extent 1
             /// @param axis Which axis to remove
             /// @return A tensor-view of the squeezed tensor
+            /// @throws std::invalid_argument if tensor rank is 1
+            /// @throws std::invalid_argument if extent of axis is not 1
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
             Tensor squeeze(int axis = 0) const;
 
@@ -297,6 +301,33 @@ namespace LinAlg {
                 return pairwise(A, B, addition);
             }
             friend Tensor<T> pairwise_add<T>(const Tensor<T>& A, const Tensor<T>& B);
+            Tensor& operator+=(const Tensor<T>& A) {
+                auto addition{
+                [](T a, T b)
+                {
+                    return a + b;
+                }
+                };
+
+                Tensor<T> C {pairwise(*this, A, addition)};
+
+                if(C.m_shape != m_shape) {
+                    throw std::invalid_argument(
+                        "Cannot perform += between tensors of shape " + 
+                        static_cast<std::string>(*this) + 
+                        " and " + 
+                        static_cast<std::string>(A) + 
+                        " since it would change its shape"
+                    );
+                }
+
+                std::vector<int> indecies(get_rank(), 0);
+                do {
+                    (*this)[indecies] = C[indecies];
+                } while(next_index(indecies, m_shape));
+
+                return *this;
+            }
 
             friend Tensor operator+(const Tensor& A, T b) {
                 auto addition{
@@ -322,6 +353,89 @@ namespace LinAlg {
                 };
 
                 return elementwise(addition);
+            }
+
+            /// @brief Performs pairwise subtraction
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @return A new tensor, the result of the operation
+            /// @throws std::invalid_argument if batching cannot be performed
+            friend Tensor operator-(const Tensor& A, const Tensor& B) {
+                auto subtraction{
+                [](T a, T b)
+                {
+                    return a - b;
+                }
+                };
+
+                return pairwise(A, B, subtraction);
+            }
+            friend Tensor<T> pairwise_sub<T>(const Tensor<T>& A, const Tensor<T>& B);
+            Tensor& operator-=(const Tensor<T>& A) {
+                auto subtraction{
+                [](T a, T b)
+                {
+                    return a - b;
+                }
+                };
+
+                Tensor<T> C {pairwise(*this, A, subtraction)};
+
+                if(C.m_shape != m_shape) {
+                    throw std::invalid_argument(
+                        "Cannot perform -= between tensors of shape " + 
+                        static_cast<std::string>(*this) + 
+                        " and " + 
+                        static_cast<std::string>(A) + 
+                        " since it would change its shape"
+                    );
+                }
+
+                std::vector<int> indecies(get_rank(), 0);
+                do {
+                    (*this)[indecies] = C[indecies];
+                } while(next_index(indecies, m_shape));
+
+                return *this;
+            }
+
+            Tensor operator-() const {
+                return (*this) * (-1);
+            }
+
+            friend Tensor operator-(const Tensor& A, T b) {
+                auto subtraction{
+                    [b](T a)
+                    {
+                        return a - b;
+                    }
+                };
+
+                Tensor<T> C {A.copy()};
+
+                return C.elementwise(subtraction);
+            }
+            friend Tensor operator-(T b, const Tensor& A) {
+                auto subtraction{
+                    [b](T a)
+                    {
+                        return b - a;
+                    }
+                };
+
+                Tensor<T> C {A.copy()};
+
+                return C.elementwise(subtraction);
+            }
+            Tensor& operator-=(T a) {
+                auto subtraction{
+                    [a](T b)
+                    {
+                        return b - a;
+                    }
+                };
+
+                return elementwise(subtraction);
             }
 
             /// @brief Performs pairwise multiplication
@@ -448,9 +562,17 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T> Tensor<T>::squeeze(int axis) const {
+        if(get_rank() == 1) {
+            throw std::invalid_argument(
+                "Cannot squeeze tensor of shape " + 
+                static_cast<std::string>(*this) + 
+                " since it would result in a rank of zero"
+            );
+        }
+
         if(axis >= get_rank() || axis < 0){
             throw std::invalid_argument(
-                "Cannot squeeze Tensor of shape " +
+                "Cannot squeeze tensor of shape " +
                 static_cast<std::string>(*this) + 
                 " in axis " + 
                 std::to_string(axis) + 
@@ -460,7 +582,7 @@ namespace LinAlg {
 
         if(m_shape[axis] != 1){
             throw std::invalid_argument(
-                "Cannot squeeze Tensor of shape " + 
+                "Cannot squeeze tensor of shape " + 
                 static_cast<std::string>(*this) + 
                 " in axis " + 
                 std::to_string(axis) + 
@@ -572,6 +694,11 @@ namespace LinAlg {
     template <std::floating_point T>
     Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B) {
         return A + B;
+    }
+
+    template <std::floating_point T>
+    Tensor<T> pairwise_sub(const Tensor<T>& A, const Tensor<T>& B) {
+        return A - B;
     }
 
     template <std::floating_point T>

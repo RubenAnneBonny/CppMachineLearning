@@ -2,7 +2,6 @@
 #define STD_FUNC_H
 
 #include <Func/function.h>
-#include <Rand/random.h>
 #include <LinAlg/tensor.h>
 
 namespace Func{
