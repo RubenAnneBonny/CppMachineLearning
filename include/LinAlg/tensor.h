@@ -8,10 +8,14 @@
 #include <stdexcept>
 #include <concepts>
 #include <cstddef>
+#include <cmath>
 
 namespace LinAlg {
     template <std::floating_point T>
     class Tensor;
+
+    template <std::floating_point T>
+    Tensor<T> one_hot(int extent, int index);
 
     template <std::floating_point T, typename Fn>
     Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
@@ -170,6 +174,16 @@ namespace LinAlg {
             /// @return The sum
             T sum() const;
 
+            /// @brief Finds the max over all elements in the tensor
+            /// @return The maximum value
+            T max() const;
+
+            /// @brief Creates a tensor of rank 1 with 1 one and the rest zeros
+            /// @param extent The extent of the only axis
+            /// @param index The index of the 1
+            /// @return The created tensor
+            friend Tensor<T> one_hot<T>(int extent, int index);
+
             /// @brief Performs a function on each element of the tensor
             /// @tparam Fn A type of function that takes only one parameter of type T
             /// @param fn The lambda function to perform on each element
@@ -319,7 +333,7 @@ namespace LinAlg {
             /// @param atol The absolute tolerance
             /// @param rtol The relative tolerance
             /// @return True if A and B are within the tolerance from each other, false otherwise
-            friend bool allclose(const Tensor& A, const Tensor& B, T atol, T rtol) {
+            friend bool all_close(const Tensor& A, const Tensor& B, T atol, T rtol) {
                 if(A.get_rank() != B.get_rank()) {
                     return false;
                 }
@@ -333,7 +347,7 @@ namespace LinAlg {
                 std::vector<int> indecies(A.get_rank(), 0);
 
                 do {
-                    if(abs(A[indecies] - B[indecies]) > atol + abs(B[indecies]) * rtol) {
+                    if(std::abs(A[indecies] - B[indecies]) > atol + std::abs(B[indecies]) * rtol) {
                         return false;
                     }
                 } while(next_index(indecies, A.m_shape));
@@ -702,6 +716,8 @@ namespace LinAlg {
                 best_indecies = indecies;
             }
         } while(next_index(indecies, m_shape));
+
+        return max_element;
     }
 
     template <std::floating_point T>
@@ -715,6 +731,30 @@ namespace LinAlg {
         } while(next_index(indecies, m_shape));
 
         return sum;
+    }
+
+    template <std::floating_point T>
+    T Tensor<T>::max() const {
+        std::vector<int> indecies(get_rank(), 0);
+
+        T max_value = (*this)[indecies];
+
+        do {
+            T element = (*this)[indecies];
+
+            max_value = (element > max_value ? element : max_value);
+        } while(next_index(indecies, m_shape));
+
+        return max_value;
+    }
+
+    template <std::floating_point T>
+    Tensor<T> one_hot(int extent, int index) {
+        LinAlg::Tensor<T> X {{extent}};
+
+        X[{index}] = 1;
+
+        return X;
     }
 
     template <std::floating_point T>
