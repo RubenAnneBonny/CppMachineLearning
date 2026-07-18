@@ -9,6 +9,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cmath>
+#include <ostream>
 
 namespace LinAlg {
     template <std::floating_point T>
@@ -204,6 +205,11 @@ namespace LinAlg {
 
             /// @brief Allows static_cast<std::string>(tensor), returns string that displays shape nicely
             operator std::string() const;
+
+            /// @brief Allows printing a tensor using the std::string() operator
+            friend std::ostream& operator<<(std::ostream& os, const Tensor<T>& A) {
+                return os << static_cast<std::string>(A);
+            }
 
             /// @brief Allows accessing elements in the tensor
             /// @param indecies The indecies of each axis to retrive element at

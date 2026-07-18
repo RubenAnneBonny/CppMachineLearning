@@ -1,9 +1,9 @@
-#include <cassert>
 #include <NN/layer.h>
 #include <Func/std_func.h>
 #include <LinAlg/tensor.h>
+#include <gtest/gtest.h>
 
-void forward_pass_test() {
+TEST(Layer, ForwardPass) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3, 3};
     layer.weights.value[{0, 0}] = 2;
     layer.weights.value[{0, 1}] = -4;
@@ -17,10 +17,10 @@ void forward_pass_test() {
     Y_exp[{0, 1}] = 6;
     Y_exp[{0, 2}] = 11;
 
-    assert(Y == Y_exp && "forward pass through one layer is faulty");
+    EXPECT_EQ(Y, Y_exp);
 }
 
-void backward_pass_test() {
+TEST(Layer, BackwardPass) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3, 3};
     layer.weights.value[{0, 0}] = 2;
     layer.weights.value[{0, 1}] = -4;
@@ -46,18 +46,11 @@ void backward_pass_test() {
     dW_exp[{2, 1}] = 6;
     dW_exp[{2, 2}] = 3;
 
-    assert(layer.weights.grad == dW_exp && "weight gradients are tracked faulty");
+    EXPECT_EQ(layer.weights.grad, dW_exp);
 
     LinAlg::Tensor<float> dX_exp {{1, 2}, 0};
     dX_exp[{0, 0}] = 19;
     dX_exp[{0, 1}] = 15;
 
-    assert(dX == dX_exp && "input gradients are faulty");
-}
-
-int main() {
-    forward_pass_test();
-    backward_pass_test();
-
-    return 0;
+    EXPECT_EQ(dX, dX_exp);
 }

@@ -1,7 +1,7 @@
 #include <LinAlg/tensor.h>
-#include <cassert>
+#include <gtest/gtest.h>
 
-void access_operator_test(){
+TEST(Tensor, AccessOperator) {
     LinAlg::Tensor<float> A {{2, 2}};
 
     A[{0, 0}] = 1; A[{0, 1}] = 2;
@@ -14,10 +14,10 @@ void access_operator_test(){
         }
     }
 
-    assert(sum == 11 && "Indexing in Tensor is incorrect");
+    EXPECT_EQ(sum, 11);
 }
 
-void equality_operator_test(){
+TEST(Tensor, EqualityOperator) {
     LinAlg::Tensor<float> A {{2, 3}};
     LinAlg::Tensor<float> B {{2, 3}};
     LinAlg::Tensor<float> C {{2, 3}};
@@ -30,13 +30,13 @@ void equality_operator_test(){
     D[{0, 1, 1}] = 1;
     E[{1, 1}] = 1;
 
-    assert(A == B && "Equality operator returns false between two identical tensors");
-    assert(A != C && "Inequality operator returns false between two different tensors");
-    assert(A != D && "Inequality operator returns false between two different tensors");
-    assert(A != E && "Inequality operator returns false between two different tensors");
+    EXPECT_EQ(A, B);
+    EXPECT_NE(A, C);
+    EXPECT_NE(A, D);
+    EXPECT_NE(A, E);
 }
 
-void matrix_multiplication_test(){
+TEST(Tensor, MatrixMultiplication) {
     LinAlg::Tensor<float> A {{2, 3}, 1};
     LinAlg::Tensor<float> B {{3, 1}, 1};
 
@@ -51,10 +51,10 @@ void matrix_multiplication_test(){
 
     C_exp[{1, 0}] = 3;
 
-    assert(C == C_exp && "Tensor multiplication between two matricies fails");
+    EXPECT_EQ(C, C_exp);
 }
 
-void batching_test(){
+TEST(Tensor, Batching) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
     LinAlg::Tensor<float> B {{3, 1}, 1};
 
@@ -72,10 +72,10 @@ void batching_test(){
     C_exp[{0, 1, 0}] = 3;
     C_exp[{1, 0, 0}] = -1;
 
-    assert(C == C_exp && "Batching in tensor multiplication does not work");
+    EXPECT_EQ(C, C_exp);
 }
 
-void pairwise_multiplication_test(){
+TEST(Tensor, PairwiseMultiplication) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
     LinAlg::Tensor<float> B {{2, 3}, 1};
 
@@ -96,10 +96,10 @@ void pairwise_multiplication_test(){
     C_exp[{1, 1, 0}] = -8;
     C_exp[{1, 1, 1}] = 2;
 
-    assert(C == C_exp && "Pairwise multiplication does not work");
+    EXPECT_EQ(C, C_exp);
 }
 
-void elementwise_multiplication_test(){
+TEST(Tensor, ElementwiseMultiplication) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
 
     A[{0, 0, 1}] = 2;
@@ -113,10 +113,10 @@ void elementwise_multiplication_test(){
     C_exp[{0, 1, 2}] = 9;
     C_exp[{1, 1, 0}] = 6;
 
-    assert(C == C_exp && "Elementwise multiplication does not work");
+    EXPECT_EQ(C, C_exp);
 }
 
-void pairwise_addition_test() {
+TEST(Tensor, PairwiseAddition) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
     LinAlg::Tensor<float> B {{2, 3}, 1};
 
@@ -137,10 +137,10 @@ void pairwise_addition_test() {
     C_exp[{1, 1, 0}] = -2;
     C_exp[{1, 1, 1}] = 3;
 
-    assert(C == C_exp && "Elementwise addition between tensors does not work");
+    EXPECT_EQ(C, C_exp);
 }
 
-void elementwise_addition_test() {
+TEST(Tensor, ElementwiseAddition) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
 
     A[{0, 0, 1}] = 2;
@@ -154,10 +154,10 @@ void elementwise_addition_test() {
     B_exp[{0, 1, 2}] = 9;
     B_exp[{1, 1, 0}] = 8;
 
-    assert(B == B_exp && "Elementwise addition between tensor and float fails");
+    EXPECT_EQ(B, B_exp);
 }
 
-void unsqueeze_test() {
+TEST(Tensor, Unsqueeze) {
     LinAlg::Tensor<float> A {{2, 2}, 1};
 
     A[{1, 1}] = 3;
@@ -168,10 +168,10 @@ void unsqueeze_test() {
 
     A_exp[{1, 0, 1}] = 3;
 
-    assert(A == A_exp && "Unsqueezing does not work");
+    EXPECT_EQ(A, A_exp);
 }
 
-void squeeze_test() {
+TEST(Tensor, Squeeze) {
     LinAlg::Tensor<float> A {{2, 1, 2}, 1};
 
     A[{0, 0, 0}] = -5;
@@ -182,10 +182,10 @@ void squeeze_test() {
     
     A_exp[{0, 0}] = -5;
 
-    assert(A == A_exp && "Squeezing does not work");
+    EXPECT_EQ(A, A_exp);
 }
 
-void t_test() {
+TEST(Tensor, Transpose) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
 
     A[{0, 0, 1}] = 2;
@@ -199,10 +199,10 @@ void t_test() {
     B_exp[{0, 2, 1}] = 3;
     B_exp[{1, 0, 1}] = -2;
 
-    assert(B == B_exp && "Transposing does not work");
+    EXPECT_EQ(B, B_exp);
 }
 
-void row_test() {
+TEST(Tensor, Row) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
 
     A[{0, 0, 1}] = 2;
@@ -214,22 +214,5 @@ void row_test() {
 
     B_exp[{1, 0}] = -2;
 
-    assert(B == B_exp && "Tensor viewing with the row function does not work");
-}
-
-int main(){
-    access_operator_test();
-    equality_operator_test();
-    matrix_multiplication_test();
-    batching_test();
-    pairwise_multiplication_test();
-    elementwise_multiplication_test();
-    pairwise_addition_test();
-    elementwise_addition_test();
-    unsqueeze_test();
-    squeeze_test();
-    t_test();
-    row_test();
-
-    return 0;
+    EXPECT_EQ(B, B_exp);
 }

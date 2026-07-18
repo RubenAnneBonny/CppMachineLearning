@@ -2,9 +2,9 @@
 #include <NN/std_opt.h>
 #include <LinAlg/tensor.h>
 #include <vector>
-#include <cassert>
+#include <gtest/gtest.h>
 
-void gradient_descent_test() {
+TEST(Optimizer, GradientDescent) {
     NN::Parameter<float> param {{1, 3}, 1};
     param.value[{0, 1}] = 5;
     param.value[{0, 2}] = -2;
@@ -24,11 +24,5 @@ void gradient_descent_test() {
     val_exp[{0, 1}] = 5;
     val_exp[{0, 2}] = 8;
 
-    assert(param.value == val_exp && "Gradient descent step fails");
-}
-
-int main() {
-    gradient_descent_test();
-
-    return 0;
+    EXPECT_EQ(param.value, val_exp);
 }
