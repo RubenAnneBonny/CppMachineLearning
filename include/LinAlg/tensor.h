@@ -162,6 +162,14 @@ namespace LinAlg {
             /// @throws std::invalid_argument if rank of tensor is less than 2
             Tensor t() const;
 
+            /// @brief Finds the position of the largest element in the tensor
+            /// @return The position of the largest element
+            std::vector<int> argmax() const;
+
+            /// @brief Computes the sum over all elements in the tensor
+            /// @return The sum
+            T sum() const;
+
             /// @brief Performs a function on each element of the tensor
             /// @tparam Fn A type of function that takes only one parameter of type T
             /// @param fn The lambda function to perform on each element
@@ -303,6 +311,34 @@ namespace LinAlg {
             }
             friend bool operator!=(const Tensor& A, const Tensor& B) {
                 return !(A == B);
+            }
+
+            /// @brief Similar to operator==, but uses tolerance so one can compare floating point types
+            /// @param A The first tensor
+            /// @param B The second tensor 
+            /// @param atol The absolute tolerance
+            /// @param rtol The relative tolerance
+            /// @return True if A and B are within the tolerance from each other, false otherwise
+            friend bool allclose(const Tensor& A, const Tensor& B, T atol, T rtol) {
+                if(A.get_rank() != B.get_rank()) {
+                    return false;
+                }
+
+                for(int i {}; i < A.get_rank(); ++i) {
+                    if(A.m_shape[i] != B.m_shape[i]){
+                        return false;
+                    }
+                }
+
+                std::vector<int> indecies(A.get_rank(), 0);
+
+                do {
+                    if(abs(A[indecies] - B[indecies]) > atol + abs(B[indecies]) * rtol) {
+                        return false;
+                    }
+                } while(next_index(indecies, A.m_shape));
+
+                return true;
             }
 
             /// @brief Performs pairwise addition
@@ -649,6 +685,36 @@ namespace LinAlg {
         A.m_strides[rank - 2] = temp_stride;
 
         return A;
+    }
+
+    template <std::floating_point T>
+    std::vector<int> Tensor<T>::argmax() const {
+        std::vector<int> best_indecies(get_rank(), 0);
+        T max_element {(*this)[best_indecies]};
+
+        std::vector<int> indecies(get_rank(), 0);
+
+        do {
+            T element = (*this)[indecies];
+
+            if(element > max_element) {
+                max_element = element;
+                best_indecies = indecies;
+            }
+        } while(next_index(indecies, m_shape));
+    }
+
+    template <std::floating_point T>
+    T Tensor<T>::sum() const {
+        std::vector<int> indecies(get_rank(), 0);
+
+        T sum {};
+
+        do {
+            sum += (*this)[indecies];
+        } while(next_index(indecies, m_shape));
+
+        return sum;
     }
 
     template <std::floating_point T>
