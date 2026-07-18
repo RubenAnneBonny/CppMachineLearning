@@ -17,6 +17,8 @@ namespace NN {
             virtual LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X) = 0;
             virtual LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY) = 0;
             virtual Parameter<T>& parameters() = 0;
+            virtual int get_nodes() const = 0;
+            virtual int get_input_nodes() const = 0;
     };
 
     template <std::floating_point T, 
@@ -40,6 +42,14 @@ namespace NN {
 
             Parameter<T>& parameters() override {
                 return m_layer.weights;
+            }
+
+            int get_nodes() const override {
+                return m_layer.get_nodes();
+            }
+
+            int get_input_nodes() const override {
+                return m_layer.get_input_nodes();
             }
     };
 }

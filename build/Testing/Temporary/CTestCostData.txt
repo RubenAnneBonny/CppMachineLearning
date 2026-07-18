@@ -1,7 +1,7 @@
 matrix_test 78 0.000394367
-tensor_test 200 0.000261095
-std_func_test 179 0.000276342
-random_test 184 4.46777e-05
-layer_test 21 0.00248208
-std_opt_test 8 0.00673634
+tensor_test 201 0.000310944
+std_func_test 180 0.000425377
+random_test 185 0.000208899
+layer_test 22 0.00229317
+std_opt_test 9 0.00551021
 ---
