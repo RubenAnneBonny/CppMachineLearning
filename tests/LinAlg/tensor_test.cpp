@@ -99,7 +99,7 @@ TEST(Tensor, PairwiseMultiplication) {
     EXPECT_EQ(C, C_exp);
 }
 
-TEST(Tensor, ElementwiseMultiplication) {
+TEST(Tensor, MultiplicationTensorScalar) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
 
     A[{0, 0, 1}] = 2;
@@ -107,6 +107,23 @@ TEST(Tensor, ElementwiseMultiplication) {
     A[{1, 1, 0}] = 2;
 
     LinAlg::Tensor<float> C {(A * 3)};
+    LinAlg::Tensor<float> C_exp {{2, 2, 3}, 3};
+
+    C_exp[{0, 0, 1}] = 6;
+    C_exp[{0, 1, 2}] = 9;
+    C_exp[{1, 1, 0}] = 6;
+
+    EXPECT_EQ(C, C_exp);
+}
+
+TEST(Tensor, MultiplicationScalarTensor) {
+    LinAlg::Tensor<float> A {{2, 2, 3}, 1};
+
+    A[{0, 0, 1}] = 2;
+    A[{0, 1, 2}] = 3;
+    A[{1, 1, 0}] = 2;
+
+    LinAlg::Tensor<float> C {(3 * A)};
     LinAlg::Tensor<float> C_exp {{2, 2, 3}, 3};
 
     C_exp[{0, 0, 1}] = 6;
@@ -140,7 +157,7 @@ TEST(Tensor, PairwiseAddition) {
     EXPECT_EQ(C, C_exp);
 }
 
-TEST(Tensor, ElementwiseAddition) {
+TEST(Tensor, AdditionTensorScalar) {
     LinAlg::Tensor<float> A {{2, 2, 3}, 1};
 
     A[{0, 0, 1}] = 2;
@@ -148,6 +165,23 @@ TEST(Tensor, ElementwiseAddition) {
     A[{1, 1, 0}] = 2;
 
     LinAlg::Tensor<float> B {A + 6};
+    LinAlg::Tensor<float> B_exp {{2, 2, 3}, 7};
+
+    B_exp[{0, 0, 1}] = 8;
+    B_exp[{0, 1, 2}] = 9;
+    B_exp[{1, 1, 0}] = 8;
+
+    EXPECT_EQ(B, B_exp);
+}
+
+TEST(Tensor, AdditionScalarTensor) {
+    LinAlg::Tensor<float> A {{2, 2, 3}, 1};
+
+    A[{0, 0, 1}] = 2;
+    A[{0, 1, 2}] = 3;
+    A[{1, 1, 0}] = 2;
+
+    LinAlg::Tensor<float> B {6 + A};
     LinAlg::Tensor<float> B_exp {{2, 2, 3}, 7};
 
     B_exp[{0, 0, 1}] = 8;
@@ -290,4 +324,281 @@ TEST(Tensor, Argmax) {
     A[{1, 2}] = -7;
 
     EXPECT_EQ(A.argmax(), std::vector<int>({0, 1}));
+}
+
+TEST(Tensor, PairwiseSubtraction) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = -2;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> B {{3}, 2};
+    B[{1}] = 5;
+
+    LinAlg::Tensor<float> A_B {A - B};
+    LinAlg::Tensor<float> A_B_exp {{2, 3}, -1};
+    A_B_exp[{0, 1}] = -2;
+    A_B_exp[{1, 1}] = -7;
+    A_B_exp[{1, 2}] = -9;
+
+    EXPECT_EQ(A_B, A_B_exp);
+
+    LinAlg::Tensor<float> B_A {B - A};
+    LinAlg::Tensor<float> B_A_exp {{2, 3}, 1};
+    B_A_exp[{0, 1}] = 2;
+    B_A_exp[{1, 1}] = 7;
+    B_A_exp[{1, 2}] = 9;
+
+    EXPECT_EQ(B_A, B_A_exp);
+}
+
+TEST(Tensor, SubtractionTensorScalar) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> B {A - 3};
+    LinAlg::Tensor<float> B_exp {{2, 3}, -2};
+    B_exp[{0, 1}] = 0;
+    B_exp[{1, 1}] = 5;
+    B_exp[{1, 2}] = -10; 
+
+    EXPECT_EQ(B, B_exp);
+}
+
+TEST(Tensor, SubtractionScalarTensor) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> B {3 - A};
+    LinAlg::Tensor<float> B_exp {{2, 3}, 2};
+    B_exp[{0, 1}] = 0;
+    B_exp[{1, 1}] = -5;
+    B_exp[{1, 2}] = 10; 
+
+    EXPECT_EQ(B, B_exp);
+}
+
+TEST(Tensor, Negation) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> B {-A};
+    LinAlg::Tensor<float> B_exp {{2, 3}, -1};
+    B_exp[{0, 1}] = -3;
+    B_exp[{1, 1}] = -8;
+    B_exp[{1, 2}] = 7;
+
+    EXPECT_EQ(B, B_exp);
+}
+
+TEST(Tensor, SubtractionAssignmentTensor) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+    
+    LinAlg::Tensor<float> B {{2, 3}, 1};
+    B[{0, 1}] = -1;
+    B[{1, 2}] = 3;
+
+    A -= B;
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, 0};
+    A_exp[{0, 1}] = 4;
+    A_exp[{1, 1}] = 7;
+    A_exp[{1, 2}] = -10;
+
+    EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, SubtractionAssignmentScalar) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+
+    A -= 7;
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, -6};
+    A_exp[{0, 1}] = -4;
+    A_exp[{1, 1}] = 1;
+    A_exp[{1, 2}] = -14;
+
+    EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, AddAssignMutatesSharedStorage) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> B {{2, 3}, 1};
+    B[{0, 1}] = -1;
+    B[{1, 2}] = 3;
+
+    LinAlg::Tensor<float> A_view {A};
+
+    A += B;
+
+    LinAlg::Tensor<float> A_view_exp {{2, 3}, 2};
+    A_view_exp[{0, 1}] = 2;
+    A_view_exp[{1, 1}] = 9;
+    A_view_exp[{1, 2}] = -4;
+
+    EXPECT_EQ(A_view, A_view_exp);
+}
+
+TEST(Tensor, SubAssignMutatesSharedStorage) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> B {{2, 3}, 1};
+    B[{0, 1}] = -1;
+    B[{1, 2}] = 3;
+
+    LinAlg::Tensor<float> A_view {A};
+
+    A -= B;
+
+    LinAlg::Tensor<float> A_view_exp {{2, 3}, 0};
+    A_view_exp[{0, 1}] = 4;
+    A_view_exp[{1, 1}] = 7;
+    A_view_exp[{1, 2}] = -10;
+
+    EXPECT_EQ(A_view, A_view_exp);
+}
+
+TEST(Tensor, MatMulAssignMutatesSharedStorage) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> B {{2, 2}, 1};
+    B[{0, 0}] = -1;
+    B[{1, 1}] = 3;
+
+    LinAlg::Tensor<float> A_view {A};
+
+    A *= B;
+
+    LinAlg::Tensor<float> A_view_exp {{2, 2}, 2};
+    A_view_exp[{0, 1}] = 10;
+    A_view_exp[{1, 0}] = 7;
+    A_view_exp[{1, 1}] = 25;
+
+    EXPECT_EQ(A_view, A_view_exp);
+}
+
+TEST(Tensor, MultAssignMutatesSharedStorage) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> A_view {A};
+
+    A *= 3;
+
+    LinAlg::Tensor<float> A_view_exp {{2, 2}, 3};
+    A_view_exp[{0, 1}] = 9;
+    A_view_exp[{1, 1}] = 24;
+
+    EXPECT_EQ(A_view, A_view_exp);
+}
+
+TEST(Tensor, MatMulAssign) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> B {{2, 2}, 1};
+    B[{0, 0}] = -1;
+    B[{1, 1}] = 3;
+
+    A *= B;
+
+    LinAlg::Tensor<float> A_exp {{2, 2}, 2};
+    A_exp[{0, 1}] = 10;
+    A_exp[{1, 0}] = 7;
+    A_exp[{1, 1}] = 25;
+
+    EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, MatMulAssignShapeChangeThrows) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> B {{2, 2, 2}, 1};
+    B[{0, 0, 0}] = -1;
+    B[{1, 1, 1}] = 3;
+
+    EXPECT_THROW(A *= B, std::invalid_argument);
+}
+
+TEST(Tensor, AddAssignShapeChangeThrows) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> B {{2, 2, 2}, 1};
+    B[{0, 0, 0}] = -1;
+    B[{1, 1, 1}] = 3;
+
+    EXPECT_THROW(A += B, std::invalid_argument);
+}
+
+TEST(Tensor, SubAssignShapeChangeThrows) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> B {{2, 2, 2}, 1};
+    B[{0, 0, 0}] = -1;
+    B[{1, 1, 1}] = 3;
+
+    EXPECT_THROW(A -= B, std::invalid_argument);
+}
+
+TEST(Tensor, AllCloseWithinAtol) {
+    LinAlg::Tensor<float> A {{2, 2}, 1.3f};
+
+    LinAlg::Tensor<float> B {A + 1.003f};
+    B -= 1.003f;
+
+    EXPECT_TRUE(LinAlg::all_close<float>(A, B, 1e-6, 0));
+}
+
+TEST(Tensor, AllCloseOutsideTol) {
+    LinAlg::Tensor<float> A {{2, 2}, 1.3f};
+
+    LinAlg::Tensor<float> B {A + 1.003f};
+
+    EXPECT_FALSE(LinAlg::all_close<float>(A, B, 1e-6, 0));
+}
+
+TEST(Tensor, AllCloseRtolScaling) {
+    LinAlg::Tensor<float> A {{2, 2}, 1e7 + 1.3f};
+
+    LinAlg::Tensor<float> B {A * 52.3f};
+
+    B *= (1 / 52.3f);
+
+    EXPECT_TRUE(LinAlg::all_close<float>(A, B, 0, 1e-6));
+}
+
+TEST(Tensor, AllCloseShapeMismatch) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    LinAlg::Tensor<float> B {{2, 2, 2}, 1};
+
+    EXPECT_FALSE(LinAlg::all_close<float>(A, B, 1, 1));
 }

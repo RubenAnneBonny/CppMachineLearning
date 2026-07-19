@@ -18,6 +18,9 @@ namespace LinAlg {
     template <std::floating_point T>
     Tensor<T> one_hot(int extent, int index);
 
+    template <std::floating_point T>
+    bool all_close(const Tensor<T>& A, const Tensor<T>& B, T atol, T rtol);
+
     template <std::floating_point T, std::invocable<T, T> Fn>
     Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
 
@@ -339,27 +342,7 @@ namespace LinAlg {
             /// @param atol The absolute tolerance
             /// @param rtol The relative tolerance
             /// @return True if A and B are within the tolerance from each other, false otherwise
-            friend bool all_close(const Tensor& A, const Tensor& B, T atol, T rtol) {
-                if(A.get_rank() != B.get_rank()) {
-                    return false;
-                }
-
-                for(int i {}; i < A.get_rank(); ++i) {
-                    if(A.m_shape[i] != B.m_shape[i]){
-                        return false;
-                    }
-                }
-
-                std::vector<int> indecies(A.get_rank(), 0);
-
-                do {
-                    if(std::abs(A[indecies] - B[indecies]) > atol + std::abs(B[indecies]) * rtol) {
-                        return false;
-                    }
-                } while(next_index(indecies, A.m_shape));
-
-                return true;
-            }
+            friend bool all_close<T>(const Tensor<T>& A, const Tensor<T>& B, T atol, T rtol);
 
             /// @brief Performs pairwise addition
             /// @param A The first tensor
@@ -829,6 +812,29 @@ namespace LinAlg {
     T& Tensor<T>::operator[](const std::vector<int>& indecies) {
         const Tensor& self = *this;
         return const_cast<T&>(self[indecies]);
+    }
+
+    template <std::floating_point T>
+    bool all_close(const Tensor<T>& A, const Tensor<T>& B, T atol, T rtol) {
+        if(A.get_rank() != B.get_rank()) {
+            return false;
+        }
+
+        for(int i {}; i < A.get_rank(); ++i) {
+            if(A.m_shape[i] != B.m_shape[i]){
+                return false;
+            }
+        }
+
+        std::vector<int> indecies(A.get_rank(), 0);
+
+        do {
+            if(std::abs(A[indecies] - B[indecies]) > atol + std::abs(B[indecies]) * rtol) {
+                return false;
+            }
+        } while(Tensor<T>::next_index(indecies, A.m_shape));
+
+        return true;
     }
 
     template <std::floating_point T>
