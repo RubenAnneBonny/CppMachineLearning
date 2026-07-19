@@ -723,7 +723,7 @@ namespace LinAlg {
             }
         } while(next_index(indecies, m_shape));
 
-        return max_element;
+        return best_indecies;
     }
 
     template <std::floating_point T>

@@ -216,3 +216,78 @@ TEST(Tensor, Row) {
 
     EXPECT_EQ(B, B_exp);
 }
+
+TEST(Tensor, RowView) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = -2;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> A_1 {A.row(1)};
+
+    A_1[{2}] = 6;
+    A_1[{0}] = -4;
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, 1};
+    A_exp[{0, 1}] = 3;
+    A_exp[{1, 0}] = -4;
+    A_exp[{1, 1}] = -2;
+    A_exp[{1, 2}] = 6;
+
+    EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, CopyView) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = -2;
+    A[{1, 2}] = -7;
+
+    LinAlg::Tensor<float> A_view {A};
+    A_view[{0, 0}] = 3;
+    A_view[{1, 1}] = 11;
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, 1};
+    A_exp[{0, 0}] = 3;
+    A_exp[{0, 1}] = 3;
+    A_exp[{1, 1}] = 11;
+    A_exp[{1, 2}] = -7;
+
+    EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, Sum) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = -2;
+    A[{1, 2}] = -7;
+
+    EXPECT_EQ(A.sum(), -3);
+}
+
+TEST(Tensor, Max) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 0}] = 3;
+    A[{0, 1}] = 3;
+    A[{1, 1}] = -2;
+    A[{1, 2}] = -7;
+
+    EXPECT_EQ(A.max(), 3);
+
+    LinAlg::Tensor<float> B {{2, 2}, 3};
+    B[{0, 0}] = -8;
+    B[{0, 1}] = -11;
+    B[{1, 0}] = -3,
+    B[{1, 1}] = -4;
+
+    EXPECT_EQ(B.max(), -3);
+}
+
+TEST(Tensor, Argmax) {
+    LinAlg::Tensor<float> A {{2, 3}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = -2;
+    A[{1, 2}] = -7;
+
+    EXPECT_EQ(A.argmax(), std::vector<int>({0, 1}));
+}
