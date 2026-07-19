@@ -18,7 +18,7 @@ namespace LinAlg {
     template <std::floating_point T>
     Tensor<T> one_hot(int extent, int index);
 
-    template <std::floating_point T, typename Fn>
+    template <std::floating_point T, std::invocable<T, T> Fn>
     Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
 
     template <std::floating_point T>
@@ -189,7 +189,7 @@ namespace LinAlg {
             /// @tparam Fn A type of function that takes only one parameter of type T
             /// @param fn The lambda function to perform on each element
             /// @return A reference to this tensor
-            template <typename Fn>
+            template <std::invocable<T> Fn>
             Tensor& elementwise(Fn fn);
 
             /// @brief Creates tensor where each element is the result of a function between two tensors, uses batching
@@ -200,7 +200,7 @@ namespace LinAlg {
             /// @param fn The lambda function to perform on the tensors
             /// @return A new tensor, the result
             /// @throws std::invalid_argument if batching cannot be performed
-            template <std::floating_point U, typename Fn>
+            template <std::floating_point U, std::invocable<U, U> Fn>
             friend Tensor<U> pairwise(const Tensor<U>& A, const Tensor<U>& B, Fn fn);
 
             /// @brief Allows static_cast<std::string>(tensor), returns string that displays shape nicely
@@ -764,7 +764,7 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    template <typename Fn>
+    template <std::invocable<T> Fn>
     Tensor<T>& Tensor<T>::elementwise(Fn fn) {
         std::vector<int> indecies(get_rank(), 0);
 
@@ -775,7 +775,7 @@ namespace LinAlg {
         return *this;
     }
 
-    template <std::floating_point T, typename Fn>
+    template <std::floating_point T, std::invocable<T, T> Fn>
     Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn) {
         Tensor<T> A_view {A};
         Tensor<T> B_view {B};

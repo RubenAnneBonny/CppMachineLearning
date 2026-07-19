@@ -6,7 +6,7 @@
 #include <Rand/random.h>
 #include <cmath>
 
-namespace Debug {
+namespace Debug::GradCheck {
     namespace helper {
         template <std::invocable Eval>
         std::pair<double, int> max_rel_error(LinAlg::Tensor<double>& disturb, const LinAlg::Tensor<double>& analytic, Eval evaluate, double eps) {
@@ -44,7 +44,7 @@ namespace Debug {
     }
 
     /// @brief A struct of valuable info about the result of gradient check for functions
-    struct Func_grad_check_result {
+    struct Func_result {
         bool passed = false;
         double max_func_rel_error = 0;
         double max_weights_rel_error = 0;
@@ -58,9 +58,9 @@ namespace Debug {
     /// @param seed The seed, to ensure reproducability
     /// @param eps Step size disturbation, error in result is O(eps^2)
     /// @param rel_tol The relative tolerance, controls the passed variable in result
-    /// @return A Func_grad_check_result instance
+    /// @return A Func_result instance
     template <Func::Function<double> F>
-    Func_grad_check_result func_grad_check(int input_size, unsigned seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
+    Func_result func(int input_size, int seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
         LinAlg::Tensor<double> input {{1, input_size}};
         LinAlg::Tensor<double> weights {{1, F::num_weights(input_size)}};
 
@@ -69,7 +69,7 @@ namespace Debug {
         input.normal(random, 0, 1);
         weights.normal(random, 0, 1);
 
-        Func_grad_check_result result;
+        Func_result result;
 
         auto eval {
             [&]()
@@ -94,21 +94,21 @@ namespace Debug {
     }
 
     /// @brief A struct of valuable info about the result of gradient chekc for activation functions
-    struct Activation_grad_check_result {
+    struct Activation_result {
         bool passed = false;
         double max_rel_error = 0;
         int worst_index = -1;
     };
 
     /// @brief Numerically tests a activation function to look for flaws in gradient calculation
-    /// @tparam F The function to test
+    /// @tparam A The activation function to test
     /// @param input_size The size of input, don't need to be large if speed is necessary
     /// @param seed The seed to ensure reproducability
     /// @param eps Step size disturbation, error in result is O(eps^2)
     /// @param rel_tol The relative tolerance, controls the passed variable in result
-    /// @return A Activation_grad_check_result instance
+    /// @return A Activation_result instance
     template <Func::Activation_function<double> A>
-    Activation_grad_check_result activation_grad_check(int input_size, unsigned seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
+    Activation_result activation(int input_size, int seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
         LinAlg::Tensor<double> input {{1, input_size}};
 
         Rand::Random<double> random {seed};
@@ -122,7 +122,7 @@ namespace Debug {
             }
         }
 
-        Activation_grad_check_result result;
+        Activation_result result;
 
         auto eval {
             [&]()
@@ -133,6 +133,48 @@ namespace Debug {
 
         LinAlg::Tensor<double> analytic_grad {A::derivate(input)};
         auto [rel_error, index] = helper::max_rel_error(input, analytic_grad, eval, eps);
+
+        result.max_rel_error = rel_error;
+        result.worst_index = index;
+        result.passed = rel_error <= rel_tol;
+
+        return result;
+    }
+
+    /// @brief A struct of valuable info about the result of gradient check for loss functions
+    struct Loss_result {
+        bool passed = false;
+        double max_rel_error = 0;
+        int worst_index = -1;
+    };
+
+    /// @brief Numerically tests a loss function to look for flaws in gradient calculation
+    /// @tparam L The loss function to test
+    /// @param input_size The size of input, don't need to be large if speed is necessary
+    /// @param seed The seed to ensure reproducability
+    /// @param eps Step size disturbation, error in result is O(eps^2)
+    /// @param rel_tol The relative tolerance, controls the passed variable in result
+    /// @return A Loss_result instance
+    template <Func::Loss_function<double> L>
+    Loss_result loss(int input_size, int seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
+        LinAlg::Tensor<double> prediction {{1, input_size}};
+        LinAlg::Tensor<double> target {{1, input_size}};
+        Rand::Random<double> random {seed};
+
+        prediction.normal(random, 0, 1);
+        target.normal(random, 0, 1);
+
+        Loss_result result;
+
+        auto eval {
+            [&]()
+            {
+                return L::loss(prediction, target);
+            }
+        };
+
+        LinAlg::Tensor<double> analytic_grad {L::gradient(prediction, target)};
+        auto [rel_error, index] = helper::max_rel_error(prediction, analytic_grad, eval, eps);
 
         result.max_rel_error = rel_error;
         result.worst_index = index;
