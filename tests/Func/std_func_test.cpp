@@ -74,3 +74,25 @@ TEST(StdFunc, NoActivationMath) {
 
     EXPECT_EQ(D, D_exp);
 }
+
+TEST(StdFunc, MSEMath) {
+    LinAlg::Tensor<float> prediction {{1, 3}, 1};
+    prediction[{0, 1}] = -1;
+    prediction[{0, 2}] = 5;
+
+    LinAlg::Tensor<float> target {{1, 3}, 0};
+    target[{0, 1}] = 3;
+    target[{0, 2}] = 6;
+
+    float loss {Func::MSE<float>::loss(prediction, target)};
+    EXPECT_EQ(loss, 6);
+
+    LinAlg::Tensor<float> grad {Func::MSE<float>::gradient(prediction, target)};
+    LinAlg::Tensor<float> grad_exp {{1, 3}, 2};
+    grad_exp[{0, 1}] = -8;
+    grad_exp[{0, 2}] = -2;
+
+    grad_exp *= (1.0f / 3.0f);
+
+    EXPECT_TRUE(LinAlg::all_close<float>(grad, grad_exp, 1e-7f, 1e-7f));
+}

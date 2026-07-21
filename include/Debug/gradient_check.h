@@ -7,7 +7,7 @@
 #include <cmath>
 
 namespace Debug::GradCheck {
-    namespace helper {
+    namespace Helper {
         template <std::invocable Eval>
         std::pair<double, int> max_rel_error(LinAlg::Tensor<double>& disturb, const LinAlg::Tensor<double>& analytic, Eval evaluate, double eps) {
             double max_rel_error {};
@@ -79,10 +79,10 @@ namespace Debug::GradCheck {
         };
 
         LinAlg::Tensor<double> analytic_grad {F::function_grad(input, weights)};
-        auto [func_rel_error, func_index] = helper::max_rel_error(input, analytic_grad, eval, eps);
+        auto [func_rel_error, func_index] = Helper::max_rel_error(input, analytic_grad, eval, eps);
 
         LinAlg::Tensor<double> analytic_weight_grad {F::weights_grad(input, weights)};
-        auto [weight_rel_error, weight_index] = helper::max_rel_error(weights, analytic_weight_grad, eval, eps);
+        auto [weight_rel_error, weight_index] = Helper::max_rel_error(weights, analytic_weight_grad, eval, eps);
 
         result.max_func_rel_error = func_rel_error;
         result.worst_func_index = func_index;
@@ -132,7 +132,7 @@ namespace Debug::GradCheck {
         };
 
         LinAlg::Tensor<double> analytic_grad {A::derivate(input)};
-        auto [rel_error, index] = helper::max_rel_error(input, analytic_grad, eval, eps);
+        auto [rel_error, index] = Helper::max_rel_error(input, analytic_grad, eval, eps);
 
         result.max_rel_error = rel_error;
         result.worst_index = index;
@@ -174,7 +174,7 @@ namespace Debug::GradCheck {
         };
 
         LinAlg::Tensor<double> analytic_grad {L::gradient(prediction, target)};
-        auto [rel_error, index] = helper::max_rel_error(prediction, analytic_grad, eval, eps);
+        auto [rel_error, index] = Helper::max_rel_error(prediction, analytic_grad, eval, eps);
 
         result.max_rel_error = rel_error;
         result.worst_index = index;
