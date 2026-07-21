@@ -42,6 +42,12 @@ namespace NN {
             /// @param optimizer The optimizer used to update weights based on their gradients
             Model(Loss loss_fn, Opt optimizer);
 
+            /// @brief Collects all parameters of the model
+            /// @return The parameters
+            const std::vector<Parameter<T>*>& get_parameters() const {
+                return m_parameters;
+            }
+
             /// @brief Adds a layer to the neural network
             /// @tparam F The function type of the layer
             /// @tparam A The activation function type of the layer
@@ -65,6 +71,7 @@ namespace NN {
             /// @brief Calculates the loss
             /// @param target The target tensor
             /// @return The loss
+            /// @throws std::invalid_argument if target rank isn't two
             /// @throws std::invalid_argument if target shape don't match output of network
             T calculate_loss(const LinAlg::Tensor<T>& target);
 
@@ -73,6 +80,7 @@ namespace NN {
 
             /// @brief Does a backpropagation through the network
             /// @param target The target tensor
+            /// @throws std::invalid_argument if target rank isn't two
             /// @throws std::invalid_argument if target don't match output of network
             void backpropagation(const LinAlg::Tensor<T>& target);
 
@@ -191,6 +199,14 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     T Model<T, Loss, Opt>::calculate_loss(const LinAlg::Tensor<T>& target) {
+        if(target.get_rank() != 2) {
+            throw std::invalid_argument(
+                "Cannot perform loss calculations with target of shape " + 
+                static_cast<std::string>(target) + 
+                " since it isn't rank 2"
+            );
+        }
+
         check_target_shape(target);
         
         m_store_loss = m_loss_fn.loss(m_store_prediction, target);
@@ -211,6 +227,14 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     void Model<T, Loss, Opt>::backpropagation(const LinAlg::Tensor<T>& target) {
+        if(target.get_rank() != 2) {
+            throw std::invalid_argument(
+                "Cannot perform backpropagation with target of shape " + 
+                static_cast<std::string>(target) + 
+                " since it isn't rank 2"
+            );
+        }
+        
         check_target_shape(target);
 
         LinAlg::Tensor<T> dY {m_loss_fn.gradient(m_store_prediction, target)};

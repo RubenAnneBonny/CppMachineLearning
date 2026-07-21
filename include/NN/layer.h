@@ -38,11 +38,11 @@ namespace NN {
                 weights.normal(random, mean, stddev);
             }
 
-            int get_nodes() {
+            int get_nodes() const {
                 return m_nodes;
             }
 
-            int get_input_nodes() {
+            int get_input_nodes() const {
                 return m_input_nodes;
             }
 

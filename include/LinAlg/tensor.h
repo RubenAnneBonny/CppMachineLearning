@@ -41,10 +41,6 @@ namespace LinAlg {
             int m_offset;
             std::vector<int> m_strides;
 
-            int get_rank() const {
-                return static_cast<int>(m_shape.size());
-            }
-
             int num_elements() const {
                 int elements {1};
 
@@ -124,6 +120,12 @@ namespace LinAlg {
             /// @brief Sets all elements to value
             /// @param value The value to set all elements to
             void set_all_elements(T value);
+
+            /// @brief Calculates the rank of the tensor
+            /// @return The rank
+            int get_rank() const {
+                return static_cast<int>(m_shape.size());
+            }
 
             /// @brief Returns the extent of an axis
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
