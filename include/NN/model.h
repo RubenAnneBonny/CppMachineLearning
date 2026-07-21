@@ -58,8 +58,19 @@ namespace NN {
                       Func::Activation_function<T> A>
             void add_layer(NN::Layer<T, F, A> layer);
 
-            /// @brief Must run before training, initializes the network
+            /// @brief Must run a init before training, initializes the network
+            /// @throws std::invalid_argument if no layers were added before init
             void init();
+
+            /// @brief Must run a init before training, initializes the network with random weights
+            /// @param random The Random instance to initialize weights
+            /// @param samples Samples to calculate optimal stddev for weights, not a must, but preferable use 5000 / (the least amount of nodes in layer)
+            /// @param target_stddev The stddev we want for the output for each layer
+            /// @param max_iters Maximum number of iterations to optimize for stddev
+            /// @param tol The maximum tolerance for differnce between stddev from output from layer and target_stddev
+            /// @throws std::invalid_argument if no layers were added before init
+            /// @throws std::invalid_argument if the extent of the first axis of samples is 0
+            void init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev = 1, int max_iters = 5, T tol = 0.01, T damping = 0.9);
 
             /// @brief Does a forward pass through the network, saving necessary inputs
             /// @param X The input tensor to the network
@@ -67,6 +78,18 @@ namespace NN {
             /// @throws std::invalid_argument if network hasn't been initialized with init()
             /// @throws std::invalid_argument if the shape of X don't match the first layer
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X);
+
+            /// @brief Calculates all the intermediate outputs of each layer 
+            /// @param input The tensor to pass through the network
+            /// @return A vector of all the outputs of each layer in order
+            /// @important Cannot be used as a normal forward pass
+            std::vector<LinAlg::Tensor<T>> forward_capture(const LinAlg::Tensor<T>& input) const;
+            
+            /// @brief Calculates all the intermediate pre-activation outputs of each layer
+            /// @param input The tensor to pass through the network
+            /// @return A vector of all the outputs of each layer in order
+            /// @important Cannot be used as a normal forward pass
+            std::vector<LinAlg::Tensor<T>> pre_activation_capture(const LinAlg::Tensor<T>& input) const;
 
             /// @brief Calculates the loss
             /// @param target The target tensor
@@ -148,12 +171,74 @@ namespace NN {
     void Model<T, Loss, Opt>::init() {
         if(m_layers.empty()) {
             throw std::invalid_argument(
-                "Layers must be added to model before init()"
+                "At least one layer must be added to model before init"
             );
         } 
 
         m_initialized = true;
 
+        m_optimizer.init(m_parameters);
+    }
+
+    template <std::floating_point T,
+              Func::Loss_function<T> Loss,
+              NN::Optimizer<T> Opt>
+    void Model<T, Loss, Opt>::init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev, int max_iters, T tol, T damping) {
+        if(m_layers.empty()) {
+            throw std::invalid_argument(
+                "At least one layer must be added to model before init"
+            );
+        }
+
+        int num_samples = samples.get_extent(0);
+
+        if(num_samples == 0) {
+            throw std::invalid_argument(
+                "Must have at least one sample to calculate the stddev"
+            );
+        }
+
+        for(auto* param : m_parameters) {
+            param->normal(random, 0, 1);
+        }
+
+        for(int layer {}; layer < static_cast<int>(m_layers.size()); ++layer) {
+            for(int iter {}; iter < max_iters; ++iter) {
+                std::vector<T> values {};
+                for(int sample {}; sample < num_samples; ++sample) {
+                    LinAlg::Tensor<T> X {samples.row(sample).unsqueeze()};
+                    for(int i {}; i <= layer; ++i) {
+                        X = m_layers[i]->forward_pass(X);
+                    }
+                    X = m_layers[layer]->get_pre_activation();
+                    for(int i {}; i < X.get_extent(1); ++i) {
+                        values.push_back(X[{0, i}]);
+                    }
+                }
+                int num_elements {static_cast<int>(values.size())};
+
+                T sum {};
+                for(T value : values) {
+                    sum += value;
+                }
+
+                T mean {sum / num_elements};
+
+                T variance {};
+                for(T value : values) {
+                    variance += (value - mean) * (value - mean);
+                }
+                variance /= num_elements;
+
+                T stddev {std::sqrt(variance)};
+
+                if(stddev < 1e-8) break;
+                if(std::abs(stddev - target_stddev) < tol) break;
+                m_parameters[layer]->value *= std::pow(target_stddev / stddev, damping);
+            }
+        }
+
+        m_initialized = true;
         m_optimizer.init(m_parameters);
     }
 
@@ -194,6 +279,32 @@ namespace NN {
 
         return out;
     }
+
+    template <std::floating_point T,
+              Func::Loss_function<T> Loss,
+              NN::Optimizer<T> Opt> 
+    std::vector<LinAlg::Tensor<T>> Model<T, Loss, Opt>::forward_capture(const LinAlg::Tensor<T>& input) const {
+        std::vector<LinAlg::Tensor<T>> outputs;
+        LinAlg::Tensor<T> X {input};
+        for(auto& layer : m_layers) {
+            X = layer->forward_pass(X);
+            outputs.push_back(X);
+        }
+        return outputs;
+    }
+
+    template <std::floating_point T,
+              Func::Loss_function<T> Loss,
+              NN::Optimizer<T> Opt> 
+    std::vector<LinAlg::Tensor<T>> Model<T, Loss, Opt>::pre_activation_capture(const LinAlg::Tensor<T>& input) const {
+        std::vector<LinAlg::Tensor<T>> outputs;
+        LinAlg::Tensor<T> X {input};
+        for(auto& layer : m_layers) {
+            X = layer->forward_pass(X);
+            outputs.push_back(layer->get_pre_activation());
+        }
+        return outputs;
+    }    
 
     template <std::floating_point T,
               Func::Loss_function<T> Loss,

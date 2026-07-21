@@ -3,6 +3,7 @@
 
 #include <Func/function.h>
 #include <LinAlg/tensor.h>
+#include <cmath>
 
 namespace Func{
     template <typename T>
@@ -53,10 +54,10 @@ namespace Func{
         public:
             static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
                 auto relu{
-                [](T a)
-                {
-                    return (a > 0 ? a : 0);
-                }
+                    [](T a)
+                    {
+                        return (a > 0 ? a : 0);
+                    }
                 };
 
                 LinAlg::Tensor<T> activated {X.copy()};
@@ -91,6 +92,30 @@ namespace Func{
                 LinAlg::Tensor<T> grad {{1, X.get_extent(1)}, 1};
 
                 return grad;
+            }
+    };
+
+    template <typename T>
+    class Sigmoid {
+        public: 
+            static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
+                auto sigmoid{
+                    [](T a)
+                    {
+                        return T{1.0} / (T{1.0} + std::exp(-a));
+                    }
+                };
+
+                LinAlg::Tensor<T> activated {X.copy()};
+                activated.elementwise(sigmoid);
+
+                return activated;
+            }
+    
+            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+                LinAlg::Tensor<T> activated {activate(X)};
+
+                return LinAlg::pairwise_mult<T>(activated, (1 - activated));
             }
     };
 

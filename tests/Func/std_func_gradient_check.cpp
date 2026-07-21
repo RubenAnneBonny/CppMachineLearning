@@ -20,6 +20,12 @@ TEST(GradientCheck, NoActivation) {
     EXPECT_TRUE(result.passed);
 }
 
+TEST(GradientCheck, Sigmoid) {
+    Debug::GradCheck::Activation_result result = Debug::GradCheck::activation<Func::Sigmoid<double>>(4);
+
+    EXPECT_TRUE(result.passed);
+}
+
 TEST(GradientCheck, MSE) {
     Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Func::MSE<double>>(4);
 

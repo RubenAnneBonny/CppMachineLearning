@@ -895,3 +895,23 @@ TEST(Tensor, PairwiseSubFreeFunction) {
     
     EXPECT_EQ(C, C_exp);    
 }
+
+TEST(Tensor, SliceInvalidRangeThrows) {
+    LinAlg::Tensor<float> A {{5, 2}, 2};
+
+    EXPECT_THROW(A.slice(2, 2), std::invalid_argument);
+    EXPECT_THROW(A.slice(-1, 3), std::invalid_argument);
+    EXPECT_THROW(A.slice(3, 6), std::invalid_argument);
+    EXPECT_THROW(A.slice(3, 2), std::invalid_argument);
+}
+
+TEST(Tensor, SliceIsView) {
+    LinAlg::Tensor<float> A {{5, 2}, 2};
+    LinAlg::Tensor<float> slice {A.slice(1, 2)};
+    slice[{0, 1}] = 8;
+
+    LinAlg::Tensor<float> A_exp {{5, 2}, 2};
+    A_exp[{1, 1}] = 8;
+
+    EXPECT_EQ(A, A_exp);
+}

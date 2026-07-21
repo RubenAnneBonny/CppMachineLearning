@@ -153,6 +153,13 @@ namespace LinAlg {
             /// @throws std::invalid_argument if i is outside extent of first axis
             Tensor row(int i) const;
 
+            /// @brief Creates a slice view of the tensor
+            /// @param start Where to start the slice of the tensor (inclusive)
+            /// @param end Where to end the slice of the tensor (exclusive)
+            /// @return A tensor view
+            /// @throws std::invalid_argument if start and end isnt a valid range in the extent of first axis
+            Tensor slice(int start, int end) const;
+
             /// @brief Add an extra axis with extent 1
             /// @param axis Before which axis to add the new
             /// @return A tensor-view of the unsqueezed tensor
@@ -603,6 +610,28 @@ namespace LinAlg {
         A.m_offset += i * m_strides[0];
         A.m_shape.erase(A.m_shape.begin());
         A.m_strides.erase(A.m_strides.begin());
+
+        return A;
+    }
+
+    template <std::floating_point T>
+    Tensor<T> Tensor<T>::slice(int start, int end) const {
+        Tensor<T> A {*this};
+
+        if(start < 0 || end > get_extent(0) || end <= start) {
+            throw std::invalid_argument(
+                "Cannot slice Tensor of shape " + 
+                static_cast<std::string>(*this) + 
+                " since the indecies for start (" + 
+                std::to_string(start) + 
+                ") and end (" + 
+                std::to_string(end) + 
+                ") must lie inside the extent of the first axis"
+            );
+        }
+
+        A.m_offset += start * m_strides[0];
+        A.m_shape[0] = end - start;
 
         return A;
     }

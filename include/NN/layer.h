@@ -46,6 +46,10 @@ namespace NN {
                 return m_input_nodes;
             }
 
+            LinAlg::Tensor<T> get_pre_activation() const {
+                return m_store_Y;
+            }
+
             /// @brief Performs a forward pass through the layer
             /// @param X Input tensor of shape (1, input nodes)
             /// @return Tensor of shape (1, nodes)

@@ -19,6 +19,7 @@ namespace NN {
             virtual Parameter<T>& parameters() = 0;
             virtual int get_nodes() const = 0;
             virtual int get_input_nodes() const = 0;
+            virtual LinAlg::Tensor<T> get_pre_activation() const = 0;
     };
 
     template <std::floating_point T, 
@@ -50,6 +51,10 @@ namespace NN {
 
             int get_input_nodes() const override {
                 return m_layer.get_input_nodes();
+            }
+
+            LinAlg::Tensor<T> get_pre_activation() const override {
+                return m_layer.get_pre_activation();
             }
     };
 }

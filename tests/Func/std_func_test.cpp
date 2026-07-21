@@ -75,6 +75,44 @@ TEST(StdFunc, NoActivationMath) {
     EXPECT_EQ(D, D_exp);
 }
 
+TEST(StdFunc, SigmoidMath) {
+    LinAlg::Tensor<float> X {{1, 3}, 2};
+
+    X[{0, 0}] = -1;
+    X[{0, 2}] = 0;
+
+    auto sigmoid{
+        [](float a)
+        {
+            return 1.0f / (1.0f + std::exp(-a));
+        }
+    };                
+    auto grad_sigmoid{
+        [&](float a)
+        {
+            float s = sigmoid(a);
+
+            return s * (1 - s);
+        }
+    };
+
+    LinAlg::Tensor<float> A {Func::Sigmoid<float>::activate(X)};
+    LinAlg::Tensor<float> A_exp {{1, 3}};
+    A_exp[{0, 0}] = sigmoid(-1.0f);
+    A_exp[{0, 1}] = sigmoid(2.0f);
+    A_exp[{0, 2}] = sigmoid(0.0f);
+
+    EXPECT_TRUE(LinAlg::all_close<float>(A, A_exp, 1e-6f, 0));
+
+    LinAlg::Tensor<float> D {Func::Sigmoid<float>::derivate(X)};
+    LinAlg::Tensor<float> D_exp {{1, 3}};
+    D_exp[{0, 0}] = grad_sigmoid(-1.0f);
+    D_exp[{0, 1}] = grad_sigmoid(2.0f);
+    D_exp[{0, 2}] = grad_sigmoid(0.0f);
+
+    EXPECT_TRUE(LinAlg::all_close<float>(D, D_exp, 1e-6f, 0));
+}
+
 TEST(StdFunc, MSEMath) {
     LinAlg::Tensor<float> prediction {{1, 3}, 1};
     prediction[{0, 1}] = -1;
