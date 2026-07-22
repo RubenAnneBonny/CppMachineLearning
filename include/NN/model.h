@@ -10,6 +10,10 @@
 #include <NN/layer_base.h>
 #include <string>
 #include <stdexcept>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <limits>
 
 namespace NN {
     template <std::floating_point T,
@@ -109,6 +113,19 @@ namespace NN {
 
             /// @brief The optimizer updates the weights
             void optimizer_step();
+
+            /// @brief Saves the weights of the model
+            /// @param path The file to write the weights to
+            /// @throws std::invalid_argument if the file could not be opened
+            void save_weights(const std::string& path) const;
+
+            /// @brief Loads weights from a file to the model
+            /// @param path The file to read the weights from
+            /// @throws std::invalid_argument if file could not be opened
+            /// @throws std::invalid_argument if the number of layers in model doesn't match the files
+            /// @throws std::invalid_argument if a layer has a different number of nodes or weights than the save file
+            /// @throws std::invalid_argument if the file was malformed or truncated
+            void load_weights(const std::string& path);
 
             /// @brief A training loop for the neural network
             /// @param inputs The input tensor of shape (batch, input size)
@@ -360,6 +377,123 @@ namespace NN {
               NN::Optimizer<T> Opt>
     void Model<T, Loss, Opt>::optimizer_step() {
         m_optimizer.step();
+    }
+
+    template <std::floating_point T,
+              Func::Loss_function<T> Loss,
+              NN::Optimizer<T> Opt>
+    void Model<T, Loss, Opt>::save_weights(const std::string& path) const {
+        std::ofstream out(path);
+        if(!out) {
+            throw std::invalid_argument(
+                "Save weights could not open " + 
+                path
+            );
+        }
+
+        out << std::setprecision(std::numeric_limits<T>::max_digits10);
+
+        const std::vector<NN::Parameter<T>*>& params = get_parameters();
+        out << params.size() << "\n";
+
+        for(int param {}; param < static_cast<int>(params.size()); ++param) {
+            const LinAlg::Tensor<T>& W {params[param]->value};
+            int rows {W.get_extent(0)};
+            int cols {W.get_extent(1)};
+
+            out << param << " " << rows << " " << cols << "\n";
+
+            for(int row {}; row < rows; ++row) {
+                for(int col {}; col < cols; ++col) {
+                    out << W[{row, col}] << " ";
+                }
+                out << "\n";
+            }
+        } 
+    } 
+    
+    template <std::floating_point T,
+            Func::Loss_function<T> Loss,
+            NN::Optimizer<T> Opt>
+    void Model<T, Loss, Opt>::load_weights(const std::string& path) {
+        std::ifstream in(path);
+        if(!in) {
+            throw std::invalid_argument(
+                "load weights could not open" + 
+                path
+            );
+        }
+
+        const std::vector<NN::Parameter<T>*>& params {get_parameters()};
+
+        int num_parameters {};
+        in >> num_parameters;
+        if(num_parameters != static_cast<int>(params.size())) {
+            throw std::invalid_argument(
+                path + 
+                " has weights for " + 
+                std::to_string(num_parameters) + 
+                " layers while the model has " + 
+                std::to_string(static_cast<int>(params.size())) + 
+                " layers"
+            );
+        }
+
+        for(int param {}; param < num_parameters; ++param) {
+            LinAlg::Tensor<T>& W {params[param]->value};
+
+            int index {};
+            int rows {};
+            int cols {};
+            in >> index >> rows >> cols;
+
+            if(index != param) {
+                throw std::invalid_argument(
+                    "load weights expected layer " + 
+                    std::to_string(param + 1) + 
+                    " but next layer in load file is " + 
+                    std::to_string(index + 1)
+                );
+            }
+
+            if(rows != W.get_extent(0)) {
+                throw std::invalid_argument(
+                    "layer #" + 
+                    std::to_string(index + 1) + 
+                    " has " + 
+                    std::to_string(W.get_extent(0)) + 
+                    " nodes while the load file's layer has " + 
+                    std::to_string(rows) + 
+                    " nodes"
+                );
+            };
+
+            if(cols != W.get_extent(1)) {
+                throw std::invalid_argument(
+                    "layer #" + 
+                    std::to_string(index + 1) + 
+                    " has " + 
+                    std::to_string(W.get_extent(1)) + 
+                    " weights pre node while the load file's layer has " + 
+                    std::to_sting(cols) + 
+                    " weights per node"
+                );
+            }
+
+            for(int row {}; row < rows; ++row) {
+                for(int col {}; col < cols; ++col) {
+                    in >> W[{row, col}];
+                }
+            }
+        }
+
+        if(in.fail()) {
+            throw std::invalid_argument(
+                "The path is malformed or truncated " + 
+                path + 
+                " couldnt load weights"
+            );
+        }
     }
 
     template <std::floating_point T,
