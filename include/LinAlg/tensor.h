@@ -180,6 +180,8 @@ namespace LinAlg {
             /// @throws std::invalid_argument if start and end isnt a valid range in the extent of first axis
             Tensor slice(int start, int end) const;
 
+            Tensor gather(const std::vector<int>& permutation) const;
+
             /// @brief Add an extra axis with extent 1
             /// @param axis Before which axis to add the new
             /// @return A tensor-view of the unsqueezed tensor
@@ -652,6 +654,42 @@ namespace LinAlg {
 
         A.m_offset += start * m_strides[0];
         A.m_shape[0] = end - start;
+
+        return A;
+    }
+
+    template <std::floating_point T>
+    Tensor<T> Tensor<T>::gather(const std::vector<int>& to_gather) const {
+        if(to_gather.empty()) {
+            throw std::invalid_argument(
+                "Cannot gather a tensor with and empty input vector"
+            );
+        } 
+
+        for(int element : to_gather) {
+            if(element < 0 || element >= get_extent(0)) {
+                throw std::invalid_argument(
+                    "Cannot gather Tensor according to input vector since it contains " + 
+                    std::to_string(element) + 
+                    " which it lies out of the extent of the first axis for tensor of shape " + 
+                    static_cast<std::string>(*this)
+                );
+            }
+        }
+
+        std::vector<int> shape {m_shape};
+        shape[0] = static_cast<int>(to_gather.size());
+        Tensor<T> A {shape};
+
+        std::vector<int> indecies(A.get_rank(), 0);
+        std::vector<int> this_indecies(A.get_rank());
+
+        do {
+            this_indecies = indecies;
+            this_indecies[0] = to_gather[indecies[0]];
+
+            A[indecies] = (*this)[this_indecies];
+        } while(next_index(indecies, A.m_shape));
 
         return A;
     }

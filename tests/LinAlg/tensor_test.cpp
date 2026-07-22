@@ -923,3 +923,24 @@ TEST(Tensor, SliceIsView) {
 
     EXPECT_EQ(A, A_exp);
 }
+
+TEST(Tensor, Gather) {
+    LinAlg::Tensor<float> A {{5, 2}, 3};
+    A[{0, 1}] = -3;
+    A[{1, 0}] = 5;
+    A[{1, 1}] = 7;
+    A[{3, 0}] = -1;
+    A[{4, 1}] = 6;
+
+    LinAlg::Tensor<float> B {A.gather({3, 4, 1, 4, 4, 3})};
+    LinAlg::Tensor<float> B_exp {{6, 2}, 3};
+    B_exp[{0, 0}] = -1;
+    B_exp[{1, 1}] = 6;
+    B_exp[{2, 0}] = 5;
+    B_exp[{2, 1}] = 7;
+    B_exp[{3, 1}] = 6;
+    B_exp[{4, 1}] = 6;
+    B_exp[{5, 0}] = -1;
+
+    EXPECT_EQ(B, B_exp);
+}
