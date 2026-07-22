@@ -74,7 +74,7 @@ namespace Data {
     }
 
     template <std::floating_point T>
-    bool Dataloader<T>::next_batch(LinAlg::Tensor<T>& inputs, LinAlg::Tensor<T>& targets) {        
+    bool Dataloader<T>::next_batch(LinAlg::Tensor<T>& X, LinAlg::Tensor<T>& Y) {        
         if(m_batch == get_num_batches()){
             shuffle();
             m_batch = 0;
@@ -86,8 +86,8 @@ namespace Data {
         int upper_index {std::min((m_batch + 1) * m_batch_size, static_cast<int>(m_permutation.size()))};
 
         std::vector<int> indecies(m_permutation.begin() + lower_index, m_permutation.begin() + upper_index);
-        inputs = m_inputs.gather(indecies);
-        targets = m_targets.gather(indecies);
+        X = m_inputs.gather(indecies);
+        Y = m_targets.gather(indecies);
         
         ++m_batch;
         return true;
