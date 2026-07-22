@@ -148,13 +148,19 @@ TEST(GradientCheckTest, WrongActivation) {
 }
 
 TEST(GradientCheckTest, CorrectLoss) {
-    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Correct_loss<double>>(4);
+    Rand::Random<double> random {};
+    LinAlg::Tensor<double> target {{1, 4}};
+    target.normal(random, 0, 1);
+    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Correct_loss<double>>(target);
 
     EXPECT_TRUE(result.passed);
 }
 
 TEST(GradientCheckTest, WrongLoss) {
-    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Wrong_loss<double>>(4);
+    Rand::Random<double> random {};
+    LinAlg::Tensor<double> target {{1, 4}};
+    target.normal(random, 0, 1);
+    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Wrong_loss<double>>(target);
 
     EXPECT_FALSE(result.passed);
 }

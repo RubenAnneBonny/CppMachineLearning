@@ -134,3 +134,54 @@ TEST(StdFunc, MSEMath) {
 
     EXPECT_TRUE(LinAlg::all_close<float>(grad, grad_exp, 1e-7f, 1e-7f));
 }
+
+TEST(StdFunc, SoftmaxCrossEntropyMath) {
+    LinAlg::Tensor<float> prediction {{1, 3}, 1};
+    prediction[{0, 1}] = 2;
+    prediction[{0, 2}] = 3;
+
+    LinAlg::Tensor<float> target {LinAlg::one_hot<float>(3, 0).unsqueeze()};
+
+    float e0 {std::exp(1)};
+    float e1 {std::exp(2)};
+    float e2 {std::exp(3)};
+    float sum {e0 + e1 + e2};
+    float p0 {e0 / sum};
+    float p1 {e1 / sum};
+    float p2 {e2 / sum};
+
+    float loss_exp {-std::log(p0)};
+
+    LinAlg::Tensor<float> grad_exp {{1, 3}};
+    grad_exp[{0, 0}] = p0 - 1;
+    grad_exp[{0, 1}] = p1;
+    grad_exp[{0, 2}] = p2;
+
+    float loss {Func::Softmax_cross_entropy<float>::loss(prediction, target)};
+    EXPECT_NEAR(loss, loss_exp, 1e-5f);
+
+    LinAlg::Tensor<float> grad {Func::Softmax_cross_entropy<float>::gradient(prediction, target)};
+    EXPECT_TRUE(LinAlg::all_close<float>(grad, grad_exp, 1e-5f, 1e-5f));
+}
+
+TEST(StdFunc, SoftmaxCrossEntropyStable) {
+    LinAlg::Tensor<float> big {{1, 3}, 1000};
+    big[{0, 1}] = 1001;
+    big[{0, 2}] = 1002;
+
+    LinAlg::Tensor<float> small {{1, 3}};
+    small[{0, 1}] = 1;
+    small[{0, 2}] = 2;
+
+    LinAlg::Tensor<float> target {{1, 3}};
+    target[{0, 0}] = 1;
+
+    float loss_big {Func::Softmax_cross_entropy<float>::loss(big, target)};
+    float loss_small {Func::Softmax_cross_entropy<float>::loss(small, target)};
+
+    EXPECT_NEAR(loss_big, loss_small, 1e-4f);
+
+    LinAlg::Tensor<float> grad_big {Func::Softmax_cross_entropy<float>::gradient(big, target)};
+    LinAlg::Tensor<float> grad_small {Func::Softmax_cross_entropy<float>::gradient(small, target)};
+    EXPECT_TRUE(LinAlg::all_close<float>(grad_big, grad_small, 1e-5f, 1e-5f));
+}

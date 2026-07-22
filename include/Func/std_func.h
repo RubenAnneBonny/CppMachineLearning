@@ -158,6 +158,55 @@ namespace Func{
                 return dL;
             }
     };
+
+    template <typename T>
+    class Softmax_cross_entropy {
+        public:
+            static T loss(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
+                int input_size {prediction.get_extent(1)};
+                int batches {prediction.get_extent(0)};
+
+                T loss {};
+
+                for(int b {}; b < batches; ++b) {
+                    T max_value {prediction.row(b).max()};
+                    T exp_sum {};
+                    for(int i {}; i < input_size; ++i) {
+                        exp_sum += std::exp(prediction[{b, i}] - max_value);
+                    }
+
+                    std::vector<int> class_indecies {target.row(b).unsqueeze().argmax()};
+                    class_indecies[0] = b;
+
+                    loss += -(prediction[class_indecies] - max_value) + std::log(exp_sum);
+                }
+
+                loss /= static_cast<T>(batches);
+
+                return loss;
+            }
+            
+            static LinAlg::Tensor<T> gradient(const LinAlg::Tensor<T>& raw_prediction, const LinAlg::Tensor<T>& target) {
+                int batches {raw_prediction.get_extent(0)};
+                int input_size {raw_prediction.get_extent(1)};
+
+                LinAlg::Tensor<T> prediction {{batches, input_size}};
+
+                for(int b {}; b < batches; ++b) {
+                    T max_value {raw_prediction.row(b).max()};
+                    T exp_sum {};
+                    for(int i {}; i < input_size; ++i) {
+                        exp_sum += std::exp(raw_prediction[{b, i}] - max_value);
+                    }
+
+                    for(int i {}; i < input_size; ++i) {
+                        prediction[{b, i}] = std::exp(raw_prediction[{b, i}] - max_value) / exp_sum;
+                    }
+                }
+
+                return (T{1} / static_cast<T>(batches)) * (prediction - target);
+            }
+    };
 }
 
 #endif

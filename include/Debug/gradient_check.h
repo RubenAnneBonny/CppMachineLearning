@@ -150,30 +150,47 @@ namespace Debug::GradCheck {
 
     /// @brief Numerically tests a loss function to look for flaws in gradient calculation
     /// @tparam L The loss function to test
-    /// @param input_size The size of input, don't need to be large if speed is necessary
+    /// @param sample_target A target tensor of shape (1, x)
     /// @param seed The seed to ensure reproducability
     /// @param eps Step size disturbation, error in result is O(eps^2)
     /// @param rel_tol The relative tolerance, controls the passed variable in result
     /// @return A Loss_result instance
+    /// @throws std::invalid_argument if sample_target rank isn't 2
+    /// @throws std::invalid_argument if extent of first axis of sample_target isn't 1
     template <Func::Loss_function<double> L>
-    Loss_result loss(int input_size, int seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
+    Loss_result loss(const LinAlg::Tensor<double>& sample_target, int seed = 41251, double eps = 1e-5, double rel_tol = 1e-6) {
+        if(sample_target.get_rank() != 2) {
+            throw std::invalid_argument(
+                "Cannot use target of shape " + 
+                static_cast<std::string>(sample_target) + 
+                " in gradient check, it must have rank 2"
+            );
+        }
+
+        if(sample_target.get_extent(0) != 1) {
+            throw std::invalid_argument(
+                "Cannot use target of shape " + 
+                static_cast<std::string>(sample_target) + 
+                " in gradient check, the extent of the first axis must be 1"
+            );
+        }
+        
+        int input_size {sample_target.get_extent(1)};
         LinAlg::Tensor<double> prediction {{1, input_size}};
-        LinAlg::Tensor<double> target {{1, input_size}};
         Rand::Random<double> random {seed};
 
         prediction.normal(random, 0, 1);
-        target.normal(random, 0, 1);
 
         Loss_result result;
 
         auto eval {
             [&]()
             {
-                return L::loss(prediction, target);
+                return L::loss(prediction, sample_target);
             }
         };
 
-        LinAlg::Tensor<double> analytic_grad {L::gradient(prediction, target)};
+        LinAlg::Tensor<double> analytic_grad {L::gradient(prediction, sample_target)};
         auto [rel_error, index] = Helper::max_rel_error(prediction, analytic_grad, eval, eps);
 
         result.max_rel_error = rel_error;

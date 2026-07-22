@@ -27,7 +27,17 @@ TEST(GradientCheck, Sigmoid) {
 }
 
 TEST(GradientCheck, MSE) {
-    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Func::MSE<double>>(4);
+    Rand::Random<double> random {42};
+    LinAlg::Tensor<double> target {{1, 4}};
+    target.normal(random, 0, 1);
+    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Func::MSE<double>>(target);
+
+    EXPECT_TRUE(result.passed);
+}
+
+TEST(GradientCheck, Softmax_cross_entropy) {
+    LinAlg::Tensor<double> target {LinAlg::one_hot<double>(4, 2).unsqueeze()};
+    Debug::GradCheck::Loss_result result = Debug::GradCheck::loss<Func::Softmax_cross_entropy<double>>(target);
 
     EXPECT_TRUE(result.passed);
 }

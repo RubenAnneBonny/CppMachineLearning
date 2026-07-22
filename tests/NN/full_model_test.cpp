@@ -39,7 +39,7 @@ TEST(FullModel, LinearRegression) {
 
 TEST(FullModel, ConvergenceXOR) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer_1 {2, 4};
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {4, 1};
+    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {4, 2};
     Rand::Random<float> random {42};
 
     layer_1.normal(random, 0, 1);
@@ -51,14 +51,16 @@ TEST(FullModel, ConvergenceXOR) {
     inputs[{3, 0}] = 1;
     inputs[{3, 1}] = 1;
 
-    LinAlg::Tensor<float> targets {{4, 1}};
-    targets[{1, 0}] = 1;
-    targets[{2, 0}] = 1;
+    LinAlg::Tensor<float> targets {{4, 2}};
+    targets[{0, 0}] = 1;
+    targets[{1, 1}] = 1;
+    targets[{2, 1}] = 1;
+    targets[{3, 0}] = 1;
 
-    Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01f};
+    Func::Softmax_cross_entropy<float> loss_fn {};
+    NN::Gradient_descent<float> opt {0.1f};
 
-    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
+    NN::Model<float, Func::Softmax_cross_entropy<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
     model.add_layer(layer_1);
     model.add_layer(layer_2);
@@ -68,15 +70,10 @@ TEST(FullModel, ConvergenceXOR) {
     EXPECT_LT(losses.back(), 0.05f);
 
     for(int i {}; i < 4; ++i) {
-        float pred {model.forward_pass(inputs.row(i).unsqueeze())[{0, 0}]};
+        int pred {model.forward_pass(inputs.row(i).unsqueeze()).argmax()[1]};
 
-        float element {targets[{i, 0}]};
+        int expected {targets.row(i).unsqueeze().argmax()[1]};
 
-        if(std::abs(pred) < std::abs(pred - 1)) {
-            EXPECT_EQ(element, 0);
-        }
-        else {
-            EXPECT_EQ(element, 1);
-        }
+        EXPECT_EQ(pred, expected);
     }
 }
