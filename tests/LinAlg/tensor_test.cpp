@@ -944,3 +944,17 @@ TEST(Tensor, Gather) {
 
     EXPECT_EQ(B, B_exp);
 }
+
+TEST(Tensor, GatherEmptyThrows) {
+    LinAlg::Tensor<float> A {{5, 2}, 3};
+
+    EXPECT_THROW(A.gather({}), std::invalid_argument);
+}
+
+TEST(Tensor, GatherIndexOutOfBoundsThrows) {
+    LinAlg::Tensor<float> A {{5, 2}, 3};
+
+    EXPECT_THROW(A.gather({-1, 2, 3}), std::invalid_argument);
+    EXPECT_THROW(A.gather({1, 2, -1}), std::invalid_argument);
+    EXPECT_THROW(A.gather({1, 5, 3}), std::invalid_argument);
+}

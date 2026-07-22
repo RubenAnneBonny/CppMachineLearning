@@ -91,10 +91,6 @@ TEST(Model, ForwardWrongShapeThrows) {
     model.add_layer(layer);
     model.init();
 
-    LinAlg::Tensor<float> X {{2, 2}, 1};
-
-    EXPECT_THROW(model.forward_pass(X), std::invalid_argument);
-
     LinAlg::Tensor<float> Y {{1, 3}, 1};
 
     EXPECT_THROW(model.forward_pass(Y), std::invalid_argument);
@@ -137,10 +133,6 @@ TEST(Model, CalculateLossWrongTargteShapeThrows) {
     LinAlg::Tensor<float> X {{1, 2}, 1};
     model.forward_pass(X);
 
-    LinAlg::Tensor<float> target_1{{2, 2}, 1};
-
-    EXPECT_THROW(model.calculate_loss(target_1), std::invalid_argument);
-
     LinAlg::Tensor<float> target_2 {{1, 3}, 1};
 
     EXPECT_THROW(model.calculate_loss(target_2), std::invalid_argument);
@@ -182,10 +174,6 @@ TEST(Model, BackpropagationWrongTargetShapeThrows) {
 
     LinAlg::Tensor<float> X {{1, 2}, 1};
     model.forward_pass(X);
-
-    LinAlg::Tensor<float> target_1 {{2, 2}, 1};
-
-    EXPECT_THROW(model.backpropagation(target_1), std::invalid_argument);
 
     LinAlg::Tensor<float> target_2 {{1, 3}, 1};
 
@@ -336,7 +324,7 @@ TEST(Model, TrainLoopReturnsPerEpochLosses) {
     LinAlg::Tensor<float> input {{5, 2}, 1};
     LinAlg::Tensor<float> target {{5, 2}, 9};
 
-    std::vector<float> losses {model.train_loop(input, target, 20)};
+    std::vector<float> losses {model.train_loop(input, target, random, 20, 1)};
 
     EXPECT_EQ(static_cast<int>(losses.size()), 20);
 
@@ -387,7 +375,7 @@ TEST(Model, Deterministic) {
         LinAlg::Tensor<float> input {{5, 2}, 1};
         LinAlg::Tensor<float> target {{5, 2}, 9};
 
-        losses.push_back(model.train_loop(input, target, 10));
+        losses.push_back(model.train_loop(input, target, random, 10, 1));
     }
 
     for(int i {}; i < 10; ++i) {

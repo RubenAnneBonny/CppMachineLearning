@@ -28,7 +28,7 @@ TEST(FullModel, LinearRegression) {
         targets[{i, 0}] = 2 * i + 1;
     }
 
-    model.train_loop(inputs, targets, 200);
+    model.train_loop(inputs, targets, random, 200, 2);
 
     LinAlg::Tensor<float> w_exp {{1, 2}};
     w_exp[{0, 0}] = 2;
@@ -66,7 +66,7 @@ TEST(FullModel, ConvergenceXOR) {
     model.add_layer(layer_2);
     model.init();
 
-    std::vector<float> losses = model.train_loop(inputs, targets, 500);
+    std::vector<float> losses = model.train_loop(inputs, targets, random, 500, 1);
     EXPECT_LT(losses.back(), 0.05f);
 
     for(int i {}; i < 4; ++i) {

@@ -6,6 +6,7 @@
 #include <NN/parameter.h>
 #include <NN/optimizer.h>
 #include <Func/function.h>
+#include <Data/dataloader.h>
 #include <vector>
 #include <NN/layer_base.h>
 #include <string>
@@ -30,11 +31,11 @@ namespace NN {
             bool m_initialized {false};
 
             void check_target_shape(const LinAlg::Tensor<T>& target) const {
-                if(target.get_extent(0) != 1 || target.get_extent(1) != m_layers.back()->get_nodes()) {
+                if(target.get_extent(1) != m_layers.back()->get_nodes()) {
                     throw std::invalid_argument(
-                        "Target must match last layer shape (1, " + 
+                        "Extent of second axis of target must match last layer shape " + 
                         std::to_string(m_layers.back()->get_nodes()) + 
-                        ") while target shape is " + 
+                        " while target shape is " + 
                         static_cast<std::string>(target)
                     );
                 }
@@ -80,7 +81,7 @@ namespace NN {
             /// @param X The input tensor to the network
             /// @return The networks raw prediction
             /// @throws std::invalid_argument if network hasn't been initialized with init()
-            /// @throws std::invalid_argument if the shape of X don't match the first layer
+            /// @throws std::invalid_argument if the extent of the second axis of X don't match the first layer
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X);
 
             /// @brief Calculates all the intermediate outputs of each layer 
@@ -132,7 +133,7 @@ namespace NN {
             /// @param targets The target tensor of shape (batch, output size)
             /// @param epochs The number of epochs to train
             /// @return A vector of losses
-            std::vector<T> train_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int epochs);
+            std::vector<T> train_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, Rand::Random<T>& random, int epochs, int batch_size);
 
             /// @brief A testing loop for the neural network
             /// @param inputs The input tensor of shape (batch, input size)
@@ -279,7 +280,7 @@ namespace NN {
             );
         }
 
-        if(out.get_extent(0) != 1 || out.get_extent(1) != m_layers[0]->get_input_nodes()) {
+        if(out.get_extent(1) != m_layers[0]->get_input_nodes()) {
             throw std::invalid_argument(
                 "Input tensor to forward pass must be size (1, " + 
                 std::to_string(m_layers[0]->get_input_nodes()) + 
@@ -499,18 +500,20 @@ namespace NN {
     template <std::floating_point T,
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
-    std::vector<T> Model<T, Loss, Opt>::train_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int epochs) {
+    std::vector<T> Model<T, Loss, Opt>::train_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, Rand::Random<T>& random, int epochs, int batch_size) {
         std::vector<T> losses {};
         losses.reserve(static_cast<std::size_t>(epochs));
         int num_inputs {inputs.get_extent(0)};
 
+        Data::Dataloader<T> loader {random, inputs, targets};
+
         for(int epoch {}; epoch < epochs; ++epoch) {
             T epoch_loss {};
 
-            for(int i {}; i < num_inputs; ++i) {
-                LinAlg::Tensor<T> input {inputs.row(i).unsqueeze()};
-                LinAlg::Tensor<T> target {targets.row(i).unsqueeze()};
+            LinAlg::Tensor<T> input {{1}};
+            LinAlg::Tensor<T> target {{1}};
 
+            while(loader.next_batch(input, target, batch_size)) {
                 forward_pass(input);
                 epoch_loss += calculate_loss(target);
                 zero_grad();
@@ -518,7 +521,7 @@ namespace NN {
                 optimizer_step();
             }
 
-            losses.push_back(epoch_loss / static_cast<T>(num_inputs));
+            losses.push_back(epoch_loss / loader.get_num_batches(batch_size));
         }
 
         return losses;

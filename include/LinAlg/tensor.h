@@ -180,7 +180,12 @@ namespace LinAlg {
             /// @throws std::invalid_argument if start and end isnt a valid range in the extent of first axis
             Tensor slice(int start, int end) const;
 
-            Tensor gather(const std::vector<int>& permutation) const;
+            /// @brief Constructs a new tensor, where the rows are the rows corresponding to to_gather
+            /// @param to_gather The indecies of the rows to gather
+            /// @return A tensor of shape (to_gather size, ...the same shapes as this)
+            /// @throws std::invalid_argument if to_gather is empty
+            /// @throws std::invalid_argument if any element in to_gather is outside extent of first axis
+            Tensor gather(const std::vector<int>& to_gather) const;
 
             /// @brief Add an extra axis with extent 1
             /// @param axis Before which axis to add the new
