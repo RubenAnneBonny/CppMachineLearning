@@ -142,9 +142,9 @@ TEST(StdFunc, SoftmaxCrossEntropyMath) {
 
     LinAlg::Tensor<float> target {LinAlg::one_hot<float>(3, 0).unsqueeze()};
 
-    float e0 {std::exp(1)};
-    float e1 {std::exp(2)};
-    float e2 {std::exp(3)};
+    float e0 {std::exp(1.0f)};
+    float e1 {std::exp(2.0f)};
+    float e2 {std::exp(3.0f)};
     float sum {e0 + e1 + e2};
     float p0 {e0 / sum};
     float p1 {e1 / sum};
