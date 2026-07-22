@@ -89,7 +89,7 @@ namespace Func{
             }
     
             static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
-                LinAlg::Tensor<T> grad {{1, X.get_extent(1)}, 1};
+                LinAlg::Tensor<T> grad {{X.get_extent(0), X.get_extent(1)}, 1};
 
                 return grad;
             }
@@ -125,23 +125,34 @@ namespace Func{
             static T loss(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
                 T loss {};
                 int input_size {prediction.get_extent(1)};
+                int batches {prediction.get_extent(0)};
 
-                for(int i {}; i < input_size; ++i) {
-                    T diff = prediction[{0, i}] - target[{0, i}];
-                    loss += diff * diff;
-                }    
+                for(int b {}; b < batches; ++b) {
+                    T batch_loss {};
 
-                loss /= static_cast<T>(input_size);
+                    for(int i {}; i < input_size; ++i) {
+                        T diff = prediction[{0, i}] - target[{0, i}];
+                        batch_loss += diff * diff;
+                    }  
+
+                    batch_loss /= static_cast<T>(input_size);
+                    loss += batch_loss;
+                }  
+
+                loss /= static_cast<T>(batches);
                 
                 return loss;
             }
     
             static LinAlg::Tensor<T> gradient(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
                 int input_size {prediction.get_extent(1)};
-                LinAlg::Tensor<T> dL {{1, input_size}};
+                int batches {prediction.get_extent(0)};
+                LinAlg::Tensor<T> dL {{batches, input_size}};
 
-                for(int i {}; i < input_size; ++i) {
-                    dL[{0, i}] = 2 * (prediction[{0, i}] - target[{0, i}]) / static_cast<T>(input_size);
+                for(int b {}; b < batches; ++b) {
+                    for(int i {}; i < input_size; ++i) {
+                        dL[{b, i}] = 2 * (prediction[{b, i}] - target[{b, i}]) / static_cast<T>(input_size);
+                    }
                 }
 
                 return dL;

@@ -51,13 +51,13 @@ namespace NN {
             }
 
             /// @brief Performs a forward pass through the layer
-            /// @param X Input tensor of shape (1, input nodes)
-            /// @return Tensor of shape (1, nodes)
+            /// @param X Input tensor of shape (Batch, input nodes)
+            /// @return Tensor of shape (Batch, nodes)
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X);
 
             /// @brief Performs backpropagation through the layer
-            /// @param dY Backpropagation tensor of shape (1, nodes) from next layer
-            /// @return Tensor of shape (1, input size)
+            /// @param dY Backpropagation tensor of shape (Batch, nodes) from next layer
+            /// @return Tensor of shape (Batch, input size)
             LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY);    
     };
 
@@ -76,10 +76,15 @@ namespace NN {
               Func::Function<T> F,
               Func::Activation_function<T> A>
     LinAlg::Tensor<T> Layer<T, F, A>::forward_pass(const LinAlg::Tensor<T>& X) {
-        LinAlg::Tensor<T> Y {{1, m_nodes}};
+        int batches {X.get_extent(0)};
+        LinAlg::Tensor<T> Y {{batches, m_nodes}};
 
-        for(int i {}; i < m_nodes; ++i) {
-            Y[{0, i}] = F::function(X, weights.value.row(i).unsqueeze());
+        for(int b {}; b < batches; ++b) {
+            LinAlg::Tensor<T> X_b {X.row(b).unsqueeze()};
+
+            for(int i {}; i < m_nodes; ++i) {
+                Y[{b, i}] = F::function(X_b, weights.value.row(i).unsqueeze());
+            }
         }
 
         m_store_Y = Y;
@@ -92,29 +97,32 @@ namespace NN {
               Func::Function<T> F,
               Func::Activation_function<T> A>
     LinAlg::Tensor<T> Layer<T, F, A>::backward_pass(const LinAlg::Tensor<T>& dY) {
+        int batches {dY.get_extent(0)};
         LinAlg::Tensor<T> dZ {LinAlg::pairwise_mult(dY, A::derivate(m_store_Y))};
 
         int num_weights {F::num_weights(m_input_nodes)};
 
-        for(int i {}; i < m_nodes; ++i) {
-            LinAlg::Tensor<T> dW_i {F::weights_grad(m_store_X, weights.value.row(i).unsqueeze())};
+        LinAlg::Tensor<T> dX {{batches, m_input_nodes}};
 
-            for(int j {}; j < num_weights; ++j) {
-                weights.grad[{i, j}] += dZ[{0, i}] * dW_i[{0, j}];
+        for(int b {}; b < batches; ++b) {
+            LinAlg::Tensor<T> X_b {m_store_X.row(b).unsqueeze()};
+
+            for(int i {}; i < m_nodes; ++i) {
+                LinAlg::Tensor<T> W_i {weights.value.row(i).unsqueeze()};
+
+                LinAlg::Tensor<T> dW_i {F::weights_grad(X_b, W_i)};
+                for(int j {}; j < num_weights; ++j) {
+                    weights.grad[{i, j}] += dZ[{b, i}] * dW_i[{0, j}];
+                }
+
+                LinAlg::Tensor<T> dF {F::function_grad(X_b, W_i)};
+                for(int j {}; j < m_input_nodes; ++j) {
+                    dX[{b, j}] += dZ[{b, i}] * dF[{0, j}];
+                }
             }
         }
 
-        LinAlg::Tensor<T> Y {{m_nodes, m_input_nodes}};
-
-        for(int i {}; i < m_nodes; ++i) {
-            LinAlg::Tensor<T> dF {F::function_grad(m_store_X, weights.value.row(i).unsqueeze())};
-
-            for(int j {}; j < m_input_nodes; ++j) {
-                Y[{i, j}] = dF[{0, j}];
-            }
-        }
-
-        return dZ * Y;
+        return dX;
     }
 }  
 

@@ -72,31 +72,51 @@ namespace LinAlg {
             }
 
             static void batching(Tensor& A_view, Tensor& B_view, int not_matching = 0) {
+                std::string a_str {static_cast<std::string>(A_view)};
+                std::string b_str {static_cast<std::string>(B_view)};
+
                 int A_rank {A_view.get_rank()};
                 int B_rank {B_view.get_rank()};
-                
-                Tensor<T>& max_ref {A_rank > B_rank ? A_view : B_view};
-                Tensor<T>& min_ref {A_rank > B_rank ? B_view : A_view};
 
-                int max_rank {max_ref.get_rank()};
-                int min_rank {min_ref.get_rank()};
+                int max_rank {A_rank > B_rank ? A_rank : B_rank};
+                int min_rank {A_rank < B_rank ? A_rank : B_rank};
 
-                for(int i {min_rank - 1 - not_matching}, j {max_rank - 1 - not_matching}; i >= 0; --i, --j) {
-                    if(max_ref.m_shape[j] != min_ref.m_shape[i]){
+                {
+                    Tensor<T>& min_ref {A_rank > B_rank ? B_view : A_view};
+                    min_ref.m_shape.insert(min_ref.m_shape.begin(), max_rank - min_rank, 1);
+                    min_ref.m_strides.insert(min_ref.m_strides.begin(), max_rank - min_rank, 0);
+                }
+
+                for(int axis {}; axis < max_rank - not_matching; ++axis) {
+                    int a_extent {A_view.m_shape[axis]};
+                    int b_extent {B_view.m_shape[axis]};
+
+                    if(a_extent == b_extent) {
+                        continue;
+                    }
+                    else if(a_extent == 1) {
+                        A_view.m_strides[axis] = 0;
+                        A_view.m_shape[axis] = b_extent;
+                    }
+                    else if(b_extent == 1) {
+                        B_view.m_strides[axis] = 0;
+                        B_view.m_shape[axis] = a_extent;
+                    }
+                    else {
                         throw std::invalid_argument(
-                            "Cannot perform a batching on two tensors of shape" + 
-                            static_cast<std::string>(A_view) + 
+                            "Cannot braodcast tensors of shape " + 
+                            a_str + 
                             " and " + 
-                            static_cast<std::string>(B_view) + 
-                            " the extents of their existing batch axises must match"
+                            b_str + 
+                            " since axis " + 
+                            std::to_string(axis) + 
+                            " has incompatible extents " + 
+                            std::to_string(a_extent) + 
+                            " and " + 
+                            std::to_string(b_extent)
                         );
                     }
                 }
-
-                min_ref.m_strides.insert(min_ref.m_strides.begin(), max_rank - min_rank, 0);
-                min_ref.m_shape.insert(min_ref.m_shape.begin(),
-                                       max_ref.m_shape.begin(),
-                                       max_ref.m_shape.begin() + max_rank - min_rank);
             }
 
         public:

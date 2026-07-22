@@ -73,6 +73,14 @@ TEST(Tensor, Batching) {
     C_exp[{1, 0, 0}] = -1;
 
     EXPECT_EQ(C, C_exp);
+
+    LinAlg::Tensor<float> D {{1, 3, 1}, 1};
+    D[{0, 1, 0}] = -4;
+    D[{0, 2, 0}] = 2;
+
+    LinAlg::Tensor<float> E {A * D};
+
+    EXPECT_EQ(E, C_exp);
 }
 
 TEST(Tensor, PairwiseMultiplication) {
