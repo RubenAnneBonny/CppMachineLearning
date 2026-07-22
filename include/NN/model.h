@@ -475,7 +475,7 @@ namespace NN {
                     " has " + 
                     std::to_string(W.get_extent(1)) + 
                     " weights pre node while the load file's layer has " + 
-                    std::to_sting(cols) + 
+                    std::to_string(cols) + 
                     " weights per node"
                 );
             }
