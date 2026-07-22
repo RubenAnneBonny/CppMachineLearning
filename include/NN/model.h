@@ -505,7 +505,7 @@ namespace NN {
         losses.reserve(static_cast<std::size_t>(epochs));
         int num_inputs {inputs.get_extent(0)};
 
-        Data::Dataloader<T> loader {random, inputs, targets};
+        Data::Dataloader<T> loader {random, inputs, targets, batch_size};
 
         for(int epoch {}; epoch < epochs; ++epoch) {
             T epoch_loss {};
@@ -513,7 +513,7 @@ namespace NN {
             LinAlg::Tensor<T> input {{1}};
             LinAlg::Tensor<T> target {{1}};
 
-            while(loader.next_batch(input, target, batch_size)) {
+            while(loader.next_batch(input, target)) {
                 forward_pass(input);
                 epoch_loss += calculate_loss(target);
                 zero_grad();
@@ -521,7 +521,7 @@ namespace NN {
                 optimizer_step();
             }
 
-            losses.push_back(epoch_loss / loader.get_num_batches(batch_size));
+            losses.push_back(epoch_loss / loader.get_num_batches());
         }
 
         return losses;

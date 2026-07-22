@@ -131,7 +131,7 @@ namespace Func{
                     T batch_loss {};
 
                     for(int i {}; i < input_size; ++i) {
-                        T diff = prediction[{0, i}] - target[{0, i}];
+                        T diff = prediction[{b, i}] - target[{b, i}];
                         batch_loss += diff * diff;
                     }  
 
@@ -151,7 +151,7 @@ namespace Func{
 
                 for(int b {}; b < batches; ++b) {
                     for(int i {}; i < input_size; ++i) {
-                        dL[{b, i}] = 2 * (prediction[{b, i}] - target[{b, i}]) / static_cast<T>(input_size);
+                        dL[{b, i}] = 2 * (prediction[{b, i}] - target[{b, i}]) / static_cast<T>(input_size * batches);
                     }
                 }
 
