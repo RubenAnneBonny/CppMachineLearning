@@ -65,6 +65,7 @@ namespace NN {
 
             /// @brief Must run a init before training, initializes the network
             /// @throws std::invalid_argument if no layers were added before init
+            /// @throws std::invalid_argument if model was already initialized
             void init();
 
             /// @brief Must run a init before training, initializes the network with random weights
@@ -74,6 +75,7 @@ namespace NN {
             /// @param max_iters Maximum number of iterations to optimize for stddev
             /// @param tol The maximum tolerance for differnce between stddev from output from layer and target_stddev
             /// @throws std::invalid_argument if no layers were added before init
+            /// @throws std::invalid_argument if model was already initialized
             /// @throws std::invalid_argument if the extent of the first axis of samples is 0
             void init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev = 1, int max_iters = 5, T tol = 0.01, T damping = 0.9);
 
@@ -193,6 +195,12 @@ namespace NN {
             );
         } 
 
+        if(m_initialized) {
+            throw std::invalid_argument(
+                "Cant re-initialize a model"
+            );
+        }
+
         m_initialized = true;
 
         m_optimizer.init(m_parameters);
@@ -202,11 +210,7 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
     void Model<T, Loss, Opt>::init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev, int max_iters, T tol, T damping) {
-        if(m_layers.empty()) {
-            throw std::invalid_argument(
-                "At least one layer must be added to model before init"
-            );
-        }
+        init();
 
         int num_samples = samples.get_extent(0);
 

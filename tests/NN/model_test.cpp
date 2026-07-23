@@ -4,6 +4,7 @@
 #include <LinAlg/tensor.h>
 #include <Rand/random.h>
 #include <NN/std_opt.h>
+#include <filesystem>
 #include <gtest/gtest.h>
 
 TEST(Model, AddLayerSizeMismatchThrows) {
@@ -551,4 +552,122 @@ TEST(Model, RandomInitCorrectness) {
     float stddev {calculate_stddev(values)};
 
     EXPECT_NEAR(stddev, std::sqrt(1.0f / 64), 0.02f);
+}
+
+TEST(Model, AddLayerDeepCopies) {
+    NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> layer {2, 3};
+    Rand::Random<float> random {42};
+    layer.normal(random, 0, 1);
+    layer.weights.grad.normal(random, 0, 1);
+
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {{}, {0.1f}};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> before_value {model.get_parameters()[0]->value.copy()};
+    LinAlg::Tensor<float> before_grad {model.get_parameters()[0]->grad.copy()};
+
+    layer.normal(random, 0, 1);
+    layer.weights.grad.normal(random, 0, 1);
+
+    EXPECT_EQ(model.get_parameters()[0]->value, before_value);
+    EXPECT_EQ(model.get_parameters()[0]->grad, before_grad);
+}
+
+TEST(Model, SavingLoading) {
+    const std::filesystem::path dir {"saving_loading_tests"};
+    std::filesystem::create_directories(dir);
+    const std::filesystem::path path {dir / "SavingLoading.weights"};
+
+    NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> layer {2, 3};
+
+    NN::Adam<float> opt {};
+    Func::MSE<float> loss_fn {};
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {loss_fn, opt};
+
+    Rand::Random<float> random {};
+
+    LinAlg::Tensor<float> samples {{20, 2}};
+    samples.normal(random, 0, 1);
+
+    model.add_layer(layer);
+    model.init(random, samples);
+
+    model.save_weights(path.string());
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {loss_fn, opt};    
+
+    model_load.add_layer(layer);
+    model_load.init(random, samples);
+
+    model_load.load_weights(path.string());
+
+    EXPECT_EQ(model.get_parameters()[0]->value, model_load.get_parameters()[0]->value);
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(Model, SavingToUnopenableThrows) {
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {{}, {}};
+    model.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model.init();
+
+    EXPECT_THROW(model.save_weights("nonexistant_directory/Save.weights"), std::invalid_argument);
+}
+
+TEST(Model, LoadingNumLayerDiffThrows) {
+    const std::filesystem::path dir {"saving_loading_tests"};
+    std::filesystem::create_directories(dir);
+    const std::filesystem::path path {dir / "LoadingNumLayerDiffThrows.weights"};
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {{}, {}};
+    model_save.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model_save.init();
+
+    model_save.save_weights(path.string());
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {{}, {}};
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {3, 3});
+    model_load.init();
+
+    EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(Model, LoadingDiffWeightsShapeThrows) {
+    const std::filesystem::path dir {"saving_loading_tests"};
+    std::filesystem::create_directories(dir);
+    const std::filesystem::path path {dir / "SavingLoading.weights"};
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {{}, {}};
+    model_save.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model_save.init();
+
+    model_save.save_weights(path.string());
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {{}, {}};
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 4});
+    model_load.init();
+
+    EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(Model, LoadTruncatedFileThrows) {
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {{}, {}};
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 4});
+    model_load.init();
+
+    const std::filesystem::path path {"truncated.weights"};
+    {
+        std::ofstream out {path};
+        out << "1\n0 3 3\n1.0 2.0\n";
+    }
+
+    EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
+    std::filesystem::remove(path);
 }

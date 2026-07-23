@@ -15,6 +15,11 @@ namespace NN {
                 , grad {shape}
             {}
 
+            Parameter(const Parameter& other) 
+                : value {other.value.copy()}
+                , grad {other.grad.copy()}
+            {}
+
             void uniform(Rand::Random<T>& random, T low, T high) {
                 value.uniform(random, low, high);
             }
@@ -26,6 +31,15 @@ namespace NN {
             void zero_grad() {
                 grad.set_all_elements(0);
             }
+
+            Parameter& operator=(const Parameter& other) {
+                value = other.value.copy();
+                grad = other.grad.copy();
+                return *this;
+            }
+
+            Parameter(Parameter&&) = default;
+            Parameter& operator=(Parameter&&) = default;
     };
 }
 
