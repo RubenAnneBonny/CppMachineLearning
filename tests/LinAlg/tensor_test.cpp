@@ -46,7 +46,7 @@ TEST(Tensor, MatrixMultiplication) {
     B[{1, 0}] = -4;
     B[{2, 0}] = 2;
 
-    LinAlg::Tensor<float> C {A * B};
+    LinAlg::Tensor<float> C {LinAlg::matmul<float>(A, B)};
     LinAlg::Tensor<float> C_exp {{2, 1}, -5};
 
     C_exp[{1, 0}] = 3;
@@ -65,7 +65,7 @@ TEST(Tensor, Batching) {
     B[{1, 0}] = -4;
     B[{2, 0}] = 2;
 
-    LinAlg::Tensor<float> C {A * B};
+    LinAlg::Tensor<float> C {LinAlg::matmul<float>(A, B)};
     LinAlg::Tensor<float> C_exp {{2, 2, 1}};
 
     C_exp[{0, 0, 0}] = -5;
@@ -78,7 +78,7 @@ TEST(Tensor, Batching) {
     D[{0, 1, 0}] = -4;
     D[{0, 2, 0}] = 2;
 
-    LinAlg::Tensor<float> E {A * D};
+    LinAlg::Tensor<float> E {LinAlg::matmul<float>(A, D)};
 
     EXPECT_EQ(E, C_exp);
 }
@@ -345,6 +345,63 @@ TEST(Tensor, Argmax) {
     EXPECT_EQ(C.argmax(), std::vector<int>({0, 0, 0}));
 }
 
+TEST(Tensor, MultiplicationTensorTensor) {
+    LinAlg::Tensor<float> A {{2, 2}, 2};
+    A[{0, 1}] = 3;
+
+    LinAlg::Tensor<float> B {{2, 1}, 4};
+    B[{1, 0}] = -1;
+
+    LinAlg::Tensor<float> C {A * B};
+    LinAlg::Tensor<float> C_exp {{2, 2}, 8};
+    C_exp[{0, 1}] = 12;
+    C_exp[{1, 0}] = -2;
+    C_exp[{1, 1}] = -2;
+
+    EXPECT_EQ(C, C_exp);
+}
+
+TEST(Tensor, MultiplicationIncompatibleExtentsThrows) {
+    LinAlg::Tensor<float> A {{2, 3}};
+    LinAlg::Tensor<float> B {{3, 2}};
+
+    EXPECT_THROW(A * B, std::invalid_argument);
+}
+
+TEST(Tensor, MultAssignTensorMutatesSharedStorage) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    A[{0, 1}] = 3;
+    A[{1, 1}] = 8;
+
+    LinAlg::Tensor<float> B {{2, 2}, 2};
+    B[{0, 0}] = -1;
+
+    LinAlg::Tensor<float> A_view {A};
+
+    A *= B;
+
+    LinAlg::Tensor<float> A_view_exp {{2, 2}, 2};
+    A_view_exp[{0, 0}] = -1;
+    A_view_exp[{0, 1}] = 6;
+    A_view_exp[{1, 1}] = 16;
+
+    EXPECT_EQ(A_view, A_view_exp);
+}
+
+TEST(Tensor, MultAssignShapeChangeThrows) {
+    LinAlg::Tensor<float> A {{2, 2}, 1};
+    LinAlg::Tensor<float> B {{2, 2, 2}, 1};
+
+    EXPECT_THROW(A *= B, std::invalid_argument);
+}
+
+TEST(Tensor, MultSignIsNotMatmul) {
+    LinAlg::Tensor<float> A {{2, 2}, 2};
+    LinAlg::Tensor<float> B {{2, 2}, 3};
+
+    EXPECT_NE(A * B, LinAlg::matmul<float>(A, B));
+}
+
 TEST(Tensor, PairwiseSubtraction) {
     LinAlg::Tensor<float> A {{2, 3}, 1};
     A[{0, 1}] = 3;
@@ -496,27 +553,6 @@ TEST(Tensor, SubAssignMutatesSharedStorage) {
     EXPECT_EQ(A_view, A_view_exp);
 }
 
-TEST(Tensor, MatMulAssignMutatesSharedStorage) {
-    LinAlg::Tensor<float> A {{2, 2}, 1};
-    A[{0, 1}] = 3;
-    A[{1, 1}] = 8;
-
-    LinAlg::Tensor<float> B {{2, 2}, 1};
-    B[{0, 0}] = -1;
-    B[{1, 1}] = 3;
-
-    LinAlg::Tensor<float> A_view {A};
-
-    A *= B;
-
-    LinAlg::Tensor<float> A_view_exp {{2, 2}, 2};
-    A_view_exp[{0, 1}] = 10;
-    A_view_exp[{1, 0}] = 7;
-    A_view_exp[{1, 1}] = 25;
-
-    EXPECT_EQ(A_view, A_view_exp);
-}
-
 TEST(Tensor, MultAssignMutatesSharedStorage) {
     LinAlg::Tensor<float> A {{2, 2}, 1};
     A[{0, 1}] = 3;
@@ -531,37 +567,6 @@ TEST(Tensor, MultAssignMutatesSharedStorage) {
     A_view_exp[{1, 1}] = 24;
 
     EXPECT_EQ(A_view, A_view_exp);
-}
-
-TEST(Tensor, MatMulAssign) {
-    LinAlg::Tensor<float> A {{2, 2}, 1};
-    A[{0, 1}] = 3;
-    A[{1, 1}] = 8;
-
-    LinAlg::Tensor<float> B {{2, 2}, 1};
-    B[{0, 0}] = -1;
-    B[{1, 1}] = 3;
-
-    A *= B;
-
-    LinAlg::Tensor<float> A_exp {{2, 2}, 2};
-    A_exp[{0, 1}] = 10;
-    A_exp[{1, 0}] = 7;
-    A_exp[{1, 1}] = 25;
-
-    EXPECT_EQ(A, A_exp);
-}
-
-TEST(Tensor, MatMulAssignShapeChangeThrows) {
-    LinAlg::Tensor<float> A {{2, 2}, 1};
-    A[{0, 1}] = 3;
-    A[{1, 1}] = 8;
-
-    LinAlg::Tensor<float> B {{2, 2, 2}, 1};
-    B[{0, 0, 0}] = -1;
-    B[{1, 1, 1}] = 3;
-
-    EXPECT_THROW(A *= B, std::invalid_argument);
 }
 
 TEST(Tensor, AddAssignShapeChangeThrows) {
@@ -716,7 +721,7 @@ TEST(Tensor, MatmulTransposedView) {
     LinAlg::Tensor<float> B {{2, 2}, 1};
     B[{1, 0}] = 4;
 
-    LinAlg::Tensor<float> C {A * B.t()};
+    LinAlg::Tensor<float> C {LinAlg::matmul<float>(A, B.t())};
 
     LinAlg::Tensor<float> C_exp {{2, 2}, 6};
     C_exp[{0, 1}] = 12;
@@ -730,21 +735,21 @@ TEST(Tensor, MatmulRankLessThanTwoThrows) {
     LinAlg::Tensor<float> A {{2}};
     LinAlg::Tensor<float> B {{2, 2}};
 
-    EXPECT_THROW(A * B, std::invalid_argument);
+    EXPECT_THROW(LinAlg::matmul<float>(A, B), std::invalid_argument);
 }
 
 TEST(Tensor, MatmulInnerDimMismatchThrows) {
     LinAlg::Tensor<float> A {{2, 2}};
     LinAlg::Tensor<float> B {{3, 2}};
 
-    EXPECT_THROW(A * B, std::invalid_argument);
+    EXPECT_THROW(LinAlg::matmul<float>(A, B), std::invalid_argument);
 }
 
 TEST(Tensor, MatmulBatchAxisMismatchThrows) {
     LinAlg::Tensor<float> A {{2, 2, 2}};
     LinAlg::Tensor<float> B {{3, 2, 2}};
 
-    EXPECT_THROW(A * B, std::invalid_argument);
+    EXPECT_THROW(LinAlg::matmul<float>(A, B), std::invalid_argument);
 }
 
 TEST(Tensor, GetExtentAxisOutOfRangeThrows) {

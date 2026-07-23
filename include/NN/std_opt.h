@@ -97,7 +97,7 @@ namespace NN {
                         }
                     };
 
-                    m_parameters[i]->value = m_parameters[i]->value - LinAlg::pairwise<T>(first_hat, second_hat, step_size);
+                    m_parameters[i]->value -= LinAlg::pairwise<T>(first_hat, second_hat, step_size);
                 }
             }
     };

@@ -1,6 +1,13 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
+/*
+    Copy construction and copy assignment produces a view sharing storage, copy() is deep copy
+    
+    These methods return views: {row, slice, unsqueeze, squeeze, t}
+    These methods return fresh storage: {copy, gather, pairwise, operator+ - *}
+*/
+
 #include <memory>
 #include <vector>
 #include <Rand/random.h>
@@ -32,6 +39,9 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T> pairwise_sub(const Tensor<T>& A, const Tensor<T>& B);
+
+    template <std::floating_point T>
+    Tensor<T> matmul(const Tensor<T>& A, const Tensor<T>& B);
 
     template <std::floating_point T>
     class Tensor {
@@ -257,93 +267,6 @@ namespace LinAlg {
             const T& operator[](const std::vector<int>& indecies) const;
             T& operator[](const std::vector<int>& indecies);
 
-            /// @brief Performs matrix multiplication, uses batching
-            /// @param A The first tensor
-            /// @param B The second tensor
-            /// @return The result of the operation
-            /// @throws std::invalid_argument if batching cannot be performed
-            /// @throws std::invalid_argument if the rank of either A or B is less than 2
-            /// @throws std::invalid_argument if the extent of the last axis of A dont match the extent of next to last axis of B
-            friend Tensor operator*(const Tensor& A, const Tensor& B) {
-                Tensor<T> A_view {A};
-                Tensor<T> B_view {B};
-
-                int A_rank {A.get_rank()};
-                int B_rank {B.get_rank()};
-
-                int max_rank {A_rank > B_rank ? A_rank : B_rank};
-                int min_rank {A_rank > B_rank ? B_rank : A_rank};
-
-                if(min_rank < 2){
-                    throw std::invalid_argument(
-                        "Cannot perform matrix multiplication on Tensors of shape " + 
-                        static_cast<std::string>(A) + 
-                        " and " + 
-                        static_cast<std::string>(B) +
-                        " since one of them has rank < 2"
-                    );
-                }
-
-                if(A_view.m_shape[A_rank - 1] != B_view.m_shape[B_rank - 2]){
-                    throw std::invalid_argument(
-                        "Cannot perform matrix multiplication on Tensors of shape " + 
-                        static_cast<std::string>(A) + 
-                        " and " + 
-                        static_cast<std::string>(B) + 
-                        " the extent of the last axis on A must match the extent of the next to last axis on B"
-                    );
-                }
-
-                batching(A_view, B_view, 2);
-
-                std::vector<int> shape {A_view.m_shape};
-                shape[max_rank - 1] = B_view.m_shape.back();
-                Tensor<T> C {shape};
-
-                std::vector<int> indecies(max_rank, 0);
-                std::vector<int> A_indecies(max_rank, 0);
-                std::vector<int> B_indecies(max_rank, 0);
-
-                do {
-                    for(int i {}; i < max_rank; ++i){
-                        A_indecies[i] = indecies[i];
-                        B_indecies[i] = indecies[i];
-                    }
-
-                    T sum {};
-                    for(int i {}; i < A_view.m_shape.back(); ++i){
-                        A_indecies[max_rank - 1] = i;
-                        B_indecies[max_rank - 2] = i;
-
-                        sum += A_view[A_indecies] * B_view[B_indecies];
-                    }
-
-                    C[indecies] = sum;
-                } while(next_index(indecies, C.m_shape));
-
-                return C;
-            }
-            Tensor& operator*=(const Tensor& A) {
-                Tensor<T> C {(*this) * A};
-
-                if(C.m_shape != m_shape) {
-                    throw std::invalid_argument(
-                        "Cannot perform *= between tensors of shape " + 
-                        static_cast<std::string>(*this) + 
-                        " and " + 
-                        static_cast<std::string>(A) + 
-                        " since it would change its shape"
-                    );
-                }
-
-                std::vector<int> indecies(get_rank(), 0);
-                do {
-                    (*this)[{indecies}] = C[indecies];
-                } while(next_index(indecies, m_shape));
-
-                return *this;
-            }
-
             /// @brief Checks for equality between two tensors
             /// @param A The first tensor
             /// @param B The second tensor
@@ -538,7 +461,37 @@ namespace LinAlg {
             /// @param A The first tensor
             /// @param B The second tensor
             /// @return A new tensor the result of the operation
-            /// @throws std::invalid_argument if batching cannot be
+            /// @throws std::invalid_argument if batching cannot be 
+            friend Tensor operator*(const Tensor& A, const Tensor& B) {
+                auto multiplication{
+                    [](T a, T b)
+                    {
+                        return a * b;
+                    }
+                };
+
+                return pairwise(A, B, multiplication);
+            }
+            Tensor& operator*=(const Tensor& A) {
+                Tensor<T> C {(*this) * A};
+
+                if(C.m_shape != m_shape) {
+                    throw std::invalid_argument(
+                        "Cannot perform *= between tensors of shape " + 
+                        static_cast<std::string>(*this) + 
+                        " and " + 
+                        static_cast<std::string>(A) + 
+                        " since it would change its shape"
+                    );
+                }
+
+                std::vector<int> indecies(get_rank(), 0);
+                do {
+                    (*this)[{indecies}] = C[indecies];
+                } while(next_index(indecies, m_shape));
+
+                return *this;
+            }
             friend Tensor<T> pairwise_mult<T>(const Tensor<T>& A, const Tensor<T>& B);
 
             friend Tensor operator*(const Tensor& A, T b) {
@@ -566,6 +519,15 @@ namespace LinAlg {
 
                 return elementwise(multiplication);
             }
+               
+            /// @brief Performs matrix multiplication, uses batching
+            /// @param A The first tensor
+            /// @param B The second tensor
+            /// @return The result of the operation
+            /// @throws std::invalid_argument if batching cannot be performed
+            /// @throws std::invalid_argument if the rank of either A or B is less than 2
+            /// @throws std::invalid_argument if the extent of the last axis of A dont match the extent of next to last axis of B
+            friend Tensor<T> matmul<T>(const Tensor<T>& A, const Tensor<T>& B);
     };
 
     template <std::floating_point T>
@@ -952,14 +914,68 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T> pairwise_mult(const Tensor<T>& A, const Tensor<T>& B) {
-        auto multiplication{
-            [](T a, T b)
-            {
-                return a * b;
-            }
-        };
+        return A * B;
+    }
 
-        return pairwise(A, B, multiplication);
+    template <std::floating_point T>
+    Tensor<T> matmul(const Tensor<T>& A, const Tensor<T>& B) {
+        Tensor<T> A_view {A};
+        Tensor<T> B_view {B};
+
+        int A_rank {A.get_rank()};
+        int B_rank {B.get_rank()};
+
+        int max_rank {A_rank > B_rank ? A_rank : B_rank};
+        int min_rank {A_rank > B_rank ? B_rank : A_rank};
+
+        if(min_rank < 2){
+            throw std::invalid_argument(
+                "Cannot perform matrix multiplication on Tensors of shape " + 
+                static_cast<std::string>(A) + 
+                " and " + 
+                static_cast<std::string>(B) +
+                " since one of them has rank < 2"
+            );
+        }
+
+        if(A_view.m_shape[A_rank - 1] != B_view.m_shape[B_rank - 2]){
+            throw std::invalid_argument(
+                "Cannot perform matrix multiplication on Tensors of shape " + 
+                static_cast<std::string>(A) + 
+                " and " + 
+                static_cast<std::string>(B) + 
+                " the extent of the last axis on A must match the extent of the next to last axis on B"
+            );
+        }
+
+        Tensor<T>::batching(A_view, B_view, 2);
+
+        std::vector<int> shape {A_view.m_shape};
+        shape[max_rank - 1] = B_view.m_shape.back();
+        Tensor<T> C {shape};
+
+        std::vector<int> indecies(max_rank, 0);
+        std::vector<int> A_indecies(max_rank, 0);
+        std::vector<int> B_indecies(max_rank, 0);
+
+        do {
+            for(int i {}; i < max_rank; ++i){
+                A_indecies[i] = indecies[i];
+                B_indecies[i] = indecies[i];
+            }
+
+            T sum {};
+            for(int i {}; i < A_view.m_shape.back(); ++i){
+                A_indecies[max_rank - 1] = i;
+                B_indecies[max_rank - 2] = i;
+
+                sum += A_view[A_indecies] * B_view[B_indecies];
+            }
+
+            C[indecies] = sum;
+        } while(Tensor<T>::next_index(indecies, C.m_shape));
+
+        return C;
     }
 }
 
