@@ -65,11 +65,11 @@ TEST(StdFunc, NoActivationMath) {
     X[{0, 0}] = 1;
     X[{0, 1}] = -7;
 
-    LinAlg::Tensor<float> A {Func::No_Activation<float>::activate(X)};
+    LinAlg::Tensor<float> A {Func::No_activation<float>::activate(X)};
 
     EXPECT_EQ(X, A);
 
-    LinAlg::Tensor<float> D {Func::No_Activation<float>::derivate(X)};
+    LinAlg::Tensor<float> D {Func::No_activation<float>::derivate(X)};
     LinAlg::Tensor<float> D_exp {{1, 3}, 1};
 
     EXPECT_EQ(D, D_exp);

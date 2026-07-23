@@ -82,7 +82,7 @@ namespace Func{
     };
 
     template <typename T>
-    class No_Activation {
+    class No_activation {
         public: 
             static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
                 return X.copy();

@@ -15,7 +15,7 @@ TEST(GradientCheck, ReLU) {
 }
 
 TEST(GradientCheck, NoActivation) {
-    Debug::GradCheck::Activation_result result = Debug::GradCheck::activation<Func::No_Activation<double>>(4);
+    Debug::GradCheck::Activation_result result = Debug::GradCheck::activation<Func::No_activation<double>>(4);
 
     EXPECT_TRUE(result.passed);
 }

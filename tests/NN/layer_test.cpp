@@ -102,7 +102,7 @@ TEST(Layer, GradientAccumulates) {
 }
 
 TEST(Layer, NoActivationForwardBackward) {
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer {2, 2};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {2, 2};
     layer.weights.value[{0, 0}] = 1;
     layer.weights.value[{0, 1}] = 2;
     layer.weights.value[{0, 2}] = 3;
@@ -188,7 +188,7 @@ namespace {
 }
 
 TEST(Layer, NumericalGradientCheckNoActivation) {
-    NN::Layer<double, Func::Linear<double>, Func::No_Activation<double>> layer {3, 2};
+    NN::Layer<double, Func::Linear<double>, Func::No_activation<double>> layer {3, 2};
     Rand::Random<double> random {42};
     layer.normal(random, 0, 1);
 

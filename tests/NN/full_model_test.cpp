@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 TEST(FullModel, LinearRegression) {
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer {1, 1};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {1, 1};
     Rand::Random<float> random {42};
     layer.normal(random, 0, 1);
 
@@ -39,7 +39,7 @@ TEST(FullModel, LinearRegression) {
 
 TEST(FullModel, ConvergenceXOR) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer_1 {2, 4};
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {4, 2};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_2 {4, 2};
     Rand::Random<float> random {42};
 
     layer_1.normal(random, 0, 1);

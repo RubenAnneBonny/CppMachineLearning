@@ -194,7 +194,7 @@ TEST(Model, ForwardComposition) {
     layer_1.weights.value[{1, 1}] = -1;
     layer_1.weights.value[{1, 2}] = 0;
 
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {2, 1};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_2 {2, 1};
     layer_2.weights.value[{0, 0}] = 2;
     layer_2.weights.value[{0, 1}] = 3;
     layer_2.weights.value[{0, 2}] = 1;
@@ -385,7 +385,7 @@ TEST(Model, Deterministic) {
 
 TEST(Model, ForwardCapture) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer_1 {2, 2};
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {2, 1};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_2 {2, 1};
     Func::MSE<float> loss_fn {};
     NN::Gradient_descent<float> opt {0.01f};
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
@@ -423,7 +423,7 @@ TEST(Model, ForwardCapture) {
 
 TEST(Model, PreActivationCapture) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer_1 {2, 2};
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {2, 1};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_2 {2, 1};
     Func::MSE<float> loss_fn {};
     NN::Gradient_descent<float> opt {0.01f};
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
@@ -485,7 +485,7 @@ namespace {
 
 TEST(Model, RandomInitStddevWithinTol) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer_1 {1, 50};
-    NN::Layer<float, Func::Linear<float>, Func::No_Activation<float>> layer_2 {50, 50};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_2 {50, 50};
     NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> layer_3 {50, 50};
 
     Rand::Random<float> random {42};
