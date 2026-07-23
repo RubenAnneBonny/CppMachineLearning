@@ -1,5 +1,10 @@
+#ifndef OPTIMIZER_CHECK_H
+#define OPTIMIZER_CHECK_H
+
 #include <NN/optimizer.h>
 #include <NN/parameter.h>
+#include <LinAlg/tensor.h>
+#include <Rand/random.h>
 
 namespace Debug {
     struct Optimizer_result {
@@ -85,3 +90,5 @@ namespace Debug {
         return result;
     }   
 }
+
+#endif

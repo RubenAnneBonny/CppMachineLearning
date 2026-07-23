@@ -10,7 +10,7 @@ namespace Debug::GradCheck {
     namespace Helper {
         template <std::invocable Eval>
         std::pair<double, int> max_rel_error(LinAlg::Tensor<double>& disturb, const LinAlg::Tensor<double>& analytic, Eval evaluate, double eps) {
-            double max_rel_error {};
+            double worst_rel_error {};
             int worst_index {-1};
 
             for(int i {}; i < disturb.get_extent(1); ++i) {
@@ -33,13 +33,13 @@ namespace Debug::GradCheck {
 
                 double rel_error {std::abs(numeric_val - analytic_val) / max};
 
-                if(rel_error > max_rel_error) {
-                    max_rel_error = rel_error;
+                if(rel_error > worst_rel_error) {
+                    worst_rel_error = rel_error;
                     worst_index = i;
                 }
             }
 
-            return {max_rel_error, worst_index};
+            return {worst_rel_error, worst_index};
         }
     }
 

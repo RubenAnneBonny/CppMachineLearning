@@ -18,6 +18,21 @@ namespace NN {
             int m_input_nodes;
             LinAlg::Tensor<T> m_store_X;
             LinAlg::Tensor<T> m_store_Y;
+
+            LinAlg::Tensor<T> forward(const LinAlg::Tensor<T>& X) const {
+                int batches {X.get_extent(0)};
+                LinAlg::Tensor<T> Y {{batches, m_nodes}};
+
+                for(int b {}; b < batches; ++b) {
+                    LinAlg::Tensor<T> X_b {X.row(b).unsqueeze()};
+
+                    for(int i {}; i < m_nodes; ++i) {
+                        Y[{b, i}] = F::function(X_b, weights.value.row(i).unsqueeze());
+                    }
+                }
+
+                return Y;
+            }
         
         public:
             Parameter<T> weights;
@@ -55,9 +70,15 @@ namespace NN {
             /// @return Tensor of shape (Batch, nodes)
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X);
 
+            /// @brief Performs a forward pass through the layer, does not save internal states
+            /// @param X Input tensor of shape (Batch, input nodes)
+            /// @return Tensor of shape (Batch, nodes)
+            LinAlg::Tensor<T> forward_pass_stateless(const LinAlg::Tensor<T>& X) const;
+
             /// @brief Performs backpropagation through the layer
             /// @param dY Backpropagation tensor of shape (Batch, nodes) from next layer
             /// @return Tensor of shape (Batch, input size)
+            /// @throws std::invalid_argument if forward_pass was never performed
             LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY);    
     };
 
@@ -68,7 +89,7 @@ namespace NN {
         : m_nodes {nodes}
         , m_input_nodes {input_nodes}
         , m_store_X {{1, input_nodes}}
-        , m_store_Y {{1, nodes}}
+        , m_store_Y {{1}}
         , weights {{nodes, F::num_weights(input_nodes)}, init}
     {}
 
@@ -76,16 +97,7 @@ namespace NN {
               Func::Function<T> F,
               Func::Activation_function<T> A>
     LinAlg::Tensor<T> Layer<T, F, A>::forward_pass(const LinAlg::Tensor<T>& X) {
-        int batches {X.get_extent(0)};
-        LinAlg::Tensor<T> Y {{batches, m_nodes}};
-
-        for(int b {}; b < batches; ++b) {
-            LinAlg::Tensor<T> X_b {X.row(b).unsqueeze()};
-
-            for(int i {}; i < m_nodes; ++i) {
-                Y[{b, i}] = F::function(X_b, weights.value.row(i).unsqueeze());
-            }
-        }
+        LinAlg::Tensor<T> Y {forward(X)};
 
         m_store_Y = Y;
         m_store_X = X.copy();
@@ -96,7 +108,22 @@ namespace NN {
     template <std::floating_point T,
               Func::Function<T> F,
               Func::Activation_function<T> A>
+    LinAlg::Tensor<T> Layer<T, F, A>::forward_pass_stateless(const LinAlg::Tensor<T>& X) const {
+        LinAlg::Tensor<T> Y {forward(X)};
+
+        return A::activate(Y);
+    }    
+
+    template <std::floating_point T,
+              Func::Function<T> F,
+              Func::Activation_function<T> A>
     LinAlg::Tensor<T> Layer<T, F, A>::backward_pass(const LinAlg::Tensor<T>& dY) {
+        if(m_store_Y.get_rank() == 1) {
+            throw std::invalid_argument(
+                "Cannot perform backward pass before forward pass"
+            );
+        }
+        
         int batches {dY.get_extent(0)};
         LinAlg::Tensor<T> dZ {LinAlg::pairwise_mult(dY, A::derivate(m_store_Y))};
 

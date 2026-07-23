@@ -5,6 +5,7 @@
 #include <NN/optimizer.h>
 #include <LinAlg/tensor.h>
 #include <vector>
+#include <cmath>
 
 namespace NN {
     template <std::floating_point T>
@@ -55,11 +56,14 @@ namespace NN {
             void init(std::vector<NN::Parameter<T>*>& parameters) {
                 m_parameters = parameters;
 
+                m_first_moment.clear();
+                m_second_moment.clear();
+
                 for(int i {}; i < static_cast<int>(m_parameters.size()); ++i) {
                     LinAlg::Tensor<T> X {{m_parameters[i]->value.get_extent(0), m_parameters[i]->value.get_extent(1)}};
 
                     m_first_moment.push_back(X.copy());
-                    m_second_moment.push_back(X);
+                    m_second_moment.push_back(X.copy());
                 }
             }
 

@@ -15,6 +15,7 @@ namespace NN {
             virtual ~Layer_base() = default;
 
             virtual LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X) = 0;
+            virtual LinAlg::Tensor<T> forward_pass_stateless(const LinAlg::Tensor<T>& X) const = 0;
             virtual LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY) = 0;
             virtual Parameter<T>& parameters() = 0;
             virtual int get_nodes() const = 0;
@@ -35,6 +36,10 @@ namespace NN {
 
             LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X) override {
                 return m_layer.forward_pass(X);
+            }
+
+            LinAlg::Tensor<T> forward_pass_stateless(const LinAlg::Tensor<T>& X) const override {
+                return m_layer.forward_pass_stateless(X);
             }
 
             LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY) override {

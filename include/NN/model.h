@@ -12,9 +12,9 @@
 #include <string>
 #include <stdexcept>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
 #include <limits>
+#include <cmath>
 
 namespace NN {
     template <std::floating_point T,
@@ -28,7 +28,7 @@ namespace NN {
             std::vector<NN::Parameter<T>*> m_parameters;
             LinAlg::Tensor<T> m_store_prediction;
             T m_store_loss;
-            bool m_initialized {false};
+            bool m_initialized;
 
             void check_target_shape(const LinAlg::Tensor<T>& target) const {
                 if(target.get_extent(1) != m_layers.back()->get_nodes()) {
@@ -37,6 +37,14 @@ namespace NN {
                         std::to_string(m_layers.back()->get_nodes()) + 
                         " while target shape is " + 
                         static_cast<std::string>(target)
+                    );
+                }
+            }
+
+            void require_initialized() const {
+                if(!m_initialized) {
+                    throw std::invalid_argument(
+                        "Network must have been initialized with init() before use!"
                     );
                 }
             }
@@ -89,32 +97,38 @@ namespace NN {
             /// @brief Calculates all the intermediate outputs of each layer 
             /// @param input The tensor to pass through the network
             /// @return A vector of all the outputs of each layer in order
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             /// @important Cannot be used as a normal forward pass
             std::vector<LinAlg::Tensor<T>> forward_capture(const LinAlg::Tensor<T>& input) const;
             
             /// @brief Calculates all the intermediate pre-activation outputs of each layer
             /// @param input The tensor to pass through the network
             /// @return A vector of all the outputs of each layer in order
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             /// @important Cannot be used as a normal forward pass
-            std::vector<LinAlg::Tensor<T>> pre_activation_capture(const LinAlg::Tensor<T>& input) const;
+            std::vector<LinAlg::Tensor<T>> pre_activation_capture(const LinAlg::Tensor<T>& input);
 
             /// @brief Calculates the loss
             /// @param target The target tensor
             /// @return The loss
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             /// @throws std::invalid_argument if target rank isn't two
             /// @throws std::invalid_argument if target shape don't match output of network
             T calculate_loss(const LinAlg::Tensor<T>& target);
 
             /// @brief Resets the gradients for the optimizer
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             void zero_grad();
 
             /// @brief Does a backpropagation through the network
             /// @param target The target tensor
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             /// @throws std::invalid_argument if target rank isn't two
             /// @throws std::invalid_argument if target don't match output of network
             void backpropagation(const LinAlg::Tensor<T>& target);
 
             /// @brief The optimizer updates the weights
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             void optimizer_step();
 
             /// @brief Saves the weights of the model
@@ -135,12 +149,16 @@ namespace NN {
             /// @param targets The target tensor of shape (batch, output size)
             /// @param epochs The number of epochs to train
             /// @return A vector of losses
+            /// @throws std::invalid_argument if epochs is less than 1
+            /// @throws std::invalid_argument if batch_size is less than 1
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             std::vector<T> train_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, Rand::Random<T>& random, int epochs, int batch_size);
 
             /// @brief A testing loop for the neural network
             /// @param inputs The input tensor of shape (batch, input size)
             /// @param targets The target tensor of shape (batch, output size)
             /// @return The loss
+            /// @throws std::invalid_argument if network hasn't been initialized with init()
             T test_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets);
     };
 
@@ -151,6 +169,8 @@ namespace NN {
         : m_loss_fn {loss_fn}
         , m_optimizer {optimizer}
         , m_store_prediction {{1, 1}}
+        , m_store_loss {}
+        , m_initialized {false}
     {}
 
     template <std::floating_point T,
@@ -210,15 +230,15 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
     void Model<T, Loss, Opt>::init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev, int max_iters, T tol, T damping) {
-        init();
-
         int num_samples = samples.get_extent(0);
-
+        
         if(num_samples == 0) {
             throw std::invalid_argument(
                 "Must have at least one sample to calculate the stddev"
             );
         }
+        
+        init();
 
         for(auto* param : m_parameters) {
             param->normal(random, 0, 1);
@@ -259,20 +279,13 @@ namespace NN {
                 m_parameters[layer]->value *= std::pow(target_stddev / stddev, damping);
             }
         }
-
-        m_initialized = true;
-        m_optimizer.init(m_parameters);
     }
 
     template <std::floating_point T,
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     LinAlg::Tensor<T> Model<T, Loss, Opt>::forward_pass(const LinAlg::Tensor<T>& X) {
-        if(!m_initialized) {
-            throw std::invalid_argument(
-                "Network must have been initialized with init() before use!"
-            );
-        }
+        require_initialized();
 
         LinAlg::Tensor<T> out {X};
 
@@ -286,7 +299,7 @@ namespace NN {
 
         if(out.get_extent(1) != m_layers[0]->get_input_nodes()) {
             throw std::invalid_argument(
-                "Input tensor to forward pass must be size (1, " + 
+                "Input tensor to forward pass must be size (Batch, " + 
                 std::to_string(m_layers[0]->get_input_nodes()) + 
                 ") but input tensor of forward pass was " + 
                 static_cast<std::string>(out)
@@ -297,7 +310,7 @@ namespace NN {
             out = layer->forward_pass(out);
         }
 
-        m_store_prediction = out;
+        m_store_prediction = out.copy();
 
         return out;
     }
@@ -306,10 +319,12 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     std::vector<LinAlg::Tensor<T>> Model<T, Loss, Opt>::forward_capture(const LinAlg::Tensor<T>& input) const {
+        require_initialized();
+       
         std::vector<LinAlg::Tensor<T>> outputs;
         LinAlg::Tensor<T> X {input};
         for(auto& layer : m_layers) {
-            X = layer->forward_pass(X);
+            X = layer->forward_pass_stateless(X);
             outputs.push_back(X);
         }
         return outputs;
@@ -318,7 +333,9 @@ namespace NN {
     template <std::floating_point T,
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
-    std::vector<LinAlg::Tensor<T>> Model<T, Loss, Opt>::pre_activation_capture(const LinAlg::Tensor<T>& input) const {
+    std::vector<LinAlg::Tensor<T>> Model<T, Loss, Opt>::pre_activation_capture(const LinAlg::Tensor<T>& input) {
+        require_initialized();
+
         std::vector<LinAlg::Tensor<T>> outputs;
         LinAlg::Tensor<T> X {input};
         for(auto& layer : m_layers) {
@@ -332,6 +349,8 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     T Model<T, Loss, Opt>::calculate_loss(const LinAlg::Tensor<T>& target) {
+        require_initialized();
+        
         if(target.get_rank() != 2) {
             throw std::invalid_argument(
                 "Cannot perform loss calculations with target of shape " + 
@@ -351,6 +370,8 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     void Model<T, Loss, Opt>::zero_grad() {
+        require_initialized();
+
         for(auto& parameter : m_parameters) {
             parameter->zero_grad();
         }
@@ -360,6 +381,8 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt> 
     void Model<T, Loss, Opt>::backpropagation(const LinAlg::Tensor<T>& target) {
+        require_initialized();
+        
         if(target.get_rank() != 2) {
             throw std::invalid_argument(
                 "Cannot perform backpropagation with target of shape " + 
@@ -381,6 +404,8 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
     void Model<T, Loss, Opt>::optimizer_step() {
+        require_initialized();
+
         m_optimizer.step();
     }
 
@@ -424,7 +449,7 @@ namespace NN {
         std::ifstream in(path);
         if(!in) {
             throw std::invalid_argument(
-                "load weights could not open" + 
+                "load weights could not open " + 
                 path
             );
         }
@@ -471,7 +496,7 @@ namespace NN {
                     std::to_string(rows) + 
                     " nodes"
                 );
-            };
+            }
 
             if(cols != W.get_extent(1)) {
                 throw std::invalid_argument(
@@ -479,7 +504,7 @@ namespace NN {
                     std::to_string(index + 1) + 
                     " has " + 
                     std::to_string(W.get_extent(1)) + 
-                    " weights pre node while the load file's layer has " + 
+                    " weights per node while the load file's layer has " + 
                     std::to_string(cols) + 
                     " weights per node"
                 );
@@ -505,9 +530,26 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
     std::vector<T> Model<T, Loss, Opt>::train_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, Rand::Random<T>& random, int epochs, int batch_size) {
+        if(epochs < 1) {
+            throw std::invalid_argument(
+                "Cannot perform a train loop with " + 
+                std::to_string(epochs) + 
+                " epochs since its less than 1"
+            );
+        }
+
+        if(batch_size < 1) {
+            throw std::invalid_argument(
+                "Cannot perform a train loop with " + 
+                std::to_string(batch_size) + 
+                " batch_size since batch is less than 1"
+            );
+        }
+        
+        require_initialized();
+        
         std::vector<T> losses {};
         losses.reserve(static_cast<std::size_t>(epochs));
-        int num_inputs {inputs.get_extent(0)};
 
         Data::Dataloader<T> loader {random, inputs, targets, batch_size};
 
@@ -535,6 +577,8 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
     T Model<T, Loss, Opt>::test_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets) {
+        require_initialized();
+        
         T loss {};
         int num_inputs {inputs.get_extent(0)};
 

@@ -39,6 +39,14 @@ namespace Rand{
             T normal(T mean, T stddev){
                 return std::normal_distribution<T>{mean, stddev}(mt);
             }
+
+            /// @brief Random uniform integer distrubution
+            /// @param low Lower bound (inclusive)
+            /// @param high Upper bound (exclusive)
+            /// @return Random integer in range [low, high)
+            int uniform_int(int low, int high) {
+                return std::uniform_int_distribution<int>{low, high - 1}(mt);
+            }
     };
 }
 

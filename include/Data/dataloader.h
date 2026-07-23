@@ -3,6 +3,9 @@
 
 #include <LinAlg/tensor.h>
 #include <Rand/random.h>
+#include <algorithm>
+#include <utility>
+#include <stdexcept>
 
 namespace Data {
     template <std::floating_point T>
@@ -17,7 +20,7 @@ namespace Data {
 
             void shuffle() {
                 for(int i {static_cast<int>(m_permutation.size()) - 1}; i > 0; --i) {
-                    int j {static_cast<int>(m_random.uniform(0, i + 1))};
+                    int j {m_random.uniform_int(0, i + 1)};
                     std::swap(m_permutation[i], m_permutation[j]);
                 }
             }

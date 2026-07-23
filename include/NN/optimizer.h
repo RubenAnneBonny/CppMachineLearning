@@ -12,6 +12,7 @@ namespace NN {
     concept Optimizer = 
         requires(O o, std::vector<NN::Parameter<T>*>& parameters) {
             /// @brief Saves parameters internally and does neccessary initialization
+            /// @important Should reset parameters, do not assume init is only run once
             {o.init(parameters)};
             /// @brief Updates the value of all parameters
             {o.step()};

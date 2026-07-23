@@ -123,6 +123,7 @@ namespace LinAlg {
             /// @brief Constructor
             /// @param shape The shape of the Tensor
             /// @param init The value to initialize all elements to
+            /// @throws std::invalid_argument if a extent of a axis is less than 1
             Tensor(const std::vector<int>& shape, T init = 0);
 
             /// @brief Randomizes all elements ~N(mean, stddev)
@@ -574,6 +575,14 @@ namespace LinAlg {
         , m_offset {}
         , m_strides {}
     {
+        for(int i {}; i < static_cast<int>(shape.size()); ++i) {
+            if(shape[i] < 1) {
+                throw std::invalid_argument(
+                    "Cannot create tensor with any extent less than 1"
+                );
+            }
+        }
+
         calculate_strides();
     }
 

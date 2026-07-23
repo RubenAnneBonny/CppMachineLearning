@@ -35,7 +35,7 @@ namespace Func{
                 return grad;
             }
 
-            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, [[maybe_unused]] const LinAlg::Tensor<T>& weights) {
                 int input_size {X.get_extent(1)};
                 LinAlg::Tensor<T> grad {{1, input_size + 1}};
 
