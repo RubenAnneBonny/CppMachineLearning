@@ -74,6 +74,7 @@ namespace NN {
             /// @brief Must run a init before training, initializes the network
             /// @throws std::invalid_argument if no layers were added before init
             /// @throws std::invalid_argument if model was already initialized
+            /// @important Only use this method if you manually set weights, otherwise model can't learn
             void init();
 
             /// @brief Must run a init before training, initializes the network with random weights
@@ -159,7 +160,13 @@ namespace NN {
             /// @param targets The target tensor of shape (batch, output size)
             /// @return The loss
             /// @throws std::invalid_argument if network hasn't been initialized with init()
-            T test_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets);
+            T test_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, Rand::Random<T>& random);
+    
+            Model(const Model&) = delete;
+            Model& operator=(const Model&) = delete;
+
+            Model(Model&&) = default;
+            Model& operator=(Model&&) = default;
     };
 
     template <std::floating_point T,
@@ -559,7 +566,7 @@ namespace NN {
             LinAlg::Tensor<T> input {{1}};
             LinAlg::Tensor<T> target {{1}};
 
-            while(loader.next_batch(input, target)) {
+            while(loader.next_batch(random, input, target)) {
                 forward_pass(input);
                 epoch_loss += calculate_loss(target);
                 zero_grad();
@@ -576,18 +583,20 @@ namespace NN {
     template <std::floating_point T,
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
-    T Model<T, Loss, Opt>::test_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets) {
+    T Model<T, Loss, Opt>::test_loop(const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, Rand::Random<T>& random) {
         require_initialized();
         
         T loss {};
         int num_inputs {inputs.get_extent(0)};
 
-        for(int i {}; i < num_inputs; ++i) {
-            LinAlg::Tensor<T> input {inputs.row(i).unsqueeze()};
-            LinAlg::Tensor<T> target {targets.row(i).unsqueeze()};
+        LinAlg::Tensor<T> X {{1}};
+        LinAlg::Tensor<T> Y {{1}};
 
-            forward_pass(input);
-            loss += calculate_loss(target);
+        Data::Dataloader<T> loader {random, inputs, targets, 1};
+
+        while(loader.next_batch(random, X, Y)) {
+            forward_pass(X);
+            loss += calculate_loss(Y);
         }
 
         loss /= static_cast<T>(num_inputs);

@@ -19,7 +19,7 @@ TEST(Dataloader, OneEpochDontLoseRows) {
     LinAlg::Tensor<float> input {{1}};
     LinAlg::Tensor<float> target {{1}};
 
-    loader.next_batch(input, target);
+    loader.next_batch(random, input, target);
 
     std::vector<int> found(100, 0);
 
@@ -58,7 +58,7 @@ TEST(Dataloader, InputTargetMatch) {
     LinAlg::Tensor<float> input {{1}};
     LinAlg::Tensor<float> target {{1}};
 
-    loader.next_batch(input, target);
+    loader.next_batch(random, input, target);
 
     for(int i {}; i < 100; ++i) {
         float x {input[{i, 0}]};
@@ -94,7 +94,7 @@ TEST(Dataloader, Determinism) {
         X.push_back(input);
         LinAlg::Tensor<float> target {{1}};
 
-        loader.next_batch(X[i], target);
+        loader.next_batch(random, X[i], target);
     }
 
     EXPECT_EQ(X[0], X[1]);
@@ -117,9 +117,9 @@ TEST(Dataloader, TwoEpochsDiffer) {
     LinAlg::Tensor<float> input_2 {{1}};
     LinAlg::Tensor<float> target {{1}};
 
-    loader.next_batch(input_1, target);
-    loader.next_batch(input_2, target);
-    loader.next_batch(input_2, target);
+    loader.next_batch(random, input_1, target);
+    loader.next_batch(random, input_2, target);
+    loader.next_batch(random, input_2, target);
 
     EXPECT_NE(input_1, input_2);
 
@@ -155,14 +155,14 @@ TEST(Dataloader, AfterLastBatchReturnsFalse) {
     LinAlg::Tensor<float> input {{1}};
     LinAlg::Tensor<float> target {{1}};
 
-    EXPECT_TRUE(loader_1.next_batch(input, target));
-    EXPECT_FALSE(loader_1.next_batch(input, target));
+    EXPECT_TRUE(loader_1.next_batch(random, input, target));
+    EXPECT_FALSE(loader_1.next_batch(random, input, target));
 
     Data::Dataloader<float> loader_2 {random, inputs, targets, 60};
 
-    EXPECT_TRUE(loader_2.next_batch(input, target));
-    EXPECT_TRUE(loader_2.next_batch(input, target));
-    EXPECT_FALSE(loader_2.next_batch(input, target));
+    EXPECT_TRUE(loader_2.next_batch(random, input, target));
+    EXPECT_TRUE(loader_2.next_batch(random, input, target));
+    EXPECT_FALSE(loader_2.next_batch(random, input, target));
 }
 
 TEST(Dataloader, BatchSizeLessThanOneThrows) {

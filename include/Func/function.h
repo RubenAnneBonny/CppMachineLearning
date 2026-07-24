@@ -8,24 +8,27 @@
 #include <LinAlg/tensor.h>
 
 namespace Func{
+    /*
+        Layer will call Function functions once per (sample, node), therfore it shouldn't use batching
+    */
     template <typename F, typename T>
     concept Function = 
         requires(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, int input_size) {
             /// @brief Returns the number of weights for the function, based on input size
             {F::num_weights(input_size)} -> std::same_as<int>;
             /// @brief Based on input and weights, calculates the output of the function
-            /// @param X Input tensor of shape (batch, input size)
-            /// @param weights Tensor of shape (batch, num_weights)
+            /// @param X Input tensor of shape (1, input size)
+            /// @param weights Tensor of shape (1, num_weights)
             /// @return Scalar
             {F::function(X, weights)} -> std::same_as<T>;
             /// @brief Calculates the gradient of the function, based on input
-            /// @param X Input tensor of shape (batch, input size)
-            /// @param weights Tensor of shape (batch, num_weights)
+            /// @param X Input tensor of shape (1, input size)
+            /// @param weights Tensor of shape (1, num_weights)
             /// @returns Tensor of shape (batch, input_size)
             {F::function_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
             /// @brief Calculates the gradient of the function, based on weights
-            /// @param X Input tensor of shape (batch, input size)
-            /// @param weights Tensor of shape (batch, num_weights)
+            /// @param X Input tensor of shape (1, input size)
+            /// @param weights Tensor of shape (1, num_weights)
             /// @return Tensor of shape (batch, num_weights)
             {F::weights_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
         };

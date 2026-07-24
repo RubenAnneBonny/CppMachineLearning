@@ -1,6 +1,10 @@
 #ifndef GRADIENT_CHECK_H
 #define GRADIENT_CHECK_H
 
+/*
+    Gradient checking uses double, instantiate you're function/activation/loss with double
+*/
+
 #include <Func/function.h>
 #include <LinAlg/tensor.h>
 #include <Rand/random.h>

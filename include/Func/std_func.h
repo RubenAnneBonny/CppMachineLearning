@@ -162,6 +162,8 @@ namespace Func{
     template <typename T>
     class Softmax_cross_entropy {
         public:
+            /// @important Targets are assumed to be one-hot
+
             static T loss(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
                 int input_size {prediction.get_extent(1)};
                 int batches {prediction.get_extent(0)};

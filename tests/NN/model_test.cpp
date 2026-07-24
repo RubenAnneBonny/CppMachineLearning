@@ -351,7 +351,7 @@ TEST(Model, TestLoopDoesNotChangeWeights) {
 
     LinAlg::Tensor<float> before {model.get_parameters()[0]->value.copy()};
 
-    model.test_loop(input, target);
+    model.test_loop(input, target, random);
 
     EXPECT_EQ(before, model.get_parameters()[0]->value);
 }

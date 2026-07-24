@@ -1,6 +1,10 @@
 #ifndef OPTIMIZER_CHECK_H
 #define OPTIMIZER_CHECK_H
 
+/*
+    Optimizer check uses double, instantiate you're optimizer with double
+*/
+
 #include <NN/optimizer.h>
 #include <NN/parameter.h>
 #include <LinAlg/tensor.h>

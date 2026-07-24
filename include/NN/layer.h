@@ -62,7 +62,7 @@ namespace NN {
             }
 
             LinAlg::Tensor<T> get_pre_activation() const {
-                return m_store_Y;
+                return m_store_Y.copy();
             }
 
             /// @brief Performs a forward pass through the layer
