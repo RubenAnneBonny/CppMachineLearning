@@ -32,15 +32,6 @@ namespace LinAlg {
     Tensor<T> pairwise(const Tensor<T>& A, const Tensor<T>& B, Fn fn);
 
     template <std::floating_point T>
-    Tensor<T> pairwise_mult(const Tensor<T>& A, const Tensor<T>& B);
-
-    template <std::floating_point T>
-    Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B);
-
-    template <std::floating_point T>
-    Tensor<T> pairwise_sub(const Tensor<T>& A, const Tensor<T>& B);
-
-    template <std::floating_point T>
     Tensor<T> matmul(const Tensor<T>& A, const Tensor<T>& B);
 
     template <std::floating_point T>
@@ -319,7 +310,6 @@ namespace LinAlg {
 
                 return pairwise(A, B, addition);
             }
-            friend Tensor<T> pairwise_add<T>(const Tensor<T>& A, const Tensor<T>& B);
             Tensor& operator+=(const Tensor<T>& A) {
                 auto addition{
                 [](T a, T b)
@@ -389,7 +379,6 @@ namespace LinAlg {
 
                 return pairwise(A, B, subtraction);
             }
-            friend Tensor<T> pairwise_sub<T>(const Tensor<T>& A, const Tensor<T>& B);
             Tensor& operator-=(const Tensor<T>& A) {
                 auto subtraction{
                 [](T a, T b)
@@ -492,7 +481,6 @@ namespace LinAlg {
 
                 return *this;
             }
-            friend Tensor<T> pairwise_mult<T>(const Tensor<T>& A, const Tensor<T>& B);
 
             friend Tensor operator*(const Tensor& A, T b) {
                 auto multiplication{
@@ -900,21 +888,6 @@ namespace LinAlg {
         } while(Tensor<T>::next_index(indecies, A.m_shape));
 
         return true;
-    }
-
-    template <std::floating_point T>
-    Tensor<T> pairwise_add(const Tensor<T>& A, const Tensor<T>& B) {
-        return A + B;
-    }
-
-    template <std::floating_point T>
-    Tensor<T> pairwise_sub(const Tensor<T>& A, const Tensor<T>& B) {
-        return A - B;
-    }
-
-    template <std::floating_point T>
-    Tensor<T> pairwise_mult(const Tensor<T>& A, const Tensor<T>& B) {
-        return A * B;
     }
 
     template <std::floating_point T>

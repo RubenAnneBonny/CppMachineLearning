@@ -32,7 +32,7 @@ namespace Debug {
             opt.step();
 
             LinAlg::Tensor<double> delta = param.value - before;
-            double dot = LinAlg::pairwise_mult<double>(delta, param.grad).sum();
+            double dot = (delta * param.grad).sum();
             result.descent_check = (dot < 0);
         }
 

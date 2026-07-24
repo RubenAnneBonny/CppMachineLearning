@@ -115,7 +115,7 @@ namespace Func{
             static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
                 LinAlg::Tensor<T> activated {activate(X)};
 
-                return LinAlg::pairwise_mult<T>(activated, (1 - activated));
+                return activated * (1 - activated);
             }
     };
 

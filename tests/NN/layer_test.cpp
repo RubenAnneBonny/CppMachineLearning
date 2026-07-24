@@ -147,7 +147,7 @@ namespace {
     class Square {
         public:
             static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
-                return LinAlg::pairwise_mult<T>(X, X);
+                return X * X;
             }
 
             static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {

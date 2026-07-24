@@ -12,17 +12,17 @@ namespace {
             }
 
             static T function(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                LinAlg::Tensor<T> cube {LinAlg::pairwise_mult(LinAlg::pairwise_mult(X, X), X)};
+                LinAlg::Tensor<T> cube {X * X * X};
 
-                return LinAlg::pairwise_mult(cube, weights).sum();
+                return (cube * weights).sum();
             }
 
             static LinAlg::Tensor<T> function_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                return 3 * LinAlg::pairwise_mult(LinAlg::pairwise_mult(X, X), weights);
+                return 3 * X * X * weights;
             }
 
             static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                return LinAlg::pairwise_mult(LinAlg::pairwise_mult(X, X), X);
+                return X * X * X;
             }
     };
 
@@ -70,7 +70,7 @@ namespace {
     class Correct_activation {
         public:
             static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
-                return LinAlg::pairwise_mult(X, X);
+                return X * X;
             }
 
             static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
@@ -96,7 +96,7 @@ namespace {
             static T loss(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
                 LinAlg::Tensor<T> diff {prediction - target};
 
-                return LinAlg::pairwise_mult(diff, diff).sum();
+                return (diff * diff).sum();
             }
 
             static LinAlg::Tensor<T> gradient(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {

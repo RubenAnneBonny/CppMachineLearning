@@ -94,7 +94,7 @@ TEST(Tensor, PairwiseMultiplication) {
     B[{1, 0}] = -4;
     B[{1, 1}] = 2;
 
-    LinAlg::Tensor<float> C {LinAlg::pairwise_mult(A, B)};
+    LinAlg::Tensor<float> C {A * B};
     LinAlg::Tensor<float> C_exp {{2, 2, 3}, 1};
 
     C_exp[{0, 0, 1}] = 2;
@@ -875,38 +875,6 @@ TEST(Tensor, ToString) {
     std::string A_str {static_cast<std::string>(A)};
 
     EXPECT_EQ(A_str, "(2, 3)");
-}
-
-TEST(Tensor, PairwiseAddFreeFunction) {
-    LinAlg::Tensor<float> A {{2, 3}, -1};
-    A[{0, 1}] = 8;
-
-    LinAlg::Tensor<float> B {{2, 3}, 5};
-    B[{1, 2}] = 2;
-    B[{0, 1}] = 1;
-
-    LinAlg::Tensor<float> C {LinAlg::pairwise_add<float>(A, B)};
-    LinAlg::Tensor<float> C_exp {{2, 3}, 4};
-    C_exp[{0, 1}] = 9;
-    C_exp[{1, 2}] = 1;
-    
-    EXPECT_EQ(C, C_exp);
-}
-
-TEST(Tensor, PairwiseSubFreeFunction) {
-    LinAlg::Tensor<float> A {{2, 3}, -1};
-    A[{0, 1}] = 8;
-
-    LinAlg::Tensor<float> B {{2, 3}, 5};
-    B[{1, 2}] = 2;
-    B[{0, 1}] = 1;
-
-    LinAlg::Tensor<float> C {LinAlg::pairwise_sub<float>(A, B)};
-    LinAlg::Tensor<float> C_exp {{2, 3}, -6};
-    C_exp[{0, 1}] = 7;
-    C_exp[{1, 2}] = -3;
-    
-    EXPECT_EQ(C, C_exp);    
 }
 
 TEST(Tensor, SliceInvalidRangeThrows) {

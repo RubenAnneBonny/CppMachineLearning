@@ -125,7 +125,7 @@ namespace NN {
         }
         
         int batches {dY.get_extent(0)};
-        LinAlg::Tensor<T> dZ {LinAlg::pairwise_mult(dY, A::derivate(m_store_Y))};
+        LinAlg::Tensor<T> dZ {dY * A::derivate(m_store_Y)};
 
         int num_weights {F::num_weights(m_input_nodes)};
 
