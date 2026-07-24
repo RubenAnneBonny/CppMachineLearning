@@ -560,7 +560,7 @@ TEST(Model, AddLayerDeepCopies) {
     layer.normal(random, 0, 1);
     layer.weights.grad.normal(random, 0, 1);
 
-    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {{}, {0.1f}};
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {Func::MSE<float>{}, NN::Gradient_descent<float>{0.1f}};
     model.add_layer(layer);
     model.init();
 
@@ -609,7 +609,7 @@ TEST(Model, SavingLoading) {
 }
 
 TEST(Model, SavingToUnopenableThrows) {
-    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {{}, {}};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {Func::MSE<float>{}, NN::Adam<float>{}};
     model.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
     model.init();
 
@@ -621,13 +621,13 @@ TEST(Model, LoadingNumLayerDiffThrows) {
     std::filesystem::create_directories(dir);
     const std::filesystem::path path {dir / "LoadingNumLayerDiffThrows.weights"};
 
-    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {{}, {}};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {Func::MSE<float>{}, NN::Adam<float>{}};
     model_save.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
     model_save.init();
 
     model_save.save_weights(path.string());
 
-    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {{}, {}};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {Func::MSE<float>{}, NN::Adam<float>{}};
     model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
     model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {3, 3});
     model_load.init();
@@ -642,13 +642,13 @@ TEST(Model, LoadingDiffWeightsShapeThrows) {
     std::filesystem::create_directories(dir);
     const std::filesystem::path path {dir / "SavingLoading.weights"};
 
-    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {{}, {}};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {Func::MSE<float>{}, NN::Adam<float>{}};
     model_save.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
     model_save.init();
 
     model_save.save_weights(path.string());
 
-    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {{}, {}};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {Func::MSE<float>{}, NN::Adam<float>{}};
     model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 4});
     model_load.init();
 
@@ -658,7 +658,7 @@ TEST(Model, LoadingDiffWeightsShapeThrows) {
 }
 
 TEST(Model, LoadTruncatedFileThrows) {
-    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {{}, {}};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {Func::MSE<float>{}, NN::Adam<float>{}};
     model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 4});
     model_load.init();
 

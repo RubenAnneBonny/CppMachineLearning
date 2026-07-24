@@ -125,7 +125,7 @@ namespace LinAlg {
             /// @param shape The shape of the Tensor
             /// @param init The value to initialize all elements to
             /// @throws std::invalid_argument if a extent of a axis is less than 1
-            Tensor(const std::vector<int>& shape, T init = 0);
+            explicit Tensor(const std::vector<int>& shape, T init = 0);
 
             /// @brief Randomizes all elements ~N(mean, stddev)
             /// @param random An instance of the random class
@@ -245,7 +245,7 @@ namespace LinAlg {
             friend Tensor<U> pairwise(const Tensor<U>& A, const Tensor<U>& B, Fn fn);
 
             /// @brief Allows static_cast<std::string>(tensor), returns string that displays shape nicely
-            operator std::string() const;
+            explicit operator std::string() const;
 
             /// @brief Allows printing a tensor using the std::string() operator
             friend std::ostream& operator<<(std::ostream& os, const Tensor<T>& A) {

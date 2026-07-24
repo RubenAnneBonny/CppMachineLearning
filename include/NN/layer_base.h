@@ -30,7 +30,7 @@ namespace NN {
             L m_layer;
         
         public:
-            Layer_holder(L layer) 
+            explicit Layer_holder(L layer) 
                 : m_layer {std::move(layer)}
             {}
 

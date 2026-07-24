@@ -15,7 +15,7 @@ namespace NN {
             std::vector<NN::Parameter<T>*> m_parameters;
         
         public:
-            Gradient_descent(T lr) 
+            explicit Gradient_descent(T lr) 
                 : m_lr {lr}
             {}
 
@@ -43,7 +43,7 @@ namespace NN {
             int m_t;
 
         public:
-            Adam(T beta_1 = 0.9, T beta_2 = 0.999, T alpha = 1e-3, T eps = 1e-8)
+            explicit Adam(T beta_1 = 0.9, T beta_2 = 0.999, T alpha = 1e-3, T eps = 1e-8)
                 : m_beta_1 {beta_1}
                 , m_beta_2 {beta_2}
                 , m_alpha {alpha}
