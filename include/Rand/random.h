@@ -3,6 +3,7 @@
 
 #include <random>
 #include <concepts>
+#include <stdexcept>
 
 namespace Rand{
     template<std::floating_point T>
@@ -14,15 +15,13 @@ namespace Rand{
             /// @brief Unseeded constructor
             explicit Random()
                 : mt {std::random_device{}()}
-            {
-            }
+            {}
 
             /// @brief Seeded constructor
             /// @param seed The seed
             explicit Random(int seed)
                 : mt {static_cast<unsigned int>(seed)}
-            {
-            }
+            {}
 
             /// @brief Random uniform distrobution
             /// @param low Lower bound of number generation
