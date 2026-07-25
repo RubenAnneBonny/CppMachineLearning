@@ -4,6 +4,7 @@
 #include <random>
 #include <concepts>
 #include <stdexcept>
+#include <string>
 
 namespace Rand{
     template<std::floating_point T>
