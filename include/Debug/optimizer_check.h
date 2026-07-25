@@ -21,7 +21,7 @@ namespace Debug {
     template <NN::Optimizer<double> Opt>
     Optimizer_result optimizer_check(Opt optimizer) {
         Optimizer_result result;
-        Rand::Random<double> random {};
+        Rand::Random<double> random {123784};
 
         {
             Opt opt {optimizer};

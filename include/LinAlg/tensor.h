@@ -1,12 +1,6 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-/*
-    Copy construction and copy assignment produces a view sharing storage, copy() is deep copy
-    
-    These methods return views: {row, slice, unsqueeze, squeeze, t}
-    These methods return fresh storage: {copy, gather, pairwise, operator+ - *}
-*/
 
 #include <memory>
 #include <vector>
@@ -19,6 +13,23 @@
 #include <ostream>
 
 namespace LinAlg {
+    /**
+     * @brief A multi-dimensional container with many functions
+     *
+     * @details Using a vector of indecies the same rank as the tensor, you can
+     * index the tensor. The storage uses shared_pointer allowing several view
+     * into the same tensor.
+     *
+     * @warning Copy construction and copy assignment produces a view sharing
+     * storage, copy() is deep copy. These methods return views: {row, slice,
+     * unsqueeze, squeeze, t}. These return a fresh storage: {copy, gather,
+     * pairwise, operator+-*}
+     * 
+     * @code
+     * LinAlg::Tensor<double> X {{2, 2}, 5};
+     * X[{1, 0}] = 3;
+     * @endcode
+     */
     template <std::floating_point T>
     class Tensor;
 
@@ -59,6 +70,18 @@ namespace LinAlg {
                 for(int j {get_rank() - 2}; j >= 0; --j) {
                     m_strides[j] = m_strides[j + 1] * m_shape[j + 1];
                 }
+            }
+
+            static std::vector<int> validate_shape(const std::vector<int>& shape) {
+                for(int i {}; i < static_cast<int>(shape.size()); ++i) {
+                    if(shape[i] < 1) {
+                        throw std::invalid_argument(
+                            "Cannot create tensor with any extent less than 1"
+                        );
+                    }
+                }
+
+                return shape;
             }
 
             static bool next_index(std::vector<int>& indecies, const std::vector<int>& shape) {
@@ -224,6 +247,7 @@ namespace LinAlg {
             /// @param extent The extent of the only axis
             /// @param index The index of the 1
             /// @return The created tensor
+            /// @throws std::invalid_argument if index lies outside of [0, extent)
             friend Tensor<T> one_hot<T>(int extent, int index);
 
             /// @brief Performs a function on each element of the tensor
@@ -255,6 +279,7 @@ namespace LinAlg {
             /// @brief Allows accessing elements in the tensor
             /// @param indecies The indecies of each axis to retrive element at
             /// @return A reference to the element
+            /// @important For speed, the access operator do no safety checks
             const T& operator[](const std::vector<int>& indecies) const;
             T& operator[](const std::vector<int>& indecies);
 
@@ -520,19 +545,11 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T>::Tensor(const std::vector<int>& shape, T init)
-        : m_shape {shape}
+        : m_shape {validate_shape(shape)}
         , m_storage {std::make_shared<std::vector<T>>(num_elements(), init)}
         , m_offset {}
         , m_strides {}
     {
-        for(int i {}; i < static_cast<int>(shape.size()); ++i) {
-            if(shape[i] < 1) {
-                throw std::invalid_argument(
-                    "Cannot create tensor with any extent less than 1"
-                );
-            }
-        }
-
         calculate_strides();
     }
 
@@ -792,6 +809,16 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T> one_hot(int extent, int index) {
+        if(index < 0 || index >= extent) {
+            throw std::invalid_argument(
+                "Couldn't perform one_hot with extent " + 
+                std::to_string(extent) + 
+                " and index " + 
+                std::to_string(index) + 
+                " because index must lie in [0, extent)"
+            );
+        }
+
         LinAlg::Tensor<T> X {{extent}};
 
         X[{index}] = 1;

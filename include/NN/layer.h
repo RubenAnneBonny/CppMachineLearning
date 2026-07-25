@@ -9,6 +9,18 @@
 #include <NN/parameter.h>
 
 namespace NN {    
+    /**
+     * @brief Defines forward and backward passes to use when propagating
+     * through the neural network
+     *
+     * @details Contains the nodes for a layer, saving states for input tensor
+     * and output tensor in forward_pass to use in backward_pass
+     * 
+     * @code
+     * NN::Layer<double, Func::Linear<double>, Func::ReLU<double>> layer {2, 3};
+     * LinAlg::Tensor<double> X {{1, 2}};
+     * LinAlg::Tensor<double> output {layer.forward_pass(X)};
+     */
     template <std::floating_point T,
               Func::Function<T> F,
               Func::Activation_function<T> A>
@@ -78,7 +90,8 @@ namespace NN {
             /// @brief Performs backpropagation through the layer
             /// @param dY Backpropagation tensor of shape (Batch, nodes) from next layer
             /// @return Tensor of shape (Batch, input size)
-            /// @throws std::invalid_argument if forward_pass was never performed
+            /// @throws std::invalid_argument if batch dimension of dY and m_store_X don't match
+            /// @throws std::invalid_argument if extent of second axis of dY don't match m_nodes
             LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY);    
     };
 
@@ -118,9 +131,21 @@ namespace NN {
               Func::Function<T> F,
               Func::Activation_function<T> A>
     LinAlg::Tensor<T> Layer<T, F, A>::backward_pass(const LinAlg::Tensor<T>& dY) {
-        if(m_store_Y.get_rank() == 1) {
+        if(dY.get_extent(1) != m_nodes) {
             throw std::invalid_argument(
-                "Cannot perform backward pass before forward pass"
+                "Cannot perform backward pass with tensor dY of shape " + 
+                static_cast<std::string>(dY) + 
+                " since last axis must match number of nodes in layer which is " + 
+                std::to_string(m_nodes)
+            );
+        }
+
+        if(dY.get_extent(0) != m_store_X.get_extent(0)) {
+            throw std::invalid_argument(
+                "Cannot perform backward pass with tensor dY of shape " + 
+                static_cast<std::string>(dY) + 
+                " since its batch dimension dont match the stored x tensor from forward pass of shape " + 
+                static_cast<std::string>(m_store_X)
             );
         }
         

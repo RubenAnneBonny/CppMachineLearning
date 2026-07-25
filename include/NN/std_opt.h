@@ -58,6 +58,7 @@ namespace NN {
 
                 m_first_moment.clear();
                 m_second_moment.clear();
+                m_t = 0;
 
                 for(int i {}; i < static_cast<int>(m_parameters.size()); ++i) {
                     LinAlg::Tensor<T> X {{m_parameters[i]->value.get_extent(0), m_parameters[i]->value.get_extent(1)}};

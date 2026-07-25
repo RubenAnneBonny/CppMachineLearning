@@ -325,7 +325,7 @@ TEST(Model, TrainLoopReturnsPerEpochLosses) {
     LinAlg::Tensor<float> input {{5, 2}, 1};
     LinAlg::Tensor<float> target {{5, 2}, 9};
 
-    std::vector<float> losses {model.train_loop(input, target, random, 20, 1)};
+    std::vector<float> losses {model.train_loop(random, input, target, 20, 1)};
 
     EXPECT_EQ(static_cast<int>(losses.size()), 20);
 
@@ -351,7 +351,7 @@ TEST(Model, TestLoopDoesNotChangeWeights) {
 
     LinAlg::Tensor<float> before {model.get_parameters()[0]->value.copy()};
 
-    model.test_loop(input, target, random);
+    model.test_loop(input, target);
 
     EXPECT_EQ(before, model.get_parameters()[0]->value);
 }
@@ -376,7 +376,7 @@ TEST(Model, Deterministic) {
         LinAlg::Tensor<float> input {{5, 2}, 1};
         LinAlg::Tensor<float> target {{5, 2}, 9};
 
-        losses.push_back(model.train_loop(input, target, random, 10, 1));
+        losses.push_back(model.train_loop(random, input, target, 10, 1));
     }
 
     for(int i {}; i < 10; ++i) {
