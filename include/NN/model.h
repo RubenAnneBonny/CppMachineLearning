@@ -439,8 +439,17 @@ namespace NN {
         require_forward_passed("calculate_loss");
 
         check_target_shape(target);
+        int batches {target.get_extent(0)};
 
-        return m_loss_fn.loss(m_store_prediction, target);
+        T loss {};
+
+        for(int b {}; b < batches; ++b) {
+            loss += m_loss_fn.loss(m_store_prediction.row(b).unsqueeze(), target.row(b).unsqueeze());
+        }        
+
+        loss /= static_cast<T>(batches);
+
+        return loss;
     } 
 
     template <std::floating_point T,
@@ -471,7 +480,16 @@ namespace NN {
         
         check_target_shape(target);
 
-        LinAlg::Tensor<T> dY {m_loss_fn.gradient(m_store_prediction, target)};
+        LinAlg::Tensor<T> dY {target.get_shape()};
+        int batches {target.get_extent(0)};
+
+        for(int b {}; b < batches; ++b) {
+            LinAlg::Tensor<T> row_b {m_loss_fn.gradient(m_store_prediction.row(b).unsqueeze(), target.row(b).unsqueeze())};
+
+            for(int i {}; i < row_b.get_extent(1); ++i) {
+                dY[{b, i}] = row_b[{0, i}];
+            }
+        }
 
         for(auto it {m_layers.rbegin()}; it != m_layers.rend(); ++it) {
             dY = (*it)->backward_pass(dY);

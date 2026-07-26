@@ -146,13 +146,10 @@ namespace Func{
     
             static LinAlg::Tensor<T> gradient(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
                 int input_size {prediction.get_extent(1)};
-                int batches {prediction.get_extent(0)};
-                LinAlg::Tensor<T> dL {{batches, input_size}};
+                LinAlg::Tensor<T> dL {{1, input_size}};
 
-                for(int b {}; b < batches; ++b) {
-                    for(int i {}; i < input_size; ++i) {
-                        dL[{b, i}] = 2 * (prediction[{b, i}] - target[{b, i}]) / static_cast<T>(input_size * batches);
-                    }
+                for(int i {}; i < input_size; ++i) {
+                    dL[{0, i}] = 2 * (prediction[{0, i}] - target[{0, i}]) / static_cast<T>(input_size);
                 }
 
                 return dL;
@@ -189,24 +186,21 @@ namespace Func{
             }
             
             static LinAlg::Tensor<T> gradient(const LinAlg::Tensor<T>& raw_prediction, const LinAlg::Tensor<T>& target) {
-                int batches {raw_prediction.get_extent(0)};
                 int input_size {raw_prediction.get_extent(1)};
 
-                LinAlg::Tensor<T> prediction {{batches, input_size}};
+                LinAlg::Tensor<T> prediction {{1, input_size}};
 
-                for(int b {}; b < batches; ++b) {
-                    T max_value {raw_prediction.row(b).max()};
-                    T exp_sum {};
-                    for(int i {}; i < input_size; ++i) {
-                        exp_sum += std::exp(raw_prediction[{b, i}] - max_value);
-                    }
-
-                    for(int i {}; i < input_size; ++i) {
-                        prediction[{b, i}] = std::exp(raw_prediction[{b, i}] - max_value) / exp_sum;
-                    }
+                T max_value {raw_prediction.max()};
+                T exp_sum {};
+                for(int i {}; i < input_size; ++i) {
+                    exp_sum += std::exp(raw_prediction[{0, i}] - max_value);
                 }
 
-                return (T{1} / static_cast<T>(batches)) * (prediction - target);
+                for(int i {}; i < input_size; ++i) {
+                    prediction[{0, i}] = std::exp(raw_prediction[{0, i}] - max_value) / exp_sum;
+                }
+
+                return prediction - target;
             }
     };
 }
