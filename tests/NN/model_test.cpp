@@ -671,3 +671,144 @@ TEST(Model, LoadTruncatedFileThrows) {
     EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
     std::filesystem::remove(path);
 }
+
+TEST(Model, BackpropMathcesNumericGradient) {
+    Func::MSE<float> loss_fn {};
+    NN::Gradient_descent<float> opt {0.01f};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {2, 1};
+    layer.weights.value[{0, 0}] = 0.5f;
+    layer.weights.value[{0, 1}] = -1.0f;
+    layer.weights.value[{0, 2}] = 0.25f;
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> X {{2, 2}};
+    X[{0, 0}] = 1.0f;
+    X[{0, 1}] = 2.0f;
+    X[{1, 0}] = -1.0f;
+    X[{1, 1}] = 0.5f;
+
+    LinAlg::Tensor<float> Y {{2, 1}};
+    Y[{0, 0}] = 1.0f;
+    Y[{1, 0}] = 0.0f;
+
+    model.forward_pass(X);
+    model.backpropagation(Y);
+
+    float eps {1e-2f};
+    auto& param {model.get_parameters()[0]};
+    for(int j {}; j < 3; ++j) {
+        float analytic {param->grad[{0, j}]};
+        float original {param->value[{0, j}]};
+        param->value[{0, j}] = original + eps;
+        model.forward_pass(X);
+        float loss_plus {model.calculate_loss(Y)};
+        param->value[{0, j}] = original - eps;
+        model.forward_pass(X);
+        float loss_minus {model.calculate_loss(Y)};
+        param->value[{0, j}] = original;
+        EXPECT_NEAR(analytic, (loss_plus - loss_minus) / (2 * eps), 1e-2f);
+    }
+}
+
+TEST(Model, CalculateLossUsesMeanOverBatch) {
+    Func::MSE<float> loss_fn {};
+    NN::Gradient_descent<float> opt {0.01f};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {2, 1};
+    layer.weights.value[{0, 0}] = 0.5f;
+    layer.weights.value[{0, 1}] = -1.0f;
+    layer.weights.value[{0, 2}] = 0.25f;
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> X {{2, 2}};
+    X[{0, 0}] = 1.0f;
+    X[{0, 1}] = 2.0f;
+    X[{1, 0}] = -1.0f;
+    X[{1, 1}] = 0.5f;
+
+    LinAlg::Tensor<float> Y {{2, 1}};
+    Y[{0, 0}] = 1.0f;
+    Y[{1, 0}] = 0.0f;
+
+    LinAlg::Tensor<float> P {model.forward_pass(X)};
+
+    float d0 {P[{0, 0}] - Y[{0, 0}]};
+    float d1 {P[{1, 0}] - Y[{1, 0}]};
+    float expected {(d0 * d0 + d1 * d1) / 2.0f};
+
+    EXPECT_NEAR(model.calculate_loss(Y), expected, 1e-5f);
+}
+
+TEST(Model, BatchMatchesSingle) {
+    Func::MSE<float> loss_fn {};
+    NN::Gradient_descent<float> opt {0.01f};
+
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_single {2, 1};
+    layer_single.weights.value[{0, 0}] = 0.5f;
+    layer_single.weights.value[{0, 1}] = -1.0f;
+    layer_single.weights.value[{0, 2}] = 0.25f;
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model_single {loss_fn, opt};
+    model_single.add_layer(layer_single);
+    model_single.init();
+    
+    LinAlg::Tensor<float> X_single {{1, 2}};
+    X_single[{0, 0}] = 1.5f;
+    X_single[{0, 1}] = -2.0f;
+    LinAlg::Tensor<float> Y_single {{1, 1}};
+    Y_single[{0, 0}] = 0.75f;
+
+    model_single.forward_pass(X_single);
+    model_single.backpropagation(Y_single);
+    model_single.optimizer_step();
+
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer_batch {2, 1};
+    layer_batch.weights.value[{0, 0}] = 0.5f;
+    layer_batch.weights.value[{0, 1}] = -1.0f;
+    layer_batch.weights.value[{0, 2}] = 0.25f;
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model_batch {loss_fn, opt};
+    model_batch.add_layer(layer_batch);
+    model_batch.init();
+
+    LinAlg::Tensor<float> X_batch {{3, 2}};
+    LinAlg::Tensor<float> Y_batch {{3, 1}};
+    for(int b {}; b < 3; ++b) {
+        X_batch[{b, 0}] = 1.5f;
+        X_batch[{b, 1}] = -2.0f;
+        Y_batch[{b, 0}] = 0.75f;
+    }
+
+    model_batch.forward_pass(X_batch);
+    model_batch.backpropagation(Y_batch);
+    model_batch.optimizer_step();
+
+    EXPECT_TRUE(LinAlg::all_close<float>(model_batch.get_parameters()[0]->value, model_single.get_parameters()[0]->value, 1e-5f, 1e-5f));
+}
+
+TEST(Model, TestLoopMathcesCalculateLoss) {
+    Func::MSE<float> loss_fn {};
+    NN::Gradient_descent<float> opt {0.01f};
+    NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {2, 1};
+    layer.weights.value[{0, 0}] = 0.5f;
+    layer.weights.value[{0, 1}] = -1.0f;
+    layer.weights.value[{0, 2}] = 0.25f;
+    NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> X {{2, 2}};
+    X[{0, 0}] = 1.0f;
+    X[{0, 1}] = 2.0f;
+    X[{1, 0}] = -1.0f;
+    X[{1, 1}] = 0.5f;
+
+    LinAlg::Tensor<float> Y {{2, 1}};
+    Y[{0, 0}] = 1.0f;
+    Y[{1, 0}] = 0.0f;
+
+    model.forward_pass(X);
+
+    EXPECT_NEAR(model.calculate_loss(Y), model.test_loop(X, Y), 1e-5f);
+}
