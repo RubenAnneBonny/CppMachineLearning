@@ -1,5 +1,5 @@
-#ifndef STD_FUNC_H
-#define STD_FUNC_H
+#ifndef CML_STD_FUNC_H
+#define CML_STD_FUNC_H
 
 #include <Func/function.h>
 #include <LinAlg/tensor.h>
@@ -196,10 +196,10 @@ namespace Func{
                         exp_sum += std::exp(prediction[{b, i}] - max_value);
                     }
 
-                    std::vector<int> class_indecies {target.row(b).unsqueeze().argmax()};
-                    class_indecies[0] = b;
+                    std::vector<int> class_indices {target.row(b).unsqueeze().argmax()};
+                    class_indices[0] = b;
 
-                    loss += -(prediction[class_indecies] - max_value) + std::log(exp_sum);
+                    loss += -(prediction[class_indices] - max_value) + std::log(exp_sum);
                 }
 
                 loss /= static_cast<T>(batches);

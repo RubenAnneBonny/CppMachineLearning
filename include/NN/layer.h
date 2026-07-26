@@ -1,5 +1,5 @@
-#ifndef LAYER_H
-#define LAYER_H
+#ifndef CML_LAYER_H
+#define CML_LAYER_H
 
 #include <vector>
 #include <stdexcept>

@@ -1,12 +1,12 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef CML_MODEL_H
+#define CML_MODEL_H
 
 #include <LinAlg/tensor.h>
 #include <NN/layer.h>
 #include <NN/parameter.h>
 #include <NN/optimizer.h>
 #include <Func/function.h>
-#include <Data/dataloader.h>
+#include <Data/data_loader.h>
 #include <vector>
 #include <NN/layer_base.h>
 #include <string>
@@ -138,7 +138,7 @@ namespace NN {
             /// @brief Must run a init before training, initializes the network
             /// @throws std::invalid_argument if no layers were added before init
             /// @throws std::invalid_argument if model was already initialized
-            /// @important Only use this method if you manually set weights, otherwise model can't learn
+            /// @warning Only use this method if you manually set weights, otherwise model can't learn
             void init();
 
             /// @brief Must run a init before training, initializes the network with random weights
@@ -147,6 +147,7 @@ namespace NN {
             /// @param target_stddev The stddev we want for the output for each layer
             /// @param max_iters Maximum number of iterations to optimize for stddev
             /// @param tol The maximum tolerance for differnce between stddev from output from layer and target_stddev
+            /// @param damping Limits the step size towards correct stddev, should be in (0, 1]
             /// @throws std::invalid_argument if no layers were added before init
             /// @throws std::invalid_argument if model was already initialized
             /// @throws std::invalid_argument if the extent of the first axis of samples is 0
@@ -172,14 +173,14 @@ namespace NN {
             /// @param input The tensor to pass through the network
             /// @return A vector of all the outputs of each layer in order
             /// @throws std::invalid_argument if network hasn't been initialized with init()
-            /// @important Cannot be used as a normal forward pass
+            /// @warning Cannot be used as a normal forward pass
             std::vector<LinAlg::Tensor<T>> forward_capture(const LinAlg::Tensor<T>& input) const;
             
             /// @brief Calculates all the intermediate pre-activation outputs of each layer
             /// @param input The tensor to pass through the network
             /// @return A vector of all the outputs of each layer in order
             /// @throws std::invalid_argument if network hasn't been initialized with init()
-            /// @important Cannot be used as a normal forward pass
+            /// @warning Cannot be used as a normal forward pass
             std::vector<LinAlg::Tensor<T>> pre_activation_capture(const LinAlg::Tensor<T>& input);
 
             /// @brief Calculates the loss
@@ -219,9 +220,11 @@ namespace NN {
             void load_weights(const std::string& path);
 
             /// @brief A training loop for the neural network
+            /// @param random A random instance used for random batching
             /// @param inputs The input tensor of shape (batch, input size)
             /// @param targets The target tensor of shape (batch, output size)
             /// @param epochs The number of epochs to train
+            /// @param batch_size The batch size to use during training
             /// @return A vector of losses
             /// @throws std::invalid_argument if epochs is less than 1
             /// @throws std::invalid_argument if batch_size is less than 1
@@ -280,7 +283,7 @@ namespace NN {
         }
 
         auto holder {std::make_unique<NN::Layer_holder<T, NN::Layer<T, F, A>>>(std::move(layer))};
-        m_parameters.push_back(&holder->parameters());
+        m_parameters.push_back(&holder->get_parameters());
         m_layers.push_back(std::move(holder));
     }
 
@@ -487,7 +490,7 @@ namespace NN {
             LinAlg::Tensor<T> row_b {m_loss_fn.gradient(m_store_prediction.row(b).unsqueeze(), target.row(b).unsqueeze())};
 
             for(int i {}; i < row_b.get_extent(1); ++i) {
-                dY[{b, i}] = row_b[{0, i}];
+                dY[{b, i}] = row_b[{0, i}] / static_cast<T>(batches);
             }
         }
 
@@ -647,7 +650,7 @@ namespace NN {
         std::vector<T> losses {};
         losses.reserve(static_cast<std::size_t>(epochs));
 
-        Data::Dataloader<T> loader {random, inputs, targets, batch_size};
+        Data::Data_loader<T> loader {random, inputs, targets, batch_size};
 
         for(int epoch {}; epoch < epochs; ++epoch) {
             T epoch_loss {};

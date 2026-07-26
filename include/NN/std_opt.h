@@ -1,5 +1,5 @@
-#ifndef STD_OPT_H
-#define STD_OPT_H
+#ifndef CML_STD_OPT_H
+#define CML_STD_OPT_H
 
 #include <NN/parameter.h>
 #include <NN/optimizer.h>

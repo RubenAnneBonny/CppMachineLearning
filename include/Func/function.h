@@ -1,5 +1,5 @@
-#ifndef FUNCTION_H
-#define FUNCTION_H
+#ifndef CML_FUNCTION_H
+#define CML_FUNCTION_H
 
 /**
  * @file
@@ -14,7 +14,7 @@
  *              return X * 3;
  *          }
  *  
- *          static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+ *          static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
  *              return LinAlg::Tensor<T> {X.get_shape(), 3};
  *          }
  * };
@@ -42,7 +42,7 @@ namespace Func{
      *
      * @warning Make sure the weights have an internal ordering, for example the
      * second weight in the parameter weights, should correspond to the gradient
-     * of the second weight when using weights_grad
+     * of the second weight when using weight_derivative
      */
     template <typename F, typename T>
     concept Function = 
@@ -59,7 +59,7 @@ namespace Func{
      * @details For all functions the shape of the input tensor X is shape
      * (1, nodes). activate should perform the activation function on all
      * elements of a copy of the input tensor, the output should be of shape
-     * (1, nodes). derivate should calculate the gradient of the activation
+     * (1, nodes). derivative should calculate the gradient of the activation
      * function and output a tensor of shape (1, nodes), where each (sample,
      * node) is the gradient of the activation function with respect to that
      * input.

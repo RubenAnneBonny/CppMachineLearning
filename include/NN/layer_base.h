@@ -1,5 +1,5 @@
-#ifndef LAYER_BASE_H
-#define LAYER_BASE_H
+#ifndef CML_LAYER_BASE_H
+#define CML_LAYER_BASE_H
 
 #include <memory>
 #include <concepts>
@@ -7,8 +7,10 @@
 #include <NN/parameter.h>
 
 namespace NN {
-    /// @brief These classes purpose is to allow vector of layers with different functions in model.h 
-
+    /**
+     * @brief This class purpose is to allow vector of layers with different
+     * functions in model.h 
+     */
     template <std::floating_point T>
     class Layer_base {
         public:
@@ -17,12 +19,16 @@ namespace NN {
             virtual LinAlg::Tensor<T> forward_pass(const LinAlg::Tensor<T>& X) = 0;
             virtual LinAlg::Tensor<T> forward_pass_stateless(const LinAlg::Tensor<T>& X) const = 0;
             virtual LinAlg::Tensor<T> backward_pass(const LinAlg::Tensor<T>& dY) = 0;
-            virtual Parameter<T>& parameters() = 0;
+            virtual Parameter<T>& get_parameters() = 0;
             virtual int get_nodes() const = 0;
             virtual int get_input_nodes() const = 0;
             virtual LinAlg::Tensor<T> get_pre_activation() const = 0;
     };
 
+    /**
+     * @brief Takes in a layer, but since it inherits from layer_base, a pointer
+     * to layer_base can point to the layer_holder
+     */
     template <std::floating_point T, 
               typename L>
     class Layer_holder final : public Layer_base<T> {
@@ -46,7 +52,7 @@ namespace NN {
                 return m_layer.backward_pass(dY);
             }
 
-            Parameter<T>& parameters() override {
+            Parameter<T>& get_parameters() override {
                 return m_layer.weights;
             }
 

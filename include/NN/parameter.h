@@ -1,9 +1,13 @@
-#ifndef PARAMETER_H
-#define PARAMETER_H
+#ifndef CML_PARAMETER_H
+#define CML_PARAMETER_H
 
 #include <LinAlg/tensor.h>
 
 namespace NN {
+    /**
+     * @brief Pairs a value tensor with a grad tensor to keep track of weights
+     * and their gradients
+     */
     template <std::floating_point T>
     class Parameter {
         public:

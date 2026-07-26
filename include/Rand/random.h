@@ -1,5 +1,5 @@
-#ifndef RANDOM_H
-#define RANDOM_H
+#ifndef CML_RANDOM_H
+#define CML_RANDOM_H
 
 #include <random>
 #include <concepts>
@@ -7,21 +7,24 @@
 #include <string>
 
 namespace Rand{
+    /**
+     * @brief A random class used for creating random numbers
+     */
     template<std::floating_point T>
     class Random{
         private:
-            std::mt19937 mt;
+            std::mt19937 m_mt;
 
         public:
             /// @brief Unseeded constructor
             explicit Random()
-                : mt {std::random_device{}()}
+                : m_mt {std::random_device{}()}
             {}
 
             /// @brief Seeded constructor
             /// @param seed The seed
             explicit Random(int seed)
-                : mt {static_cast<unsigned int>(seed)}
+                : m_mt {static_cast<unsigned int>(seed)}
             {}
 
             /// @brief Random uniform distrobution
@@ -40,7 +43,7 @@ namespace Rand{
                     );
                 }
 
-                return std::uniform_real_distribution<T>{low, high}(mt);
+                return std::uniform_real_distribution<T>{low, high}(m_mt);
             }
 
             /// @brief Random normal distrubution
@@ -48,7 +51,7 @@ namespace Rand{
             /// @param stddev Standard deviation
             /// @return Random number ~N(mean, stddev)
             T normal(T mean, T stddev){
-                return std::normal_distribution<T>{mean, stddev}(mt);
+                return std::normal_distribution<T>{mean, stddev}(m_mt);
             }
 
             /// @brief Random uniform integer distrubution
@@ -67,7 +70,7 @@ namespace Rand{
                     );
                 }
 
-                return std::uniform_int_distribution<int>{low, high - 1}(mt);
+                return std::uniform_int_distribution<int>{low, high - 1}(m_mt);
             }
     };
 }

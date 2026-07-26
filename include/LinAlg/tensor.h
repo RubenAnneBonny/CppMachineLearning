@@ -1,5 +1,5 @@
-#ifndef TENSOR_H
-#define TENSOR_H
+#ifndef CML_TENSOR_H
+#define CML_TENSOR_H
 
 
 #include <memory>
@@ -16,7 +16,7 @@ namespace LinAlg {
     /**
      * @brief A multi-dimensional container with many functions
      *
-     * @details Using a vector of indecies the same rank as the tensor, you can
+     * @details Using a vector of indices the same rank as the tensor, you can
      * index the tensor. The storage uses shared_pointer allowing several view
      * into the same tensor.
      *
@@ -84,12 +84,12 @@ namespace LinAlg {
                 return shape;
             }
 
-            static bool next_index(std::vector<int>& indecies, const std::vector<int>& shape) {
+            static bool next_index(std::vector<int>& indices, const std::vector<int>& shape) {
                 for(int i {static_cast<int>(shape.size()) - 1}; i >= 0; --i) {
-                    if(++indecies[i] < shape[i]) {
+                    if(++indices[i] < shape[i]) {
                         return true;
                     }
-                    indecies[i] = 0;
+                    indices[i] = 0;
                 }
 
                 return false;
@@ -212,7 +212,7 @@ namespace LinAlg {
             Tensor slice(int start, int end) const;
 
             /// @brief Constructs a new tensor, where the rows are the rows corresponding to to_gather
-            /// @param to_gather The indecies of the rows to gather
+            /// @param to_gather The indices of the rows to gather
             /// @return A tensor of shape (to_gather size, ...the same shapes as this)
             /// @throws std::invalid_argument if to_gather is empty
             /// @throws std::invalid_argument if any element in to_gather is outside extent of first axis
@@ -283,11 +283,12 @@ namespace LinAlg {
             }
 
             /// @brief Allows accessing elements in the tensor
-            /// @param indecies The indecies of each axis to retrive element at
+            /// @param indices The indices of each axis to retrive element at
             /// @return A reference to the element
-            /// @important For speed, the access operator do no safety checks
-            const T& operator[](const std::vector<int>& indecies) const;
-            T& operator[](const std::vector<int>& indecies);
+            /// @warning For speed, the access operator do no safety checks
+            /// @pre indices.size() == rank and each index is in [0, extent(axis)), otherwise undefined behaviour
+            const T& operator[](const std::vector<int>& indices) const;
+            T& operator[](const std::vector<int>& indices);
 
             /// @brief Checks for equality between two tensors
             /// @param A The first tensor
@@ -304,13 +305,13 @@ namespace LinAlg {
                     }
                 }
 
-                std::vector<int> indecies(A.get_rank(), 0);
+                std::vector<int> indices(A.get_rank(), 0);
 
                 do {
-                    if(A[indecies] != B[indecies]) {
+                    if(A[indices] != B[indices]) {
                         return false;
                     }
-                } while(next_index(indecies, A.m_shape));
+                } while(next_index(indices, A.m_shape));
 
                 return true;
             }
@@ -361,10 +362,10 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indecies(get_rank(), 0);
+                std::vector<int> indices(get_rank(), 0);
                 do {
-                    (*this)[indecies] = C[indecies];
-                } while(next_index(indecies, m_shape));
+                    (*this)[indices] = C[indices];
+                } while(next_index(indices, m_shape));
 
                 return *this;
             }
@@ -430,10 +431,10 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indecies(get_rank(), 0);
+                std::vector<int> indices(get_rank(), 0);
                 do {
-                    (*this)[indecies] = C[indecies];
-                } while(next_index(indecies, m_shape));
+                    (*this)[indices] = C[indices];
+                } while(next_index(indices, m_shape));
 
                 return *this;
             }
@@ -505,10 +506,10 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indecies(get_rank(), 0);
+                std::vector<int> indices(get_rank(), 0);
                 do {
-                    (*this)[{indecies}] = C[indecies];
-                } while(next_index(indecies, m_shape));
+                    (*this)[{indices}] = C[indices];
+                } while(next_index(indices, m_shape));
 
                 return *this;
             }
@@ -561,36 +562,36 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::normal(Rand::Random<T>& random, T mean, T stddev) {
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
         do {
-            (*this)[indecies] = random.normal(mean, stddev);
-        } while(next_index(indecies, m_shape));
+            (*this)[indices] = random.normal(mean, stddev);
+        } while(next_index(indices, m_shape));
     }
 
     template <std::floating_point T>
     void Tensor<T>::uniform(Rand::Random<T>& random, T low, T high) {
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
         do {
-            (*this)[indecies] = random.uniform(low, high);
-        } while(next_index(indecies, m_shape));
+            (*this)[indices] = random.uniform(low, high);
+        } while(next_index(indices, m_shape));
     }
 
     template <std::floating_point T>
     void Tensor<T>::set_all_elements(T value) {
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
         do {
-            (*this)[indecies] = value;
-        } while(next_index(indecies, m_shape));
+            (*this)[indices] = value;
+        } while(next_index(indices, m_shape));
     }
 
     template <std::floating_point T>
     Tensor<T> Tensor<T>::copy() const {
         Tensor<T> A {m_shape};
 
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
         do {
-            A[indecies] = (*this)[indecies];
-        } while(next_index(indecies, m_shape));
+            A[indices] = (*this)[indices];
+        } while(next_index(indices, m_shape));
 
         return A;
     }
@@ -631,7 +632,7 @@ namespace LinAlg {
             throw std::invalid_argument(
                 "Cannot slice Tensor of shape " + 
                 static_cast<std::string>(*this) + 
-                " since the indecies for start (" + 
+                " since the indices for start (" + 
                 std::to_string(start) + 
                 ") and end (" + 
                 std::to_string(end) + 
@@ -668,15 +669,15 @@ namespace LinAlg {
         shape[0] = static_cast<int>(to_gather.size());
         Tensor<T> A {shape};
 
-        std::vector<int> indecies(A.get_rank(), 0);
-        std::vector<int> this_indecies(A.get_rank());
+        std::vector<int> indices(A.get_rank(), 0);
+        std::vector<int> this_indices(A.get_rank());
 
         do {
-            this_indecies = indecies;
-            this_indecies[0] = to_gather[indecies[0]];
+            this_indices = indices;
+            this_indices[0] = to_gather[indices[0]];
 
-            A[indecies] = (*this)[this_indecies];
-        } while(next_index(indecies, A.m_shape));
+            A[indices] = (*this)[this_indices];
+        } while(next_index(indices, A.m_shape));
 
         return A;
     }
@@ -768,47 +769,47 @@ namespace LinAlg {
 
     template <std::floating_point T>
     std::vector<int> Tensor<T>::argmax() const {
-        std::vector<int> best_indecies(get_rank(), 0);
-        T max_element {(*this)[best_indecies]};
+        std::vector<int> best_indices(get_rank(), 0);
+        T max_element {(*this)[best_indices]};
 
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
 
         do {
-            T element = (*this)[indecies];
+            T element = (*this)[indices];
 
             if(element > max_element) {
                 max_element = element;
-                best_indecies = indecies;
+                best_indices = indices;
             }
-        } while(next_index(indecies, m_shape));
+        } while(next_index(indices, m_shape));
 
-        return best_indecies;
+        return best_indices;
     }
 
     template <std::floating_point T>
     T Tensor<T>::sum() const {
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
 
         T sum {};
 
         do {
-            sum += (*this)[indecies];
-        } while(next_index(indecies, m_shape));
+            sum += (*this)[indices];
+        } while(next_index(indices, m_shape));
 
         return sum;
     }
 
     template <std::floating_point T>
     T Tensor<T>::max() const {
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
 
-        T max_value = (*this)[indecies];
+        T max_value = (*this)[indices];
 
         do {
-            T element = (*this)[indecies];
+            T element = (*this)[indices];
 
             max_value = (element > max_value ? element : max_value);
-        } while(next_index(indecies, m_shape));
+        } while(next_index(indices, m_shape));
 
         return max_value;
     }
@@ -835,11 +836,11 @@ namespace LinAlg {
     template <std::floating_point T>
     template <std::invocable<T> Fn>
     Tensor<T>& Tensor<T>::elementwise(Fn fn) {
-        std::vector<int> indecies(get_rank(), 0);
+        std::vector<int> indices(get_rank(), 0);
 
         do {
-            (*this)[indecies] = fn((*this)[indecies]);
-        } while(next_index(indecies, m_shape));
+            (*this)[indices] = static_cast<T>(fn((*this)[indices]));
+        } while(next_index(indices, m_shape));
 
         return *this;
     }
@@ -858,11 +859,11 @@ namespace LinAlg {
 
         Tensor<T> C {A_view.m_shape};
 
-        std::vector<int> indecies(rank, 0);
+        std::vector<int> indices(rank, 0);
 
         do {
-            C[indecies] = fn(A_view[indecies], B_view[indecies]);
-        } while(Tensor<T>::next_index(indecies, C.m_shape));
+            C[indices] = fn(A_view[indices], B_view[indices]);
+        } while(Tensor<T>::next_index(indices, C.m_shape));
 
         return C;
     }
@@ -885,19 +886,19 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    const T& Tensor<T>::operator[](const std::vector<int>& indecies) const {
+    const T& Tensor<T>::operator[](const std::vector<int>& indices) const {
         int index {m_offset};
 
         for(int i {}; i < get_rank(); ++i) {
-            index += indecies[i] * m_strides[i];
+            index += indices[i] * m_strides[i];
         }
 
         return (*m_storage)[static_cast<std::size_t>(index)];
     }
     template <std::floating_point T>
-    T& Tensor<T>::operator[](const std::vector<int>& indecies) {
+    T& Tensor<T>::operator[](const std::vector<int>& indices) {
         const Tensor& self = *this;
-        return const_cast<T&>(self[indecies]);
+        return const_cast<T&>(self[indices]);
     }
 
     template <std::floating_point T>
@@ -912,13 +913,13 @@ namespace LinAlg {
             }
         }
 
-        std::vector<int> indecies(A.get_rank(), 0);
+        std::vector<int> indices(A.get_rank(), 0);
 
         do {
-            if(std::abs(A[indecies] - B[indecies]) > atol + std::abs(B[indecies]) * rtol) {
+            if(std::abs(A[indices] - B[indices]) > atol + std::abs(B[indices]) * rtol) {
                 return false;
             }
-        } while(Tensor<T>::next_index(indecies, A.m_shape));
+        } while(Tensor<T>::next_index(indices, A.m_shape));
 
         return true;
     }
@@ -960,26 +961,26 @@ namespace LinAlg {
         shape[max_rank - 1] = B_view.m_shape.back();
         Tensor<T> C {shape};
 
-        std::vector<int> indecies(max_rank, 0);
-        std::vector<int> A_indecies(max_rank, 0);
-        std::vector<int> B_indecies(max_rank, 0);
+        std::vector<int> indices(max_rank, 0);
+        std::vector<int> A_indices(max_rank, 0);
+        std::vector<int> B_indices(max_rank, 0);
 
         do {
             for(int i {}; i < max_rank; ++i){
-                A_indecies[i] = indecies[i];
-                B_indecies[i] = indecies[i];
+                A_indices[i] = indices[i];
+                B_indices[i] = indices[i];
             }
 
             T sum {};
             for(int i {}; i < A_view.m_shape.back(); ++i){
-                A_indecies[max_rank - 1] = i;
-                B_indecies[max_rank - 2] = i;
+                A_indices[max_rank - 1] = i;
+                B_indices[max_rank - 2] = i;
 
-                sum += A_view[A_indecies] * B_view[B_indecies];
+                sum += A_view[A_indices] * B_view[B_indices];
             }
 
-            C[indecies] = sum;
-        } while(Tensor<T>::next_index(indecies, C.m_shape));
+            C[indices] = sum;
+        } while(Tensor<T>::next_index(indices, C.m_shape));
 
         return C;
     }

@@ -1,5 +1,5 @@
-#ifndef OPTIMIZER_CHECK_H
-#define OPTIMIZER_CHECK_H
+#ifndef CML_OPTIMIZER_CHECK_H
+#define CML_OPTIMIZER_CHECK_H
 
 /**
  * @file

@@ -1,5 +1,5 @@
-#ifndef DATALOADER_H
-#define DATALOADER_H
+#ifndef CML_DATALOADER_H
+#define CML_DATALOADER_H
 
 #include <LinAlg/tensor.h>
 #include <Rand/random.h>
@@ -28,7 +28,7 @@ namespace Data {
      */
 
     template <std::floating_point T>
-    class Dataloader {
+    class Data_loader {
         private:
             const LinAlg::Tensor<T> m_inputs;
             const LinAlg::Tensor<T> m_targets;
@@ -51,7 +51,7 @@ namespace Data {
             /// @param batch_size The batch size to use when loading 
             /// @throws std::invalid_argument if batch_size is less than 1 
             /// @throws std::invalid_argument if the extents of the first axises of targets and inputs don't match
-            Dataloader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size);
+            Data_loader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size);
        
             int get_num_batches(bool drop_last = false) {
                 if(drop_last) {
@@ -70,7 +70,7 @@ namespace Data {
     };
 
     template <std::floating_point T>
-    Dataloader<T>::Dataloader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size) 
+    Data_loader<T>::Data_loader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size) 
         : m_inputs {inputs.copy()}
         , m_targets {targets.copy()}
         , m_permutation(inputs.get_extent(0))
@@ -99,7 +99,7 @@ namespace Data {
     }
 
     template <std::floating_point T>
-    bool Dataloader<T>::next_batch(Rand::Random<T>& random, LinAlg::Tensor<T>& X, LinAlg::Tensor<T>& Y, bool drop_last) {        
+    bool Data_loader<T>::next_batch(Rand::Random<T>& random, LinAlg::Tensor<T>& X, LinAlg::Tensor<T>& Y, bool drop_last) {        
         if(m_batch == get_num_batches(drop_last)){
             shuffle(random);
             m_batch = 0;
@@ -110,9 +110,9 @@ namespace Data {
         int lower_index {m_batch * m_batch_size};
         int upper_index {std::min((m_batch + 1) * m_batch_size, static_cast<int>(m_permutation.size()))};
 
-        std::vector<int> indecies(m_permutation.begin() + lower_index, m_permutation.begin() + upper_index);
-        X = m_inputs.gather(indecies);
-        Y = m_targets.gather(indecies);
+        std::vector<int> indices(m_permutation.begin() + lower_index, m_permutation.begin() + upper_index);
+        X = m_inputs.gather(indices);
+        Y = m_targets.gather(indices);
         
         ++m_batch;
         return true;

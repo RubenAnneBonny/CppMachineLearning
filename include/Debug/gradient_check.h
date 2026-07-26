@@ -1,5 +1,5 @@
-#ifndef GRADIENT_CHECK_H
-#define GRADIENT_CHECK_H
+#ifndef CML_GRADIENT_CHECK_H
+#define CML_GRADIENT_CHECK_H
 
 /**
  * @file

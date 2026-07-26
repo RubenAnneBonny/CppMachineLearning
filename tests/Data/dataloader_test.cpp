@@ -1,10 +1,10 @@
 #include <Rand/random.h>
 #include <LinAlg/tensor.h>
-#include <Data/dataloader.h>
+#include <Data/data_loader.h>
 #include <vector>
 #include <gtest/gtest.h>
 
-TEST(Dataloader, OneEpochDontLoseRows) {
+TEST(Data_loader, OneEpochDontLoseRows) {
     LinAlg::Tensor<float> inputs {{100, 1}};
     LinAlg::Tensor<float> targets {{100, 1}};
 
@@ -14,7 +14,7 @@ TEST(Dataloader, OneEpochDontLoseRows) {
 
     Rand::Random<float> random {42};
 
-    Data::Dataloader<float> loader {random, inputs, targets, 100};
+    Data::Data_loader<float> loader {random, inputs, targets, 100};
 
     LinAlg::Tensor<float> input {{1}};
     LinAlg::Tensor<float> target {{1}};
@@ -42,7 +42,7 @@ TEST(Dataloader, OneEpochDontLoseRows) {
     }
 }
 
-TEST(Dataloader, InputTargetMatch) {
+TEST(Data_loader, InputTargetMatch) {
     LinAlg::Tensor<float> inputs {{100, 1}};
     LinAlg::Tensor<float> targets {{100, 1}};
 
@@ -53,7 +53,7 @@ TEST(Dataloader, InputTargetMatch) {
 
     Rand::Random<float> random {42};
 
-    Data::Dataloader<float> loader {random, inputs, targets, 100};
+    Data::Data_loader<float> loader {random, inputs, targets, 100};
 
     LinAlg::Tensor<float> input {{1}};
     LinAlg::Tensor<float> target {{1}};
@@ -68,18 +68,18 @@ TEST(Dataloader, InputTargetMatch) {
     }
 }
 
-TEST(Dataloader, NumBatchesNotDivisible) {
+TEST(Data_loader, NumBatchesNotDivisible) {
     LinAlg::Tensor<float> inputs {{42, 10}};
     LinAlg::Tensor<float> targets {{42, 2}};
 
     Rand::Random<float> random {42};
 
-    Data::Dataloader<float> loader {random, inputs, targets, 10};
+    Data::Data_loader<float> loader {random, inputs, targets, 10};
 
     EXPECT_EQ(5, loader.get_num_batches());
 }
 
-TEST(Dataloader, Determinism) {
+TEST(Data_loader, Determinism) {
     std::vector<LinAlg::Tensor<float>> X {};
 
     for(int i {}; i < 2; ++i) {
@@ -88,7 +88,7 @@ TEST(Dataloader, Determinism) {
 
         Rand::Random<float> random {42};
 
-        Data::Dataloader<float> loader {random, inputs, targets, 100};
+        Data::Data_loader<float> loader {random, inputs, targets, 100};
 
         LinAlg::Tensor<float> input {{1}};
         X.push_back(input);
@@ -100,7 +100,7 @@ TEST(Dataloader, Determinism) {
     EXPECT_EQ(X[0], X[1]);
 }
 
-TEST(Dataloader, TwoEpochsDiffer) {
+TEST(Data_loader, TwoEpochsDiffer) {
     LinAlg::Tensor<float> inputs {{100, 1}};
     LinAlg::Tensor<float> targets {{100, 1}};
 
@@ -111,7 +111,7 @@ TEST(Dataloader, TwoEpochsDiffer) {
 
     Rand::Random<float> random {42};
 
-    Data::Dataloader<float> loader {random, inputs, targets, 100};
+    Data::Data_loader<float> loader {random, inputs, targets, 100};
 
     LinAlg::Tensor<float> input_1 {{1}};
     LinAlg::Tensor<float> input_2 {{1}};
@@ -144,13 +144,13 @@ TEST(Dataloader, TwoEpochsDiffer) {
     }
 }
 
-TEST(Dataloader, AfterLastBatchReturnsFalse) {
+TEST(Data_loader, AfterLastBatchReturnsFalse) {
     LinAlg::Tensor<float> inputs {{100, 1}};
     LinAlg::Tensor<float> targets {{100, 1}};
 
     Rand::Random<float> random {42};
 
-    Data::Dataloader<float> loader_1 {random, inputs, targets, 100};
+    Data::Data_loader<float> loader_1 {random, inputs, targets, 100};
 
     LinAlg::Tensor<float> input {{1}};
     LinAlg::Tensor<float> target {{1}};
@@ -158,28 +158,28 @@ TEST(Dataloader, AfterLastBatchReturnsFalse) {
     EXPECT_TRUE(loader_1.next_batch(random, input, target));
     EXPECT_FALSE(loader_1.next_batch(random, input, target));
 
-    Data::Dataloader<float> loader_2 {random, inputs, targets, 60};
+    Data::Data_loader<float> loader_2 {random, inputs, targets, 60};
 
     EXPECT_TRUE(loader_2.next_batch(random, input, target));
     EXPECT_TRUE(loader_2.next_batch(random, input, target));
     EXPECT_FALSE(loader_2.next_batch(random, input, target));
 }
 
-TEST(Dataloader, BatchSizeLessThanOneThrows) {
+TEST(Data_loader, BatchSizeLessThanOneThrows) {
     LinAlg::Tensor<float> inputs {{100, 1}};
     LinAlg::Tensor<float> targets {{100, 1}};
 
     Rand::Random<float> random {42};
 
-    EXPECT_THROW((Data::Dataloader<float> {random, inputs, targets, 0}), std::invalid_argument);
-    EXPECT_THROW((Data::Dataloader<float> {random, inputs, targets, -32}), std::invalid_argument);
+    EXPECT_THROW((Data::Data_loader<float> {random, inputs, targets, 0}), std::invalid_argument);
+    EXPECT_THROW((Data::Data_loader<float> {random, inputs, targets, -32}), std::invalid_argument);
 }
 
-TEST(Dataloader, BatchSizeDifferInputsTargetsThrows) {
+TEST(Data_loader, BatchSizeDifferInputsTargetsThrows) {
     LinAlg::Tensor<float> inputs {{100, 1}};
     LinAlg::Tensor<float> targets {{24, 1}};
 
     Rand::Random<float> random {42};
 
-    EXPECT_THROW((Data::Dataloader<float> {random, inputs, targets, 21}), std::invalid_argument);
+    EXPECT_THROW((Data::Data_loader<float> {random, inputs, targets, 21}), std::invalid_argument);
 }
