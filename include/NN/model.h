@@ -150,7 +150,7 @@ namespace NN {
             /// @throws std::invalid_argument if no layers were added before init
             /// @throws std::invalid_argument if model was already initialized
             /// @throws std::invalid_argument if the extent of the first axis of samples is 0
-            void init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev = 1, int max_iters = 5, T tol = 0.01, T damping = 0.9);
+            void init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev = T{1}, int max_iters = 5, T tol = T{0.01}, T damping = T{0.9});
 
             /// @brief Does a forward pass through the network, saving necessary inputs
             /// @param X The input tensor to the network

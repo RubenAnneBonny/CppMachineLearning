@@ -827,7 +827,7 @@ namespace LinAlg {
 
         LinAlg::Tensor<T> X {{extent}};
 
-        X[{index}] = 1;
+        X[{index}] = T{1};
 
         return X;
     }

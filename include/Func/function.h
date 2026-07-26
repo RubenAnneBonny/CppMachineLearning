@@ -31,53 +31,62 @@
 #include <LinAlg/tensor.h>
 
 namespace Func{
+    /**
+     * @brief A concept for the normal function inside a node
+     *
+     * @details For all functions the input tensor X is shape (1, input_size) and
+     * weight shape is (1, num_weights). num_weights should return the number of
+     * weights the function uses based on the input_size. function should based
+     * on input and weights, calulate the output of the function as a scalar.
+     * The function grad should output a tensor of shape (1, input_size), the
+     * gradient of the function with respective to each of its inputs.
+     * weights_grad should output tensor of shape (1, num_weights) the gradient
+     * of the function with respective to each weight.
+     *
+     * @warning Make sure the weights have an internal ordering, for example the
+     * second weight in the parameter weights, should correspond to the gradient
+     * of the second weight when using weights_grad
+     */
     template <typename F, typename T>
     concept Function = 
         requires(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, int input_size) {
-            /// @brief Returns the number of weights for the function, based on input size
             {F::num_weights(input_size)} -> std::same_as<int>;
-            /// @brief Based on input and weights, calculates the output of the function
-            /// @param X Input tensor of shape (1, input size)
-            /// @param weights Tensor of shape (1, num_weights)
-            /// @return Scalar
             {F::function(X, weights)} -> std::same_as<T>;
-            /// @brief Calculates the gradient of the function, based on input
-            /// @param X Input tensor of shape (1, input size)
-            /// @param weights Tensor of shape (1, num_weights)
-            /// @returns Tensor of shape (batch, input_size)
             {F::function_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
-            /// @brief Calculates the gradient of the function, based on weights
-            /// @param X Input tensor of shape (1, input size)
-            /// @param weights Tensor of shape (1, num_weights)
-            /// @return Tensor of shape (batch, num_weights)
             {F::weights_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 
+    /**
+     * @brief A concept for the activation function used in a layer
+     *
+     * @details For all functions the shape of the input tensor X is shape
+     * (batch, nodes). activate should perform the activation function on all
+     * elements of a copy of the input tensor, the output should be of shape
+     * (batch, nodes). derivate should calculate the gradient of the activation
+     * function and output a tensor of shape (batch, nodes), where each (sample,
+     * node) is the gradient of the activation function with respect to that
+     * input.
+     */
     template <typename F, typename T>
     concept Activation_function = 
         requires(const LinAlg::Tensor<T>& X) {
-            /// @brief Forward pass through the activation function
-            /// @param X Tensor of shape (batch, nodes)
-            /// @return Tensor of shape (batch, nodes)
             {F::activate(X)} -> std::same_as<LinAlg::Tensor<T>>;
-            /// @brief Calculate gradient of Activation
-            /// @param X Tensor of shape (batch, nodes)
-            /// @return Tensor of shape (batch, nodes)
             {F::derivate(X)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 
+    /**
+     * @brief A concept for the loss function used in a neural network
+     *
+     * @details For all functions the prediction and target tensors should be of
+     * shape (batch, input_size). The loss function should calculate the loss
+     * value, a scalar. The gradient function should calculate a gradient tensor
+     * of shape (batch, input_size) the gradient of the function with respective
+     * to each input.
+     */
     template <typename F, typename T>
     concept Loss_function = 
         requires(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
-            /// @brief Calculates the loss
-            /// @param prediction The output from the neural network, tensor of shape (batch, input size)
-            /// @param target The target output, tensor of shape (batch, input size)
-            /// @return The loss, a scalar
             {F::loss(prediction, target)} -> std::same_as<T>;
-            /// @brief Calculates the gradient of the loss function
-            /// @param prediction The output from the neural network, tensor of shape (1, input size)
-            /// @param target The target output, tensor of shape (batch, input size)
-            /// @result The gradient tensor of shape (batch, input size)
             {F::gradient(prediction, target)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 }

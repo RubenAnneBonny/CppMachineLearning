@@ -43,7 +43,7 @@ namespace NN {
             int m_t;
 
         public:
-            explicit Adam(T beta_1 = 0.9, T beta_2 = 0.999, T alpha = 1e-3, T eps = 1e-8)
+            explicit Adam(T beta_1 = T{0.9}, T beta_2 = T{0.999}, T alpha = T{1e-3}, T eps = T{1e-8})
                 : m_beta_1 {beta_1}
                 , m_beta_2 {beta_2}
                 , m_alpha {alpha}
@@ -88,8 +88,8 @@ namespace NN {
                     m_first_moment[i] = LinAlg::pairwise<T>(m_first_moment[i], m_parameters[i]->grad, first);
                     m_second_moment[i] = LinAlg::pairwise<T>(m_second_moment[i], m_parameters[i]->grad, second);
 
-                    LinAlg::Tensor<T> first_hat = m_first_moment[i] * (1 / (1 - std::pow(m_beta_1, m_t)));
-                    LinAlg::Tensor<T> second_hat = m_second_moment[i] * (1 / (1 - std::pow(m_beta_2, m_t)));
+                    LinAlg::Tensor<T> first_hat = m_first_moment[i] * (1 / (1 - static_cast<T>(std::pow(m_beta_1, m_t))));
+                    LinAlg::Tensor<T> second_hat = m_second_moment[i] * (1 / (1 - static_cast<T>(std::pow(m_beta_2, m_t))));
 
                     auto step_size {
                         [&](T a, T b)

@@ -20,6 +20,7 @@ namespace NN {
      * NN::Layer<double, Func::Linear<double>, Func::ReLU<double>> layer {2, 3};
      * LinAlg::Tensor<double> X {{1, 2}};
      * LinAlg::Tensor<double> output {layer.forward_pass(X)};
+     * @endcode
      */
     template <std::floating_point T,
               Func::Function<T> F,
