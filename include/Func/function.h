@@ -1,6 +1,29 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
+/**
+ * @file
+ * @brief Defines the concepts for functions, activation functions and loss
+ * functions
+ *
+ * @warning Unlike activation and loss functions, normal functions shouldn't use
+ * batching, it is handeled by the layer class
+ * 
+ * @code
+ * template <std::floating_point T>
+ * class My_activation {
+ *      public:
+ *          static LinAlg::Tensor<T> activate(const LinAlg::Tensor<T>& X) {
+ *              return X * 3;
+ *          }
+ *  
+ *          static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+ *              return LinAlg::Tensor<T> {X.get_shape(), 3};
+ *          }
+ * };
+ * @endcode
+ */
+
 #include <vector>
 #include <Rand/random.h>
 #include <stdexcept>
@@ -8,9 +31,6 @@
 #include <LinAlg/tensor.h>
 
 namespace Func{
-    /*
-        Layer will call Function functions once per (sample, node), therfore it shouldn't use batching
-    */
     template <typename F, typename T>
     concept Function = 
         requires(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, int input_size) {

@@ -1,16 +1,29 @@
 #ifndef OPTIMIZER_CHECK_H
 #define OPTIMIZER_CHECK_H
 
-/*
-    Optimizer check uses double, instantiate you're optimizer with double
-*/
+/**
+ * @file
+ * @brief Verifies an optimizer for common edge cases
+ * 
+ * @warning The check uses double, instantiate you're optimizer with double
+ *  
+ * @code
+ * Opt<double> my_optimizer {};
+ * Debug::Optimizer_result result {Debug::optimizer_check<Opt<double>>(my_optimizer)};
+ * if(!result.passed) {
+ *      //Maybe print some error message
+ * }
+ * @endcode
+ */
 
 #include <NN/optimizer.h>
 #include <NN/parameter.h>
 #include <LinAlg/tensor.h>
 #include <Rand/random.h>
 
+
 namespace Debug {
+    /// @brief  A struct for containg the result for an optimizer_check
     struct Optimizer_result {
         bool passed = false;
         bool descent_check = false;
@@ -18,6 +31,10 @@ namespace Debug {
         bool zero_gradient = false;
     };
 
+    /// @brief Checks an optimizer for standard errors
+    /// @tparam Opt The type of optimizer to check
+    /// @param optimizer An instance of the optimizer to check
+    /// @return An Optimizer_result with the outcome
     template <NN::Optimizer<double> Opt>
     Optimizer_result optimizer_check(Opt optimizer) {
         Optimizer_result result;

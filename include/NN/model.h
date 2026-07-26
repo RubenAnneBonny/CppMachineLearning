@@ -17,6 +17,28 @@
 #include <cmath>
 
 namespace NN {
+    /**
+     * @brief A full neural network model
+     *
+     * @details Handles end-to-end neural network training and testing, either
+     * with the the train_loop and test_loop or by using the exposed steps used
+     * to train a network. 
+     * 
+     * @code 
+     * NN::Layer<double, Func::Linear<double>, Func::ReLU<double>> layer {2, 1};
+     * Func::MSE<double> loss_fn {};
+     * NN::Adam<double> opt {};
+     * NN::Model<double, Func::MSE<double>, NN::Adam<double>> model {loss_fn, opt};
+     * model.add_layer(layer);
+     * Rand::Random<double> random {};
+     * LinAlg::Tensor<double> samples {{2000, 2}};
+     * samples.normal(random, 0, 1);
+     * model.init(random, samples);
+     * LinAlg::Tensor<double> X {{5000, 2}};
+     * LinAlg::Tensor<double> Y {{5000, 1}};
+     * model.train(random, X, Y, 32);
+     * @endcode
+     */
     template <std::floating_point T,
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>

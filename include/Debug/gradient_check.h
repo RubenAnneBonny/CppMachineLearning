@@ -1,6 +1,22 @@
 #ifndef GRADIENT_CHECK_H
 #define GRADIENT_CHECK_H
 
+/**
+ * @file
+ * @brief Checks functions, loss functions and activation functions numerically
+ * to verify their gradient
+ *
+ * @warning Gradient checking uses double, instantiate you're
+ * function/activation/loss with double
+ * 
+ * @code
+ * Debug::GradCheck::Func_result result {Debug::GradCheck::func<My_function<double>>(4)}
+ * if(!result.passed) {
+ *      // Maybe print some error message
+ * }
+ * @endcode
+ */
+
 /*
     Gradient checking uses double, instantiate you're function/activation/loss with double
 */

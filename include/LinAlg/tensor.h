@@ -188,6 +188,12 @@ namespace LinAlg {
                 return m_shape[static_cast<std::size_t>(axis)];
             }
             
+            /// @brief Exposes the shape of the tensors as read-only
+            /// @return A copy of the shape
+            std::vector<int> get_shape() const {
+                return m_shape;
+            }
+
             /// @brief Creates a deep copy of the tensor
             /// @return Returns a copy of the tensor
             Tensor copy() const;

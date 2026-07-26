@@ -44,13 +44,13 @@ namespace Data {
             }
 
         public:
-            /// @brief A constructor for the dataloader @param random A random
-            /// instance to shuffle the permutation @param inputs The tensor to
-            /// batch as input @param targets The tensor to batch as target
-            /// @param batch_size The batch size to use when loading @throws
-            /// std::invalid_argument if batch_size is less than 1 @throws
-            /// std::invalid_argument if the extents of the first axises of
-            /// targets and inputs don't match
+            /// @brief A constructor for the dataloader 
+            /// @param random A random instance to shuffle the permutation 
+            /// @param inputs The tensor to batch as input 
+            /// @param targets The tensor to batch as target
+            /// @param batch_size The batch size to use when loading 
+            /// @throws std::invalid_argument if batch_size is less than 1 
+            /// @throws std::invalid_argument if the extents of the first axises of targets and inputs don't match
             Dataloader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size);
        
             int get_num_batches(bool drop_last = false) {
@@ -60,12 +60,12 @@ namespace Data {
                 return ((static_cast<int>(m_permutation.size()) + m_batch_size - 1) / m_batch_size);
             }
 
-            /// @brief Gets the next batched inputs and targets @param random A
-            /// random instance to shuffle the permutation @param inputs The
-            /// tensor to put the batched inputs in @param targets The tensor to
-            /// put the batched targets in @param drop_last If last batch will
-            /// be incomplete, drop it or not @return True if it hasn't iterated
-            /// through the all smamples, false if it has
+            /// @brief Gets the next batched inputs and targets 
+            /// @param random A random instance to shuffle the permutation 
+            /// @param inputs The tensor to put the batched inputs in 
+            /// @param targets The tensor to put the batched targets in 
+            /// @param drop_last If last batch will be incomplete, drop it or not 
+            /// @return True if it hasn't iterated through the all smamples, false if it has
             bool next_batch(Rand::Random<T>& random, LinAlg::Tensor<T>& inputs, LinAlg::Tensor<T>& targets, bool drop_last = false);
     };
 
