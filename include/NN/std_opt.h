@@ -8,6 +8,10 @@
 #include <cmath>
 
 namespace NN {
+    /**
+     * @brief Gradient Descent optimizer that updates parameters like value +=
+     * lr * grad
+     */
     template <std::floating_point T>
     class Gradient_descent {
         private:
@@ -30,6 +34,9 @@ namespace NN {
             }
     };
 
+    /**
+     * @brief Adam optimizer, that updates parameters using a roling momentum
+     */
     template <std::floating_point T>
     class Adam {
         private:

@@ -6,6 +6,9 @@
 #include <cmath>
 
 namespace Func{
+    /**
+     * @brief Linear node function a * X + b
+     */
     template <typename T>
     class Linear {
         public:
@@ -49,6 +52,9 @@ namespace Func{
             }
     };
 
+    /**
+     * @brief ReLU activation function, performs elementwise max(0, X[element])
+     */
     template <typename T>
     class ReLU {
         public:
@@ -81,6 +87,10 @@ namespace Func{
             }
     };
 
+    /**
+     * @brief No_activation activation function that makes it possible to create
+     * layers with no activation
+     */
     template <typename T>
     class No_activation {
         public: 
@@ -95,6 +105,10 @@ namespace Func{
             }
     };
 
+    /**
+     * @brief Sigmoid activation function performs elementwise 1 / (1 +
+     * e^(-X[element]))
+     */
     template <typename T>
     class Sigmoid {
         public: 
@@ -119,6 +133,10 @@ namespace Func{
             }
     };
 
+    /**
+     * @brief Mean Squared Error loss function, computes loss as the squared
+     * difference between prediction and target
+     */
     template <typename T>
     class MSE {
         public:
@@ -156,11 +174,15 @@ namespace Func{
             }
     };
 
+    /**
+     * @brief Softmax cross entropy loss function used for classification
+     * problems
+     * 
+     * @note Targets are assumed to be one-hot
+     */
     template <typename T>
     class Softmax_cross_entropy {
         public:
-            /// @important Targets are assumed to be one-hot
-
             static T loss(const LinAlg::Tensor<T>& prediction, const LinAlg::Tensor<T>& target) {
                 int input_size {prediction.get_extent(1)};
                 int batches {prediction.get_extent(0)};
