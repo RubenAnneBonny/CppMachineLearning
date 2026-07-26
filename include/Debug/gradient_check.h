@@ -17,10 +17,6 @@
  * @endcode
  */
 
-/*
-    Gradient checking uses double, instantiate you're function/activation/loss with double
-*/
-
 #include <Func/function.h>
 #include <LinAlg/tensor.h>
 #include <Rand/random.h>
@@ -98,10 +94,10 @@ namespace Debug::GradCheck {
             }
         };
 
-        LinAlg::Tensor<double> analytic_grad {F::function_grad(input, weights)};
+        LinAlg::Tensor<double> analytic_grad {F::input_derivative(input, weights)};
         auto [func_rel_error, func_index] = Helper::max_rel_error(input, analytic_grad, eval, eps);
 
-        LinAlg::Tensor<double> analytic_weight_grad {F::weights_grad(input, weights)};
+        LinAlg::Tensor<double> analytic_weight_grad {F::weight_derivative(input, weights)};
         auto [weight_rel_error, weight_index] = Helper::max_rel_error(weights, analytic_weight_grad, eval, eps);
 
         result.max_func_rel_error = func_rel_error;
@@ -151,7 +147,7 @@ namespace Debug::GradCheck {
             }
         };
 
-        LinAlg::Tensor<double> analytic_grad {A::derivate(input)};
+        LinAlg::Tensor<double> analytic_grad {A::derivative(input)};
         auto [rel_error, index] = Helper::max_rel_error(input, analytic_grad, eval, eps);
 
         result.max_rel_error = rel_error;

@@ -22,7 +22,7 @@ TEST(StdFunc, LinearMath) {
 
     EXPECT_EQ(func, 27);
 
-    LinAlg::Tensor<float> dF {Func::Linear<float>::function_grad(X, weights)};
+    LinAlg::Tensor<float> dF {Func::Linear<float>::input_derivative(X, weights)};
     LinAlg::Tensor<float> dF_exp {{1, 3}};
     for(int i {}; i < 3; ++i) {
         dF_exp[{0, i}] = weights[{0, i}];
@@ -30,7 +30,7 @@ TEST(StdFunc, LinearMath) {
 
     EXPECT_EQ(dF, dF_exp);
 
-    LinAlg::Tensor<float> dW {Func::Linear<float>::weights_grad(X, weights)};
+    LinAlg::Tensor<float> dW {Func::Linear<float>::weight_derivative(X, weights)};
     LinAlg::Tensor<float> dW_exp {{1, 4}};
     for(int i {}; i < 3; ++i) {
         dW_exp[{0, i}] = X[{0, i}];
@@ -52,7 +52,7 @@ TEST(StdFunc, ReLUMath) {
 
     EXPECT_EQ(A, A_exp);
 
-    LinAlg::Tensor<float> D {Func::ReLU<float>::derivate(X)};
+    LinAlg::Tensor<float> D {Func::ReLU<float>::derivative(X)};
     LinAlg::Tensor<float> D_exp {{1, 3}};
 
     D_exp[{0, 1}] = 1;
@@ -69,7 +69,7 @@ TEST(StdFunc, NoActivationMath) {
 
     EXPECT_EQ(X, A);
 
-    LinAlg::Tensor<float> D {Func::No_activation<float>::derivate(X)};
+    LinAlg::Tensor<float> D {Func::No_activation<float>::derivative(X)};
     LinAlg::Tensor<float> D_exp {{1, 3}, 1};
 
     EXPECT_EQ(D, D_exp);
@@ -104,7 +104,7 @@ TEST(StdFunc, SigmoidMath) {
 
     EXPECT_TRUE(LinAlg::all_close<float>(A, A_exp, 1e-6f, 0));
 
-    LinAlg::Tensor<float> D {Func::Sigmoid<float>::derivate(X)};
+    LinAlg::Tensor<float> D {Func::Sigmoid<float>::derivative(X)};
     LinAlg::Tensor<float> D_exp {{1, 3}};
     D_exp[{0, 0}] = grad_sigmoid(-1.0f);
     D_exp[{0, 1}] = grad_sigmoid(2.0f);

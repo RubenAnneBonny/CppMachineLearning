@@ -151,7 +151,7 @@ namespace NN {
         }
         
         int batches {dY.get_extent(0)};
-        LinAlg::Tensor<T> dZ {dY * A::derivate(m_store_Y)};
+        LinAlg::Tensor<T> dZ {dY * A::derivative(m_store_Y)};
 
         int num_weights {F::num_weights(m_input_nodes)};
 
@@ -161,16 +161,16 @@ namespace NN {
             LinAlg::Tensor<T> X_b {m_store_X.row(b).unsqueeze()};
 
             for(int i {}; i < m_nodes; ++i) {
-                LinAlg::Tensor<T> W_i {weights.value.row(i).unsqueeze()};
+                LinAlg::Tensor<T> weight_i {weights.value.row(i).unsqueeze()};
 
-                LinAlg::Tensor<T> dW_i {F::weights_grad(X_b, W_i)};
+                LinAlg::Tensor<T> weight_derivative {F::weight_derivative(X_b, weight_i)};
                 for(int j {}; j < num_weights; ++j) {
-                    weights.grad[{i, j}] += dZ[{b, i}] * dW_i[{0, j}];
+                    weights.grad[{i, j}] += dZ[{b, i}] * weight_derivative[{0, j}];
                 }
 
-                LinAlg::Tensor<T> dF {F::function_grad(X_b, W_i)};
+                LinAlg::Tensor<T> input_derivative {F::input_derivative(X_b, weight_i)};
                 for(int j {}; j < m_input_nodes; ++j) {
-                    dX[{b, j}] += dZ[{b, i}] * dF[{0, j}];
+                    dX[{b, j}] += dZ[{b, i}] * input_derivative[{0, j}];
                 }
             }
         }

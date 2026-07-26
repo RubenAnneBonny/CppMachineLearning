@@ -17,11 +17,11 @@ namespace {
                 return (cube * weights).sum();
             }
 
-            static LinAlg::Tensor<T> function_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+            static LinAlg::Tensor<T> input_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
                 return 3 * X * X * weights;
             }
 
-            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+            static LinAlg::Tensor<T> weight_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
                 return X * X * X;
             }
     };
@@ -37,12 +37,12 @@ namespace {
                 return Correct_func<T>::function(X, weights);
             }
 
-            static LinAlg::Tensor<T> function_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                return Correct_func<T>::function_grad(X, weights) * 1.5;
+            static LinAlg::Tensor<T> input_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+                return Correct_func<T>::input_derivative(X, weights) * 1.5;
             }
 
-            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                return Correct_func<T>::weights_grad(X, weights);
+            static LinAlg::Tensor<T> weight_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+                return Correct_func<T>::weight_derivative(X, weights);
             }
     };
 
@@ -57,12 +57,12 @@ namespace {
                 return Correct_func<T>::function(X, weights);
             }
 
-            static LinAlg::Tensor<T> function_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                return Correct_func<T>::function_grad(X, weights);
+            static LinAlg::Tensor<T> input_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+                return Correct_func<T>::input_derivative(X, weights);
             }
 
-            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
-                return Correct_func<T>::weights_grad(X, weights) * 1.5;
+            static LinAlg::Tensor<T> weight_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+                return Correct_func<T>::weight_derivative(X, weights) * 1.5;
             }
     };
 
@@ -73,7 +73,7 @@ namespace {
                 return X * X;
             }
 
-            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+            static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
                 return 2 * X;
             }
     };
@@ -85,8 +85,8 @@ namespace {
                 return Correct_activation<T>::activate(X);
             }
 
-            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
-                return Correct_activation<T>::derivate(X) * 1.5;
+            static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
+                return Correct_activation<T>::derivative(X) * 1.5;
             }
     };
 

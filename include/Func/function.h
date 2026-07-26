@@ -5,9 +5,6 @@
  * @file
  * @brief Defines the concepts for functions, activation functions and loss
  * functions
- *
- * @warning Unlike activation and loss functions, normal functions shouldn't use
- * batching, it is handeled by the layer class
  * 
  * @code
  * template <std::floating_point T>
@@ -38,9 +35,9 @@ namespace Func{
      * weight shape is (1, num_weights). num_weights should return the number of
      * weights the function uses based on the input_size. function should based
      * on input and weights, calulate the output of the function as a scalar.
-     * The function grad should output a tensor of shape (1, input_size), the
+     * The input_derivative should output a tensor of shape (1, input_size), the
      * gradient of the function with respective to each of its inputs.
-     * weights_grad should output tensor of shape (1, num_weights) the gradient
+     * weight_derivative should output tensor of shape (1, num_weights) the gradient
      * of the function with respective to each weight.
      *
      * @warning Make sure the weights have an internal ordering, for example the
@@ -52,18 +49,18 @@ namespace Func{
         requires(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights, int i, int input_size) {
             {F::num_weights(input_size)} -> std::same_as<int>;
             {F::function(X, weights)} -> std::same_as<T>;
-            {F::function_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
-            {F::weights_grad(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
+            {F::input_derivative(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
+            {F::weight_derivative(X, weights)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 
     /**
      * @brief A concept for the activation function used in a layer
      *
      * @details For all functions the shape of the input tensor X is shape
-     * (batch, nodes). activate should perform the activation function on all
+     * (1, nodes). activate should perform the activation function on all
      * elements of a copy of the input tensor, the output should be of shape
-     * (batch, nodes). derivate should calculate the gradient of the activation
-     * function and output a tensor of shape (batch, nodes), where each (sample,
+     * (1, nodes). derivate should calculate the gradient of the activation
+     * function and output a tensor of shape (1, nodes), where each (sample,
      * node) is the gradient of the activation function with respect to that
      * input.
      */
@@ -71,16 +68,16 @@ namespace Func{
     concept Activation_function = 
         requires(const LinAlg::Tensor<T>& X) {
             {F::activate(X)} -> std::same_as<LinAlg::Tensor<T>>;
-            {F::derivate(X)} -> std::same_as<LinAlg::Tensor<T>>;
+            {F::derivative(X)} -> std::same_as<LinAlg::Tensor<T>>;
         };
 
     /**
      * @brief A concept for the loss function used in a neural network
      *
      * @details For all functions the prediction and target tensors should be of
-     * shape (batch, input_size). The loss function should calculate the loss
+     * shape (1, input_size). The loss function should calculate the loss
      * value, a scalar. The gradient function should calculate a gradient tensor
-     * of shape (batch, input_size) the gradient of the function with respective
+     * of shape (1, input_size) the gradient of the function with respective
      * to each input.
      */
     template <typename F, typename T>

@@ -24,7 +24,7 @@ namespace Func{
                 return result + weights[{0, input_size}];
             }
     
-            static LinAlg::Tensor<T> function_grad(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+            static LinAlg::Tensor<T> input_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
                 int input_size {X.get_extent(1)};
                 LinAlg::Tensor<T> grad {{1, input_size}};
 
@@ -35,7 +35,7 @@ namespace Func{
                 return grad;
             }
 
-            static LinAlg::Tensor<T> weights_grad(const LinAlg::Tensor<T>& X, [[maybe_unused]] const LinAlg::Tensor<T>& weights) {
+            static LinAlg::Tensor<T> weight_derivative(const LinAlg::Tensor<T>& X, [[maybe_unused]] const LinAlg::Tensor<T>& weights) {
                 int input_size {X.get_extent(1)};
                 LinAlg::Tensor<T> grad {{1, input_size + 1}};
 
@@ -66,7 +66,7 @@ namespace Func{
                 return activated;
             }
     
-            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+            static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
                 auto relu_grad{
                 [](T a)
                 {
@@ -88,7 +88,7 @@ namespace Func{
                 return X.copy();
             }
     
-            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+            static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
                 LinAlg::Tensor<T> grad {{X.get_extent(0), X.get_extent(1)}, 1};
 
                 return grad;
@@ -112,7 +112,7 @@ namespace Func{
                 return activated;
             }
     
-            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+            static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
                 LinAlg::Tensor<T> activated {activate(X)};
 
                 return activated * (1 - activated);

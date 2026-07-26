@@ -150,7 +150,7 @@ namespace {
                 return X * X;
             }
 
-            static LinAlg::Tensor<T> derivate(const LinAlg::Tensor<T>& X) {
+            static LinAlg::Tensor<T> derivative(const LinAlg::Tensor<T>& X) {
                 return 2 * X;
             }
     };
