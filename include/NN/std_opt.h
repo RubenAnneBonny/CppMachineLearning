@@ -11,6 +11,8 @@ namespace NN {
     /**
      * @brief Gradient Descent optimizer that updates parameters like value +=
      * lr * grad
+     * 
+     * @see NN::Optimizer for more information about methods
      */
     template <std::floating_point T>
     class Gradient_descent {

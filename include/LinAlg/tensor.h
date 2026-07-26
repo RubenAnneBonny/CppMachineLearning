@@ -57,7 +57,7 @@ namespace LinAlg {
                 int elements {1};
 
                 for(int i {}; i < get_rank(); ++i) {
-                    elements *= m_shape[i];
+                    elements *= m_shape[static_cast<std::size_t>(i)];
                 }
 
                 return elements;
@@ -65,15 +65,15 @@ namespace LinAlg {
 
             void calculate_strides() {
                 m_strides.clear();
-                m_strides.assign(get_rank(), 1);
+                m_strides.assign(static_cast<std::size_t>(get_rank()), 1);
 
                 for(int j {get_rank() - 2}; j >= 0; --j) {
-                    m_strides[j] = m_strides[j + 1] * m_shape[j + 1];
+                    m_strides[static_cast<std::size_t>(j)] = m_strides[static_cast<std::size_t>(j + 1)] * m_shape[static_cast<std::size_t>(j + 1)];
                 }
             }
 
             static std::vector<int> validate_shape(const std::vector<int>& shape) {
-                for(int i {}; i < static_cast<int>(shape.size()); ++i) {
+                for(std::size_t i {}; i < shape.size(); ++i) {
                     if(shape[i] < 1) {
                         throw std::invalid_argument(
                             "Cannot create tensor with any extent less than 1"
@@ -85,11 +85,11 @@ namespace LinAlg {
             }
 
             static bool next_index(std::vector<int>& indices, const std::vector<int>& shape) {
-                for(int i {static_cast<int>(shape.size()) - 1}; i >= 0; --i) {
-                    if(++indices[i] < shape[i]) {
+                for(int i {static_cast<int>(shape.size() - 1)}; i >= 0; --i) {
+                    if(++indices[static_cast<std::size_t>(i)] < shape[static_cast<std::size_t>(i)]) {
                         return true;
                     }
-                    indices[i] = 0;
+                    indices[static_cast<std::size_t>(i)] = 0;
                 }
 
                 return false;
@@ -107,11 +107,11 @@ namespace LinAlg {
 
                 {
                     Tensor<T>& min_ref {A_rank > B_rank ? B_view : A_view};
-                    min_ref.m_shape.insert(min_ref.m_shape.begin(), max_rank - min_rank, 1);
-                    min_ref.m_strides.insert(min_ref.m_strides.begin(), max_rank - min_rank, 0);
+                    min_ref.m_shape.insert(min_ref.m_shape.begin(), static_cast<std::size_t>(max_rank - min_rank), 1);
+                    min_ref.m_strides.insert(min_ref.m_strides.begin(), static_cast<std::size_t>(max_rank - min_rank), 0);
                 }
 
-                for(int axis {}; axis < max_rank - not_matching; ++axis) {
+                for(std::size_t axis {}; axis < static_cast<std::size_t>(max_rank - not_matching); ++axis) {
                     int a_extent {A_view.m_shape[axis]};
                     int b_extent {B_view.m_shape[axis]};
 
@@ -362,7 +362,7 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indices(get_rank(), 0);
+                std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
                 do {
                     (*this)[indices] = C[indices];
                 } while(next_index(indices, m_shape));
@@ -431,7 +431,7 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indices(get_rank(), 0);
+                std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
                 do {
                     (*this)[indices] = C[indices];
                 } while(next_index(indices, m_shape));
@@ -506,7 +506,7 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indices(get_rank(), 0);
+                std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
                 do {
                     (*this)[{indices}] = C[indices];
                 } while(next_index(indices, m_shape));
@@ -562,7 +562,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::normal(Rand::Random<T>& random, T mean, T stddev) {
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             (*this)[indices] = random.normal(mean, stddev);
         } while(next_index(indices, m_shape));
@@ -570,7 +570,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::uniform(Rand::Random<T>& random, T low, T high) {
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             (*this)[indices] = random.uniform(low, high);
         } while(next_index(indices, m_shape));
@@ -578,7 +578,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::set_all_elements(T value) {
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             (*this)[indices] = value;
         } while(next_index(indices, m_shape));
@@ -588,7 +588,7 @@ namespace LinAlg {
     Tensor<T> Tensor<T>::copy() const {
         Tensor<T> A {m_shape};
 
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             A[indices] = (*this)[indices];
         } while(next_index(indices, m_shape));
@@ -669,12 +669,12 @@ namespace LinAlg {
         shape[0] = static_cast<int>(to_gather.size());
         Tensor<T> A {shape};
 
-        std::vector<int> indices(A.get_rank(), 0);
-        std::vector<int> this_indices(A.get_rank());
+        std::vector<int> indices(static_cast<std::size_t>(A.get_rank()), 0);
+        std::vector<int> this_indices(static_cast<std::size_t>(A.get_rank()));
 
         do {
             this_indices = indices;
-            this_indices[0] = to_gather[indices[0]];
+            this_indices[0] = to_gather[static_cast<std::size_t>(indices[0])];
 
             A[indices] = (*this)[this_indices];
         } while(next_index(indices, A.m_shape));
@@ -696,7 +696,7 @@ namespace LinAlg {
             );
         }
 
-        int strides {axis == 0 ? m_strides[0] * m_shape[0] : m_strides[axis - 1]};
+        int strides {axis == 0 ? m_strides[0] * m_shape[0] : m_strides[static_cast<std::size_t>(axis - 1)]};
 
         A.m_shape.insert(A.m_shape.begin() + axis, 1);
         A.m_strides.insert(A.m_strides.begin() + axis, strides);
@@ -724,7 +724,7 @@ namespace LinAlg {
             );
         }
 
-        if(m_shape[axis] != 1){
+        if(m_shape[static_cast<std::size_t>(axis)] != 1){
             throw std::invalid_argument(
                 "Cannot squeeze tensor of shape " + 
                 static_cast<std::string>(*this) + 
@@ -744,7 +744,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     Tensor<T> Tensor<T>::t() const {
-        int rank {get_rank()};
+        std::size_t rank {static_cast<std::size_t>(get_rank())};
 
         if(rank < 2){
             throw std::invalid_argument(
@@ -769,10 +769,10 @@ namespace LinAlg {
 
     template <std::floating_point T>
     std::vector<int> Tensor<T>::argmax() const {
-        std::vector<int> best_indices(get_rank(), 0);
+        std::vector<int> best_indices(static_cast<std::size_t>(get_rank()), 0);
         T max_element {(*this)[best_indices]};
 
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
 
         do {
             T element = (*this)[indices];
@@ -788,7 +788,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     T Tensor<T>::sum() const {
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
 
         T sum {};
 
@@ -801,7 +801,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     T Tensor<T>::max() const {
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
 
         T max_value = (*this)[indices];
 
@@ -836,7 +836,7 @@ namespace LinAlg {
     template <std::floating_point T>
     template <std::invocable<T> Fn>
     Tensor<T>& Tensor<T>::elementwise(Fn fn) {
-        std::vector<int> indices(get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
 
         do {
             (*this)[indices] = static_cast<T>(fn((*this)[indices]));
@@ -859,7 +859,7 @@ namespace LinAlg {
 
         Tensor<T> C {A_view.m_shape};
 
-        std::vector<int> indices(rank, 0);
+        std::vector<int> indices(static_cast<std::size_t>(rank), 0);
 
         do {
             C[indices] = fn(A_view[indices], B_view[indices]);
@@ -873,7 +873,7 @@ namespace LinAlg {
         std::string shape_string {"("};
 
         for(int i {}; i < get_rank(); ++i) {
-            shape_string += std::to_string(m_shape[i]);
+            shape_string += std::to_string(m_shape[static_cast<std::size_t>(i)]);
 
             if(i < get_rank() - 1) {
                 shape_string += ", ";
@@ -889,7 +889,7 @@ namespace LinAlg {
     const T& Tensor<T>::operator[](const std::vector<int>& indices) const {
         int index {m_offset};
 
-        for(int i {}; i < get_rank(); ++i) {
+        for(std::size_t i {}; i < static_cast<std::size_t>(get_rank()); ++i) {
             index += indices[i] * m_strides[i];
         }
 

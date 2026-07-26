@@ -8,6 +8,8 @@
 namespace Func{
     /**
      * @brief Linear node function a * X + b
+     * 
+     * @see Func::Function for more information about methods
      */
     template <typename T>
     class Linear {
@@ -54,6 +56,8 @@ namespace Func{
 
     /**
      * @brief ReLU activation function, performs elementwise max(0, X[element])
+     * 
+     * @see Func::Activation_function for more information about methods
      */
     template <typename T>
     class ReLU {
@@ -90,6 +94,8 @@ namespace Func{
     /**
      * @brief No_activation activation function that makes it possible to create
      * layers with no activation
+     * 
+     * @see Func::Activation_function for more information about methods
      */
     template <typename T>
     class No_activation {
@@ -108,6 +114,8 @@ namespace Func{
     /**
      * @brief Sigmoid activation function performs elementwise 1 / (1 +
      * e^(-X[element]))
+     * 
+     * @see Func::Activation_function for more information about methods
      */
     template <typename T>
     class Sigmoid {
@@ -136,6 +144,8 @@ namespace Func{
     /**
      * @brief Mean Squared Error loss function, computes loss as the squared
      * difference between prediction and target
+     * 
+     * @see Func::Loss_function for more information about methods
      */
     template <typename T>
     class MSE {
@@ -179,6 +189,8 @@ namespace Func{
      * problems
      * 
      * @note Targets are assumed to be one-hot
+     * 
+     * @see Func::Loss_function for more information about methods
      */
     template <typename T>
     class Softmax_cross_entropy {
