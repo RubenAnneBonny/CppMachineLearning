@@ -24,17 +24,17 @@ namespace Data {
     /// @brief Classification, makes dots on two circles with different radius + noise
     /// @tparam T A floating point type
     /// @param random A random instance
-    /// @param samples The number of samples to create
+    /// @param num_samples The number of samples to create
     /// @param noise The amount of noise in the data
     /// @param radius_factor How much larger the second circle is than the first
     /// @return A data_set with a input tensor of 2D-coordinates, shape
-    /// (samples, 2), and one-hot targets, shape (samples, 2)
+    /// (num_samples, 2), and one-hot targets, shape (num_samples, 2)
     template <std::floating_point T>
-    Data_set<T> make_circles(Rand::Random<T>& random, int samples, T noise = T{0.05}, T radius_factor = T{0.5}) {
-        LinAlg::Tensor<T> X {{samples, 2}};
-        LinAlg::Tensor<T> Y {{samples, 2}};
+    Data_set<T> make_circles(Rand::Random<T>& random, int num_samples, T noise = T{0.05}, T radius_factor = T{0.5}) {
+        LinAlg::Tensor<T> X {{num_samples, 2}};
+        LinAlg::Tensor<T> Y {{num_samples, 2}};
 
-        for(int i {}; i < samples; ++i) {
+        for(int i {}; i < num_samples; ++i) {
             int cls {random.uniform_int(0, 2)};
             T radius {cls ? radius_factor : T{1}};
             T theta {random.uniform(T{0}, T{2} * std::numbers::pi_v<T>)};
@@ -51,16 +51,16 @@ namespace Data {
     /// @brief Classification, makes dots on two inteviened half-moons
     /// @tparam T A floating point type
     /// @param random A random instance
-    /// @param samples The amount of samples to create
+    /// @param num_samples The amount of samples to create
     /// @param noise The amound of noise in the data
-    /// @return A data_set with input tensor 2D-coordinates, shape (samples, 2),
-    /// and one-hot targets, shape (samples, 2)
+    /// @return A data_set with input tensor 2D-coordinates, shape (num_samples, 2),
+    /// and one-hot targets, shape (num_samples, 2)
     template <std::floating_point T>
-    Data_set<T> make_moons(Rand::Random<T>& random, int samples, T noise = T{0.1}) {
-        LinAlg::Tensor<T> X {{samples, 2}};
-        LinAlg::Tensor<T> Y {{samples, 2}};
+    Data_set<T> make_moons(Rand::Random<T>& random, int num_samples, T noise = T{0.1}) {
+        LinAlg::Tensor<T> X {{num_samples, 2}};
+        LinAlg::Tensor<T> Y {{num_samples, 2}};
 
-        for(int i {}; i < samples; ++i) {
+        for(int i {}; i < num_samples; ++i) {
             int cls = random.uniform_int(0, 2);
             T theta = random.uniform(T{0}, std::numbers::pi_v<T>);
             
@@ -82,15 +82,15 @@ namespace Data {
     /// @brief Classification, makes dots on several spirals
     /// @tparam T A floating point type
     /// @param random A random instance
-    /// @param samples_per_class The amount of samples to create per class
+    /// @param num_samples_per_class The amount of samples to create per class
     /// @param classes The amount of classes/spirals to create
     /// @param noise The amount of noise in the data
     /// @return A data_set with input tensor of 2D-coordinates, shape
-    /// (samples_per_class * classes, 2), and one-hot targets, shape
-    /// (samples_per_target * classes, 2)
+    /// (num_samples_per_class * classes, 2), and one-hot targets, shape
+    /// (num_samples_per_target * classes, 2)
     template <std::floating_point T>
-    Data_set<T> make_spirals(Rand::Random<T>& random, int samples_per_class, int classes = 3, T noise = T{0.2}) {
-        int samples {samples_per_class * classes};
+    Data_set<T> make_spirals(Rand::Random<T>& random, int num_samples_per_class, int classes = 3, T noise = T{0.2}) {
+        int num_samples {samples_per_class * classes};
         LinAlg::Tensor<T> X {{samples, 2}};
         LinAlg::Tensor<T> Y {{samples, classes}};
 
@@ -139,17 +139,17 @@ namespace Data {
     /// @brief Creates a data set for estimation of black-scholes pricing
     /// @tparam T A floating point type
     /// @param random A random instance
-    /// @param samples The amount of samples to create
+    /// @param num_samples The amount of samples to create
     /// @return A data set wit inputs [S / K, time_to_expiry, sigma, r], shape
-    /// (samples, 4), and targets the call price, shape (samples, 1)
+    /// (num_samples, 4), and targets the call price, shape (num_samples, 1)
     template <std::floating_point T>
-    Data_set<T> make_black_scholes(Rand::Random<T>& random, int samples) {
-        LinAlg::Tensor<T> inputs {{samples, 4}};
-        LinAlg::Tensor<T> targets {{samples, 1}};
+    Data_set<T> make_black_scholes(Rand::Random<T>& random, int num_samples) {
+        LinAlg::Tensor<T> inputs {{num_samples, 4}};
+        LinAlg::Tensor<T> targets {{num_samples, 1}};
 
         T S {T{1}};
 
-        for(int i {}; i < samples; ++i) {
+        for(int i {}; i < num_samples; ++i) {
             T K {random.uniform(T{0.5}, T{1.5})};
             T time_to_expiry {random.uniform(T{0.05}, T{2})};
             T sigma {random.uniform(T{0.1}, T{0.6})};
