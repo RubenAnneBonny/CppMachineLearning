@@ -844,6 +844,7 @@ TEST(Tensor, NormalFillsAllElements) {
     for(int i {}; i < 2; ++i) {
         for(int j {}; j < 3; ++j) {
             float element {A[{i, j}]};
+            
             EXPECT_NE(element, 10);
         }
     }
@@ -863,6 +864,7 @@ TEST(Tensor, UniformWithinBounds) {
     for(int i {}; i < 2; ++i) {
         for(int j {}; j < 2; ++j) {
             float element {A[{i, j}]};
+
             EXPECT_TRUE(element >= 0 && element <= 3);
         }
     }
@@ -906,6 +908,7 @@ TEST(Tensor, Gather) {
     A[{4, 1}] = 6;
 
     LinAlg::Tensor<float> B {A.gather({3, 4, 1, 4, 4, 3})};
+
     LinAlg::Tensor<float> B_exp {{6, 2}, 3};
     B_exp[{0, 0}] = -1;
     B_exp[{1, 1}] = 6;
@@ -960,7 +963,6 @@ TEST(Tensor, AdditionAssignmentScalar) {
 
 TEST(Tensor, MultiplicationAssignmentScalar) {
     LinAlg::Tensor<float> A {{2, 3}, 2};
-    
     A[{0, 0}] = 3;
     A[{1, 1}] = -4;
     A[{1, 2}] = 8;
@@ -968,7 +970,6 @@ TEST(Tensor, MultiplicationAssignmentScalar) {
     A *= 3;
 
     LinAlg::Tensor<float> A_exp {{2, 3}, 6};
-
     A_exp[{0, 0}] = 9;
     A_exp[{1, 1}] = -12;
     A_exp[{1, 2}] = 24;
@@ -978,7 +979,6 @@ TEST(Tensor, MultiplicationAssignmentScalar) {
 
 TEST(Tensor, Elementwise) {
     LinAlg::Tensor<float> A {{2, 3}, 2};
-
     A[{0, 0}] = 3;
     A[{1, 2}] = -4;
 
@@ -992,7 +992,6 @@ TEST(Tensor, Elementwise) {
     LinAlg::Tensor<float>& ref {A.elementwise(some_fn)};
 
     LinAlg::Tensor<float> A_exp {{2, 3}, 5};
-
     A_exp[{0, 0}] = 10;
     A_exp[{1, 2}] = 17;
 
