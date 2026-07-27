@@ -960,6 +960,7 @@ TEST(Tensor, AdditionAssignmentScalar) {
 
 TEST(Tensor, MultiplicationAssignmentScalar) {
     LinAlg::Tensor<float> A {{2, 3}, 2};
+    
     A[{0, 0}] = 3;
     A[{1, 1}] = -4;
     A[{1, 2}] = 8;
@@ -967,9 +968,34 @@ TEST(Tensor, MultiplicationAssignmentScalar) {
     A *= 3;
 
     LinAlg::Tensor<float> A_exp {{2, 3}, 6};
+
     A_exp[{0, 0}] = 9;
     A_exp[{1, 1}] = -12;
     A_exp[{1, 2}] = 24;
 
     EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, Elementwise) {
+    LinAlg::Tensor<float> A {{2, 3}, 2};
+
+    A[{0, 0}] = 3;
+    A[{1, 2}] = -4;
+
+    auto some_fn{
+        [](float x)
+        {
+            return x * x + 1;
+        }
+    };
+
+    LinAlg::Tensor<float>& ref {A.elementwise(some_fn)};
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, 5};
+
+    A_exp[{0, 0}] = 10;
+    A_exp[{1, 2}] = 17;
+
+    EXPECT_EQ(A, A_exp);
+    EXPECT_EQ(&ref, &A);
 }
