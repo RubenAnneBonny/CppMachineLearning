@@ -252,6 +252,7 @@ namespace NN {
         , m_optimizer {optimizer}
         , m_store_prediction {{1, 1}}
         , m_initialized {false}
+        , m_forward_passed {false}
     {}
 
     template <std::floating_point T,
