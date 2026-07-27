@@ -79,7 +79,9 @@ namespace Data {
     {        
         if(batch_size < 1) {
             throw std::invalid_argument(
-                "Cannot get next batch, if batch size is 0"
+                "Cannot get next batch, since batch size is " + 
+                std::to_string(batch_size) + 
+                " which is less than 1"
             );
         }
 

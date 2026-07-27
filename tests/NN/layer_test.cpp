@@ -232,3 +232,10 @@ TEST(Layer, BackwardPassBatchNotMatchingStoredBatchThrows) {
 
     EXPECT_THROW(layer.backward_pass(dY), std::invalid_argument);
 }
+
+TEST(Layer, ForwardPassStatelessEqualsForwardPass) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    LinAlg::Tensor<float> X {{32, 2}};
+
+    EXPECT_EQ(layer.forward_pass(X), layer.forward_pass_stateless(X));
+}

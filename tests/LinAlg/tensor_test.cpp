@@ -941,3 +941,35 @@ TEST(Tensor, OneHotAxisOutOfRangeThrows) {
     EXPECT_THROW(LinAlg::one_hot<float>(4, -1), std::invalid_argument);
     EXPECT_THROW(LinAlg::one_hot<float>(4, 4), std::invalid_argument);
 }
+
+TEST(Tensor, AdditionAssignmentScalar) {
+    LinAlg::Tensor<float> A {{2, 3}, 2};
+    A[{0, 0}] = 3;
+    A[{1, 1}] = -4;
+    A[{1, 2}] = 8;
+
+    A += 3;
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, 5};
+    A_exp[{0, 0}] = 6;
+    A_exp[{1, 1}] = -1;
+    A_exp[{1, 2}] = 11;
+
+    EXPECT_EQ(A, A_exp);
+}
+
+TEST(Tensor, MultiplicationAssignmentScalar) {
+    LinAlg::Tensor<float> A {{2, 3}, 2};
+    A[{0, 0}] = 3;
+    A[{1, 1}] = -4;
+    A[{1, 2}] = 8;
+
+    A *= 3;
+
+    LinAlg::Tensor<float> A_exp {{2, 3}, 6};
+    A_exp[{0, 0}] = 9;
+    A_exp[{1, 1}] = -12;
+    A_exp[{1, 2}] = 24;
+
+    EXPECT_EQ(A, A_exp);
+}
