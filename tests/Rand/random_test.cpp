@@ -68,3 +68,16 @@ TEST(Random, DifferentSeedsDifferentValues) {
 
     EXPECT_NE(r_1.normal(0, 1), r_2.normal(0, 1));
 }
+
+TEST(Random, UniformHighLessThanLowThrows) {
+    Rand::Random<float> random {42};
+
+    EXPECT_THROW(random.uniform(3, 2.999f), std::invalid_argument);
+}
+
+TEST(Random, UniformIntHighLessOrEqualThanLowThrows) {
+    Rand::Random<float> random {42};
+
+    EXPECT_THROW(random.uniform_int(2, 2), std::invalid_argument);
+    EXPECT_THROW(random.uniform_int(4, 3), std::invalid_argument);
+}

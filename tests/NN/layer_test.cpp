@@ -208,3 +208,27 @@ TEST(Layer, NumricalGradientCheckSmoothActivation) {
 
     EXPECT_LT(layer_grad_check(layer, X, 2), 1e-6);
 }
+
+TEST(Layer, BackwarPassdYDoNotMatchNodesThrows) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    LinAlg::Tensor<float> X {{1, 2}};
+    layer.forward_pass(X);
+
+    LinAlg::Tensor<float> dY_1 {{1, 2}};
+
+    EXPECT_THROW(layer.backward_pass(dY_1), std::invalid_argument);
+
+    LinAlg::Tensor<float> dY_2 {{1, 6}};
+
+    EXPECT_THROW(layer.backward_pass(dY_2), std::invalid_argument);
+}
+
+TEST(Layer, BackwardPassBatchNotMatchingStoredBatchThrows) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    LinAlg::Tensor<float> X {{32, 2}};
+    layer.forward_pass(X);
+
+    LinAlg::Tensor<float> dY {{31, 3}};
+
+    EXPECT_THROW(layer.backward_pass(dY), std::invalid_argument);
+}

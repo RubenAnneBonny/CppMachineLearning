@@ -164,3 +164,13 @@ TEST(GradientCheckTest, WrongLoss) {
 
     EXPECT_FALSE(result.passed);
 }
+
+TEST(GradientCheckTest, WrongTargetShapeThrows) {
+    Rand::Random<double> random {};
+    LinAlg::Tensor<double> target_1 {{4}};
+    target_1.normal(random, 0, 1);
+    EXPECT_THROW(Debug::GradCheck::loss<Correct_loss<double>>(target_1), std::invalid_argument);
+
+    LinAlg::Tensor<double> target_2 {{2, 4}};
+    EXPECT_THROW(Debug::GradCheck::loss<Correct_loss<double>>(target_2), std::invalid_argument);
+}

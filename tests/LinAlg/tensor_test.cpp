@@ -931,3 +931,13 @@ TEST(Tensor, GatherIndexOutOfBoundsThrows) {
     EXPECT_THROW(A.gather({1, 2, -1}), std::invalid_argument);
     EXPECT_THROW(A.gather({1, 5, 3}), std::invalid_argument);
 }
+
+TEST(Tensor, ConstructorExtentLessThanOneThrows) {
+    EXPECT_THROW(LinAlg::Tensor<float>({{-1, 1}}), std::invalid_argument);
+    EXPECT_THROW(LinAlg::Tensor<float>({{2, 3, 0}}), std::invalid_argument);
+}
+
+TEST(Tensor, OneHotAxisOutOfRangeThrows) {
+    EXPECT_THROW(LinAlg::one_hot<float>(4, -1), std::invalid_argument);
+    EXPECT_THROW(LinAlg::one_hot<float>(4, 4), std::invalid_argument);
+}

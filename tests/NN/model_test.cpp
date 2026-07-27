@@ -665,7 +665,7 @@ TEST(Model, LoadTruncatedFileThrows) {
     const std::filesystem::path path {"truncated.weights"};
     {
         std::ofstream out {path};
-        out << "1\n0 3 3\n1.0 2.0\n";
+        out << "1\n0 3 3\n1.0 2.0 3.0\n";
     }
 
     EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
@@ -811,4 +811,149 @@ TEST(Model, TestLoopMathcesCalculateLoss) {
     model.forward_pass(X);
 
     EXPECT_NEAR(model.calculate_loss(Y), model.test_loop(X, Y), 1e-5f);
+}
+
+TEST(Model, PredictionTargetBatchNotMatchingThrows) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    Func::MSE<float> loss_fn {};
+    NN::Adam<float> opt {};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> X {{2, 2}};
+    model.forward_pass(X);
+
+    LinAlg::Tensor<float> Y {{3, 3}};
+    EXPECT_THROW(model.backpropagation(Y), std::invalid_argument);
+}
+
+TEST(Model, CalculateLossBeforeForwardPassThrows) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    Func::MSE<float> loss_fn {};
+    NN::Adam<float> opt {};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> Y {{1, 3}};
+    EXPECT_THROW(model.calculate_loss(Y), std::invalid_argument);
+}
+
+TEST(Model, BackpropagationBeforeForwardPassThrows) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    Func::MSE<float> loss_fn {};
+    NN::Adam<float> opt {};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    LinAlg::Tensor<float> Y {{1, 3}};
+    EXPECT_THROW(model.backpropagation(Y), std::invalid_argument);
+}
+
+TEST(Model, InitTwiceThrows) {
+    NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 3};
+    Func::MSE<float> loss_fn {};
+    NN::Adam<float> opt {};
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {loss_fn, opt};
+    model.add_layer(layer);
+    model.init();
+
+    EXPECT_THROW(model.init(), std::invalid_argument);
+}
+
+TEST(Model, LoadingLayerIndexMismatchThrows) {
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {Func::MSE<float>{}, NN::Adam<float>{}};
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>>{2, 4});
+    model_load.init();
+
+    std::filesystem::path path {"layer_index_mismatch.weights"};
+    {
+        std::ofstream out {path};
+        out << "1\n5 4 3\n0.0 0.0 0.0\n0.0 0.0 0.0\n0.0 0.0 0.0\n0.0 0.0 0.0\n";
+    }
+
+    EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
+    std::filesystem::remove(path);
+}
+
+TEST(Model, LoadingWeightsPerNodeMismatchThrows) {
+    std::filesystem::path dir {"saving_loading_tests"};
+    std::filesystem::create_directories(dir);
+    std::filesystem::path path {dir / "WeightsPerNodeMismatch.weights"};
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_save {Func::MSE<float>{}, NN::Adam<float>{}};
+    model_save.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model_save.init();
+    model_save.save_weights(path.string());
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {Func::MSE<float>{}, NN::Adam<float>{}};
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {3, 3});
+    model_load.init();
+
+    EXPECT_THROW(model_load.load_weights(path.string()), std::invalid_argument);
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(Model, SavingLoadingMultLyaerPredictionsMatch) {
+    std::filesystem::path dir {"saving_loading_tests"};
+    std::filesystem::create_directories(dir);
+    std::filesystem::path path {dir / "MultiLayerRoundTrip.weights"};
+
+    Rand::Random<float> random {};
+
+    LinAlg::Tensor<float> samples {{20, 2}};
+    samples.normal(random, 0, 1);
+
+    NN::Adam<float> opt {};
+    Func::MSE<float> loss_fn {};
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {loss_fn, opt};
+    model.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model.add_layer(NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> {3, 2});
+    model.init(random, samples);
+    model.save_weights(path.string());
+
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model_load {loss_fn, opt};
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model_load.add_layer(NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> {3, 2});
+    model_load.init(random, samples);
+    model_load.load_weights(path.string());
+
+    LinAlg::Tensor<float> X {{4, 2}};
+    X.normal(random, 0, 1);
+
+    EXPECT_EQ(model.forward_pass(X), model_load.forward_pass(X));
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(Model, TrainLoopEpochsLessThanOneThrows) {
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {Func::MSE<float>{}, NN::Adam<float>{}};
+    model.add_layer(NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> {2, 3});
+    model.init();
+
+    Rand::Random<float> random {42};
+
+    LinAlg::Tensor<float> X {{20, 2}};
+    LinAlg::Tensor<float> Y {{20, 3}};
+
+    EXPECT_THROW(model.train_loop(random, X, Y, 0, 2), std::invalid_argument);
+    EXPECT_THROW(model.train_loop(random, X, Y, -1, 2), std::invalid_argument);
+}
+
+TEST(Model, TrainLoopBatchSizeLessThanOneThrows) {
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {Func::MSE<float>{}, NN::Adam<float>{}};
+    model.add_layer(NN::Layer<float, Func::Linear<float>, Func::Sigmoid<float>> {2, 3});
+    model.init();
+
+    Rand::Random<float> random {42};
+
+    LinAlg::Tensor<float> X {{20, 2}};
+    LinAlg::Tensor<float> Y {{20, 3}};
+
+    EXPECT_THROW(model.train_loop(random, X, Y, 4, 0), std::invalid_argument);
+    EXPECT_THROW(model.train_loop(random, X, Y, 4, -1), std::invalid_argument);
 }
