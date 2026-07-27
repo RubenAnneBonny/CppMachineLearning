@@ -312,8 +312,6 @@ namespace NN {
               Func::Loss_function<T> Loss,
               NN::Optimizer<T> Opt>
     void Model<T, Loss, Opt>::init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev, int max_iters, T tol, T damping) {
-        int num_samples = samples.get_extent(0);
-        
         init();
 
         for(auto* param : m_parameters) {

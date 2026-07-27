@@ -5,6 +5,7 @@
 #include <concepts>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace Rand{
     /**
@@ -71,6 +72,32 @@ namespace Rand{
                 }
 
                 return std::uniform_int_distribution<int>{low, high - 1}(m_mt);
+            }
+
+            /// @brief A Fisher-Yates shuffled permutation of [0, length)
+            /// @param length The length of the permutation
+            /// @return The permutation
+            /// @throws std::invalid_argument if lenght is less than 0
+            std::vector<int> permutation(int length) {
+                if(length < 0) {
+                    throw std::invalid_argument(
+                        "Cannot create permutation of length " + 
+                        std::to_string(length) + 
+                        " since its a negative number"
+                    );
+                }
+
+                std::vector<int> p(static_cast<std::size_t>(length));
+                for(int i {}; i < length; ++i) {
+                    p[static_cast<std::size_t>(i)] = i;
+                }
+
+                for(int i {length - 1}; i > 0; --i) {
+                    int j {uniform_int(0, i + 1)};
+                    std::swap(p[static_cast<std::size_t>(i)], p[static_cast<std::size_t>(j)]);
+                }
+
+                return p;
             }
     };
 }

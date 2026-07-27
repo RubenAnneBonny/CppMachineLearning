@@ -37,10 +37,7 @@ namespace Data {
             int m_batch_size;
 
             void shuffle(Rand::Random<T>& random) {
-                for(int i {static_cast<int>(m_permutation.size()) - 1}; i > 0; --i) {
-                    int j {random.uniform_int(0, i + 1)};
-                    std::swap(m_permutation[i], m_permutation[j]);
-                }
+                m_permutation = random.permutation(static_cast<int>(m_permutation.size()));
             }
 
         public:

@@ -52,7 +52,7 @@ class Momentum {
         }
 
         void step() {
-            for(std:.size_t i {}; i < m_params.size(); ++i) {
+            for(std::size_t i {}; i < m_params.size(); ++i) {
                 m_velocity[i] = m_velocity[i] * m_mu - m_params[i]->grad * m_lr;
                 m_params[i]->value += m_velocity[i];
             }

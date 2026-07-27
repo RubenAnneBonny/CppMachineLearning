@@ -23,11 +23,10 @@ namespace LinAlg {
      * @warning Copy construction and copy assignment produces a view sharing
      * storage, copy() is deep copy. These methods return views: {row, slice,
      * unsqueeze, squeeze, t}. These return a fresh storage: {copy, gather,
-     * pairwise, operator+-*}
-     * 
+     * shuffle_rows pairwise, operator+-*}
+     *
      * @code
-     * LinAlg::Tensor<double> X {{2, 2}, 5};
-     * X[{1, 0}] = 3;
+     * LinAlg::Tensor<double> X {{2, 2}, 5}; X[{1, 0}] = 3;
      * @endcode
      */
     template <std::floating_point T>
@@ -248,6 +247,11 @@ namespace LinAlg {
             /// @brief Finds the max over all elements in the tensor
             /// @return The maximum value
             T max() const;
+
+            /// @brief Creates a new tensor with shuffled rows
+            /// @param random A random instance
+            /// @return A fresh tensor with shuffled rows
+            Tensor shuffle_rows(Rand::Random<T>& random);
 
             /// @brief Creates a tensor of rank 1 with 1 one and the rest zeros
             /// @param extent The extent of the only axis
@@ -812,6 +816,12 @@ namespace LinAlg {
         } while(next_index(indices, m_shape));
 
         return max_value;
+    }
+
+    template <std::floating_point T>
+    Tensor<T> Tensor<T>::shuffle_rows(Rand::Random<T>& random) {
+        Tensor<T> A {gather(random.permutation(get_extent(0)))};
+        return A;
     }
 
     template <std::floating_point T>
