@@ -2,6 +2,8 @@
 #include <iostream>
 
 int main() {
+    // Black-Scholes, learn call price from [S/K, T, sigma, r]
+
     Rand::Random<double> random {42};
     Data::Data_set<double> data {Data::make_black_scholes<double>(random, 1000)};
 

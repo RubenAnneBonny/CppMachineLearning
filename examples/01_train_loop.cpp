@@ -2,6 +2,8 @@
 #include <iostream>
 
 int main() {
+    // Minimal end-to-end. Initialize model -> train -> test
+
     Rand::Random<double> random {42};
     Data::Data_set<double> data {Data::make_circles<double>(random, 1000)};
 
@@ -10,6 +12,7 @@ int main() {
     NN::Model<double, Func::Softmax_cross_entropy<double>, NN::Adam<double>> model {loss_fn, opt};
     model.add_layer(NN::Layer<double, Func::Linear<double>, Func::ReLU<double>>{2, 16});
     model.add_layer(NN::Layer<double, Func::Linear<double>, Func::ReLU<double>>{16, 16});
+    // Output layer uses no_activation since Softmax_cross_entropy takes raw logits
     model.add_layer(NN::Layer<double, Func::Linear<double>, Func::No_activation<double>>{16, 2});
     model.init(random, data.inputs);
 
