@@ -138,7 +138,7 @@ namespace NN {
             /// @brief Must run a init before training, initializes the network
             /// @throws std::invalid_argument if no layers were added before init
             /// @throws std::invalid_argument if model was already initialized
-            /// @warning Only use this method if you manually set weights, otherwise model can't learn
+            /// @warning Only use this method if you manually set weights or use load_weights, otherwise model can't learn
             void init();
 
             /// @brief Must run a init before training, initializes the network with random weights

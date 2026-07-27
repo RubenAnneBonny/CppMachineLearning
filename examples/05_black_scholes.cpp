@@ -3,14 +3,14 @@
 
 int main() {
     Rand::Random<double> random {42};
-    Data::Data_set<double> data {Data::make_circles<double>(random, 1000)};
+    Data::Data_set<double> data {Data::make_black_scholes<double>(random, 1000)};
 
-    Func::Softmax_cross_entropy<double> loss_fn {};
+    Func::MSE<double> loss_fn {};
     NN::Adam<double> opt {};
-    NN::Model<double, Func::Softmax_cross_entropy<double>, NN::Adam<double>> model {loss_fn, opt};
-    model.add_layer(NN::Layer<double, Func::Linear<double>, Func::ReLU<double>>{2, 16});
+    NN::Model<double, Func::MSE<double>, NN::Adam<double>> model {loss_fn, opt};
+    model.add_layer(NN::Layer<double, Func::Linear<double>, Func::ReLU<double>>{4, 16});
     model.add_layer(NN::Layer<double, Func::Linear<double>, Func::ReLU<double>>{16, 16});
-    model.add_layer(NN::Layer<double, Func::Linear<double>, Func::No_activation<double>>{16, 2});
+    model.add_layer(NN::Layer<double, Func::Linear<double>, Func::No_activation<double>>{16, 1});
     model.init(random, data.inputs);
 
     std::vector<double> losses {model.train_loop(random, data.inputs.slice(0, 800), data.targets.slice(0, 800), 200, 32)};
