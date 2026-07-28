@@ -8,7 +8,7 @@ int main() {
     LinAlg::Tensor<double> train_X {data.inputs.slice(0, 2400)};
     LinAlg::Tensor<double> train_Y {data.targets.slice(0, 2400)};
     LinAlg::Tensor<double> test_X {data.inputs.slice(2400, 3000)};
-    LinAlg::Tensor<double> test_Y {data.inputs.slice(2400, 3000)};
+    LinAlg::Tensor<double> test_Y {data.targets.slice(2400, 3000)};
 
     Func::Softmax_cross_entropy<double> loss_fn {};
     NN::Adam<double> opt {};

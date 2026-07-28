@@ -159,7 +159,7 @@ FetchContent_MakeAvailable(cml)
 target_link_libraries(your_target PRIVATE CML::CML)
 ```
 
-The library's tests and examples only build when CppMachineLearning is the top-level project, so pulling it into you build won't drag them along.
+The library's tests and examples only build when CppMachineLearning is the top-level project, so pulling it into your build won't drag them along.
 
 ## A few design decisions
 

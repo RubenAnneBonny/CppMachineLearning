@@ -1,5 +1,6 @@
 #include <cml.h>
 #include <iostream>
+#include <iomanip>
 
 int main() {
     // Minimal end-to-end. Initialize model -> train -> test
@@ -10,7 +11,7 @@ int main() {
     LinAlg::Tensor<double> train_X {data.inputs.slice(0, 800)};
     LinAlg::Tensor<double> train_Y {data.targets.slice(0, 800)};
     LinAlg::Tensor<double> test_X {data.inputs.slice(800, 1000)};
-    LinAlg::Tensor<double> test_Y {data.inputs.slice(800, 1000)};
+    LinAlg::Tensor<double> test_Y {data.targets.slice(800, 1000)};
 
     Func::Softmax_cross_entropy<double> loss_fn {};
     NN::Adam<double> opt {};
@@ -41,7 +42,9 @@ int main() {
         }
     };
 
-    std::cout << "Train accuracy: " << std::setprecision(1) << accuracy(train_X, train_Y) << '\n';
+    std::cout << std::fixed << std::setprecision(1);
+
+    std::cout << "Train accuracy: " << accuracy(train_X, train_Y) << '\n';
     std::cout << "Test accuracy: " << accuracy(test_X, test_Y) << '\n';
 
     return 0;

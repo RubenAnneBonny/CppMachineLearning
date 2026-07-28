@@ -19,7 +19,7 @@ int main() {
     double test_loss {model.test_loop(data.inputs.slice(800, 1000), data.targets.slice(800, 1000))};
 
     std::cout << "Final train loss: " << losses.back() << std::endl;
-    std::cout << "Test loss " << test_loss;
+    std::cout << "Test loss: " << test_loss << '\n';
 
     return 0;
 }
