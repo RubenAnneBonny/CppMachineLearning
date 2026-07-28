@@ -108,7 +108,7 @@ TEST(Random, PermutationSeeded) {
     std::vector<int> p_1 {r_1.permutation(10)};
     std::vector<int> p_2 {r_2.permutation(10)};
 
-    for(std::size_t i; i < 10; ++i) {
+    for(std::size_t i {}; i < 10; ++i) {
         EXPECT_EQ(p_1[i], p_2[i]);
     }
 }
