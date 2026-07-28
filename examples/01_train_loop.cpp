@@ -44,8 +44,8 @@ int main() {
 
     std::cout << std::fixed << std::setprecision(1);
 
-    std::cout << "Train accuracy: " << accuracy(train_X, train_Y) << '\n';
-    std::cout << "Test accuracy: " << accuracy(test_X, test_Y) << '\n';
+    std::cout << "Train accuracy: " << accuracy(train_X, train_Y) << "%\n";
+    std::cout << "Test accuracy: " << accuracy(test_X, test_Y) << "%\n";
 
     return 0;
 }

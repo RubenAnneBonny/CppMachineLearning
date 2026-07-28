@@ -26,7 +26,8 @@ namespace LinAlg {
      * shuffle_rows pairwise, operator+-*}
      *
      * @code
-     * LinAlg::Tensor<double> X {{2, 2}, 5}; X[{1, 0}] = 3;
+     * LinAlg::Tensor<double> X {{2, 2}, 5}; 
+     * X[{1, 0}] = 3;
      * @endcode
      */
     template <std::floating_point T>
