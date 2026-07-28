@@ -5,6 +5,11 @@ int main() {
     Rand::Random<double> random {42};
     Data::Data_set<double> data {Data::make_spirals<double>(random, 1000)};
 
+    LinAlg::Tensor<double> train_X {data.inputs.slice(0, 2400)};
+    LinAlg::Tensor<double> train_Y {data.targets.slice(0, 2400)};
+    LinAlg::Tensor<double> test_X {data.inputs.slice(2400, 3000)};
+    LinAlg::Tensor<double> test_Y {data.inputs.slice(2400, 3000)};
+
     Func::Softmax_cross_entropy<double> loss_fn {};
     NN::Adam<double> opt {};
     NN::Model<double, Func::Softmax_cross_entropy<double>, NN::Adam<double>> model {loss_fn, opt};
@@ -14,7 +19,7 @@ int main() {
     model.add_layer(NN::Layer<double, Func::Linear<double>, Func::No_activation<double>>{16, 3});
     model.init(random, data.inputs);
 
-    Data::Data_loader<double> loader {random, data.inputs.slice(0, 2400), data.targets.slice(0, 2400), 32};
+    Data::Data_loader<double> loader {random, train_X, train_Y, 32};
 
     // X and Y are placeholders, will be replaced by loader
     LinAlg::Tensor<double> X {{1}};
@@ -29,7 +34,7 @@ int main() {
         }
 
         if(epoch % 20 == 0) {
-            std::cout << "Test loss at epoch " << epoch << " = " << model.test_loop(data.inputs.slice(2400, 3000), data.targets.slice(2400, 3000)) << std::endl;
+            std::cout << "Test loss at epoch " << epoch << ": " << model.test_loop(test_X, test_Y) << '\n';
         }
     }
 
