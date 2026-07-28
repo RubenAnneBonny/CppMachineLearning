@@ -118,19 +118,19 @@ namespace {
 }
 
 TEST(GradientCheckTest, CorrectFunc) {
-    Debug::GradCheck::Func_result result = Debug::GradCheck::func<Correct_func<double>>(4);
+    Debug::GradCheck::Func_result result = Debug::GradCheck::function<Correct_func<double>>(4);
 
     EXPECT_TRUE(result.passed);
 }
 
 TEST(GradientCheckTest, WrongFunc) {
-    Debug::GradCheck::Func_result result = Debug::GradCheck::func<Wrong_func<double>>(4);
+    Debug::GradCheck::Func_result result = Debug::GradCheck::function<Wrong_func<double>>(4);
 
     EXPECT_FALSE(result.passed);
 }
 
 TEST(GradientCheckTest, WrongWeights) {
-    Debug::GradCheck::Func_result result = Debug::GradCheck::func<Wrong_weights<double>>(4);
+    Debug::GradCheck::Func_result result = Debug::GradCheck::function<Wrong_weights<double>>(4);
 
     EXPECT_FALSE(result.passed);
 }

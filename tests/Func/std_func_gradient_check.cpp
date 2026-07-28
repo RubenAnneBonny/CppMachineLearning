@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 TEST(GradientCheck, Linear) {
-    Debug::GradCheck::Func_result result = Debug::GradCheck::func<Func::Linear<double>>(4);
+    Debug::GradCheck::Func_result result = Debug::GradCheck::function<Func::Linear<double>>(4);
 
     EXPECT_TRUE(result.passed);
 }

@@ -76,7 +76,7 @@ namespace Debug::GradCheck {
     /// @param rel_tol The relative tolerance, controls the passed variable in result
     /// @return A Func_result instance
     template <Func::Function<double> F>
-    Func_result func(int input_size, int seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
+    Func_result function(int input_size, int seed = 42, double eps = 1e-5, double rel_tol = 1e-6) {
         LinAlg::Tensor<double> input {{1, input_size}};
         LinAlg::Tensor<double> weights {{1, F::num_weights(input_size)}};
 
