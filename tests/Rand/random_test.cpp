@@ -126,3 +126,12 @@ TEST(Random, PermutationLenghtLessThanOneThrows) {
 
     EXPECT_THROW(random.permutation(-1), std::invalid_argument);
 }
+
+TEST(Random, UniformIntWithinBounds) {
+    Rand::Random<float> random {42};
+
+    for(int i {}; i < 1000; ++i) {
+        int value {random.uniform_int(3, 7)};
+        EXPECT_TRUE(value >= 3 && value < 7);
+    }
+}

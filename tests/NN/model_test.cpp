@@ -957,3 +957,11 @@ TEST(Model, TrainLoopBatchSizeLessThanOneThrows) {
     EXPECT_THROW(model.train_loop(random, X, Y, 4, 0), std::invalid_argument);
     EXPECT_THROW(model.train_loop(random, X, Y, 4, -1), std::invalid_argument);
 }
+
+TEST(Model, LoadingFromUnopenableFileThrows) {
+    NN::Model<float, Func::MSE<float>, NN::Adam<float>> model {Func::MSE<float>{}, NN::Adam<float>{}};
+    model.add_layer(NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> {2, 3});
+    model.init();
+
+    EXPECT_THROW(model.load_weights("nonexistant_directory/DoesNotExist.weights"), std::invalid_argument);
+}

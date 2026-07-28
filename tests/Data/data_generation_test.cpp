@@ -163,3 +163,60 @@ TEST(DataGeneration, MakeSpiralsShuffle) {
 
     EXPECT_NE(times, 60);
 }
+
+TEST(DataGeneration, DataSetShuffleSameShape) {
+    LinAlg::Tensor<float> A {{10, 1}};
+    LinAlg::Tensor<float> B {{10, 1}};
+
+    for(int i {}; i < 10; ++i) {
+        A[{i, 0}] = i;
+        B[{i, 0}] = i;
+    }
+
+    Rand::Random<float> random {42};
+    Data::Data_set<float> data {A, B};
+    data.shuffle(random);
+
+    EXPECT_EQ(data.inputs.get_rank(), 2);
+    EXPECT_EQ(data.targets.get_rank(), 2);
+    if(data.inputs.get_rank() == 2) {
+        EXPECT_EQ(data.inputs.get_extent(0), 10);
+        EXPECT_EQ(data.inputs.get_extent(1), 1);
+    }
+    if(data.targets.get_rank() == 2) {
+        EXPECT_EQ(data.targets.get_extent(0), 10);
+        EXPECT_EQ(data.targets.get_extent(1), 1);
+    }
+}
+
+TEST(DataGeneration, DataSetShufflePairs) {
+    LinAlg::Tensor<float> A {{10, 1}};
+    LinAlg::Tensor<float> B {{10, 1}};
+
+    for(int i {}; i < 10; ++i) {
+        A[{i, 0}] = i;
+        B[{i, 0}] = i;
+    }
+
+    Rand::Random<float> random {42};
+    Data::Data_set<float> data {A, B};
+    data.shuffle(random);
+
+    for(int i {}; i < 10; ++i) {
+        EXPECT_EQ((data.inputs[{i, 0}]), (data.targets[{i, 0}]));
+    }
+}
+
+TEST(DataGeneration, DataSetDifferentRankThrows) {
+    LinAlg::Tensor<double> X {{4, 2}};
+    LinAlg::Tensor<double> Y {{4}};
+
+    EXPECT_THROW((Data::Data_set<double>{X, Y}), std::invalid_argument);
+}
+
+TEST(DataGeneration, DataSetDifferentBatchThrows) {
+    LinAlg::Tensor<double> X {{4, 2}};
+    LinAlg::Tensor<double> Y {{3, 2}};
+
+    EXPECT_THROW((Data::Data_set<double>{X, Y}), std::invalid_argument);
+}
