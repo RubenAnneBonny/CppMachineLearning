@@ -81,3 +81,48 @@ TEST(Random, UniformIntHighLessOrEqualThanLowThrows) {
     EXPECT_THROW(random.uniform_int(2, 2), std::invalid_argument);
     EXPECT_THROW(random.uniform_int(4, 3), std::invalid_argument);
 }
+
+TEST(Random, PermutationIsPermutation) {
+    Rand::Random<float> random {42};
+
+    std::vector<int> p {random.permutation(4)};
+    std::vector<int> found(4, 0);
+
+    for(std::size_t i {}; i < 4; ++i) {
+        EXPECT_TRUE(p[i] >= 0 && p[i] < 4);
+
+        if(p[i] >= 0 && p[i] < 4) {
+            found[p[i]] = 1;
+        }
+    }
+
+    for(std::size_t i {}; i < 4; ++i) {
+        EXPECT_EQ(found[i], 1);
+    }
+}
+
+TEST(Random, PermutationSeeded) {
+    Rand::Random<float> r_1 {42};
+    Rand::Random<float> r_2 {42};
+
+    std::vector<int> p_1 {r_1.permutation(10)};
+    std::vector<int> p_2 {r_2.permutation(10)};
+
+    for(std::size_t i; i < 10; ++i) {
+        EXPECT_EQ(p_1[i], p_2[i]);
+    }
+}
+
+TEST(Random, PermutationZeroIsEmpty) {
+    Rand::Random<float> random {42};
+
+    std::vector<int> p {random.permutation(0)};
+
+    EXPECT_TRUE(p.empty());
+}
+
+TEST(Random, PermutationLenghtLessThanOneThrows) {
+    Rand::Random<float> random {42};
+
+    EXPECT_THROW(random.permutation(-1), std::invalid_argument);
+}
