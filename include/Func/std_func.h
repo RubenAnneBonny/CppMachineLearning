@@ -208,7 +208,7 @@ namespace Func{
                         exp_sum += std::exp(prediction[{b, i}] - max_value);
                     }
 
-                    std::vector<int> class_indices {target.row(b).unsqueeze().argmax()};
+                    LinAlg::Small_vector<int, 4> class_indices {target.row(b).unsqueeze().argmax()};
                     class_indices[0] = b;
 
                     loss += -(prediction[class_indices] - max_value) + std::log(exp_sum);

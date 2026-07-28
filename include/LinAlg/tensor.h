@@ -1,10 +1,10 @@
 #ifndef CML_TENSOR_H
 #define CML_TENSOR_H
 
-
 #include <memory>
 #include <vector>
 #include <Rand/random.h>
+#include <LinAlg/small_vector.h>
 #include <string>
 #include <stdexcept>
 #include <concepts>
@@ -48,10 +48,10 @@ namespace LinAlg {
     template <std::floating_point T>
     class Tensor {
         private:
-            std::vector<int> m_shape;
+            LinAlg::Small_vector<int, 4> m_shape;
             std::shared_ptr<std::vector<T>> m_storage;
             int m_offset;
-            std::vector<int> m_strides;
+            LinAlg::Small_vector<int, 4> m_strides;
 
             int num_elements() const {
                 int elements {1};
@@ -72,7 +72,7 @@ namespace LinAlg {
                 }
             }
 
-            static std::vector<int> validate_shape(const std::vector<int>& shape) {
+            static LinAlg::Small_vector<int, 4> validate_shape(const LinAlg::Small_vector<int, 4>& shape) {
                 for(std::size_t i {}; i < shape.size(); ++i) {
                     if(shape[i] < 1) {
                         throw std::invalid_argument(
@@ -84,7 +84,7 @@ namespace LinAlg {
                 return shape;
             }
 
-            static bool next_index(std::vector<int>& indices, const std::vector<int>& shape) {
+            static bool next_index(LinAlg::Small_vector<int, 4>& indices, const LinAlg::Small_vector<int, 4>& shape) {
                 for(int i {static_cast<int>(shape.size() - 1)}; i >= 0; --i) {
                     if(++indices[static_cast<std::size_t>(i)] < shape[static_cast<std::size_t>(i)]) {
                         return true;
@@ -148,7 +148,7 @@ namespace LinAlg {
             /// @param shape The shape of the Tensor
             /// @param init The value to initialize all elements to
             /// @throws std::invalid_argument if a extent of a axis is less than 1
-            explicit Tensor(const std::vector<int>& shape, T init = 0);
+            explicit Tensor(const LinAlg::Small_vector<int, 4>& shape, T init = 0);
 
             /// @brief Randomizes all elements ~N(mean, stddev)
             /// @param random An instance of the random class
@@ -190,7 +190,7 @@ namespace LinAlg {
             
             /// @brief Exposes the shape of the tensors as read-only
             /// @return A copy of the shape
-            std::vector<int> get_shape() const {
+            LinAlg::Small_vector<int, 4> get_shape() const {
                 return m_shape;
             }
 
@@ -239,7 +239,7 @@ namespace LinAlg {
 
             /// @brief Finds the position of the largest element in the tensor
             /// @return The position of the largest element
-            std::vector<int> argmax() const;
+            LinAlg::Small_vector<int, 4> argmax() const;
 
             /// @brief Computes the sum over all elements in the tensor
             /// @return The sum
@@ -292,8 +292,8 @@ namespace LinAlg {
             /// @return A reference to the element
             /// @warning For speed, the access operator do no safety checks
             /// @pre indices.size() == rank and each index is in [0, extent(axis)), otherwise undefined behaviour
-            const T& operator[](const std::vector<int>& indices) const;
-            T& operator[](const std::vector<int>& indices);
+            const T& operator[](const LinAlg::Small_vector<int, 4>& indices) const;
+            T& operator[](const LinAlg::Small_vector<int, 4>& indices);
 
             /// @brief Checks for equality between two tensors
             /// @param A The first tensor
@@ -310,7 +310,7 @@ namespace LinAlg {
                     }
                 }
 
-                std::vector<int> indices(static_cast<std::size_t>(A.get_rank()), 0);
+                LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(A.get_rank()), 0);
 
                 do {
                     if(A[indices] != B[indices]) {
@@ -367,7 +367,7 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+                LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
                 do {
                     (*this)[indices] = C[indices];
                 } while(next_index(indices, m_shape));
@@ -436,7 +436,7 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+                LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
                 do {
                     (*this)[indices] = C[indices];
                 } while(next_index(indices, m_shape));
@@ -511,7 +511,7 @@ namespace LinAlg {
                     );
                 }
 
-                std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+                LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
                 do {
                     (*this)[{indices}] = C[indices];
                 } while(next_index(indices, m_shape));
@@ -556,7 +556,7 @@ namespace LinAlg {
     };
 
     template <std::floating_point T>
-    Tensor<T>::Tensor(const std::vector<int>& shape, T init)
+    Tensor<T>::Tensor(const LinAlg::Small_vector<int, 4>& shape, T init)
         : m_shape {validate_shape(shape)}
         , m_storage {std::make_shared<std::vector<T>>(num_elements(), init)}
         , m_offset {}
@@ -567,7 +567,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::normal(Rand::Random<T>& random, T mean, T stddev) {
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             (*this)[indices] = random.normal(mean, stddev);
         } while(next_index(indices, m_shape));
@@ -575,7 +575,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::uniform(Rand::Random<T>& random, T low, T high) {
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             (*this)[indices] = random.uniform(low, high);
         } while(next_index(indices, m_shape));
@@ -583,7 +583,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     void Tensor<T>::set_all_elements(T value) {
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             (*this)[indices] = value;
         } while(next_index(indices, m_shape));
@@ -593,7 +593,7 @@ namespace LinAlg {
     Tensor<T> Tensor<T>::copy() const {
         Tensor<T> A {m_shape};
 
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
         do {
             A[indices] = (*this)[indices];
         } while(next_index(indices, m_shape));
@@ -670,12 +670,12 @@ namespace LinAlg {
             }
         }
 
-        std::vector<int> shape {m_shape};
+        LinAlg::Small_vector<int, 4> shape {m_shape};
         shape[0] = static_cast<int>(to_gather.size());
         Tensor<T> A {shape};
 
-        std::vector<int> indices(static_cast<std::size_t>(A.get_rank()), 0);
-        std::vector<int> this_indices(static_cast<std::size_t>(A.get_rank()));
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(A.get_rank()), 0);
+        LinAlg::Small_vector<int, 4> this_indices(static_cast<std::size_t>(A.get_rank()));
 
         do {
             this_indices = indices;
@@ -773,11 +773,11 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    std::vector<int> Tensor<T>::argmax() const {
-        std::vector<int> best_indices(static_cast<std::size_t>(get_rank()), 0);
+    LinAlg::Small_vector<int, 4> Tensor<T>::argmax() const {
+        LinAlg::Small_vector<int, 4> best_indices(static_cast<std::size_t>(get_rank()), 0);
         T max_element {(*this)[best_indices]};
 
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
 
         do {
             T element = (*this)[indices];
@@ -793,7 +793,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     T Tensor<T>::sum() const {
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
 
         T sum {};
 
@@ -806,7 +806,7 @@ namespace LinAlg {
 
     template <std::floating_point T>
     T Tensor<T>::max() const {
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
 
         T max_value = (*this)[indices];
 
@@ -847,7 +847,7 @@ namespace LinAlg {
     template <std::floating_point T>
     template <std::invocable<T> Fn>
     Tensor<T>& Tensor<T>::elementwise(Fn fn) {
-        std::vector<int> indices(static_cast<std::size_t>(get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(get_rank()), 0);
 
         do {
             (*this)[indices] = static_cast<T>(fn((*this)[indices]));
@@ -870,7 +870,7 @@ namespace LinAlg {
 
         Tensor<T> C {A_view.m_shape};
 
-        std::vector<int> indices(static_cast<std::size_t>(rank), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(rank), 0);
 
         do {
             C[indices] = fn(A_view[indices], B_view[indices]);
@@ -897,7 +897,7 @@ namespace LinAlg {
     }
 
     template <std::floating_point T>
-    const T& Tensor<T>::operator[](const std::vector<int>& indices) const {
+    const T& Tensor<T>::operator[](const LinAlg::Small_vector<int, 4>& indices) const {
         int index {m_offset};
 
         for(std::size_t i {}; i < static_cast<std::size_t>(get_rank()); ++i) {
@@ -907,7 +907,7 @@ namespace LinAlg {
         return (*m_storage)[static_cast<std::size_t>(index)];
     }
     template <std::floating_point T>
-    T& Tensor<T>::operator[](const std::vector<int>& indices) {
+    T& Tensor<T>::operator[](const LinAlg::Small_vector<int, 4>& indices) {
         const Tensor& self = *this;
         return const_cast<T&>(self[indices]);
     }
@@ -924,7 +924,7 @@ namespace LinAlg {
             }
         }
 
-        std::vector<int> indices(static_cast<std::size_t>(A.get_rank()), 0);
+        LinAlg::Small_vector<int, 4> indices(static_cast<std::size_t>(A.get_rank()), 0);
 
         do {
             if(std::abs(A[indices] - B[indices]) > atol + std::abs(B[indices]) * rtol) {
@@ -968,13 +968,13 @@ namespace LinAlg {
 
         Tensor<T>::batching(A_view, B_view, 2);
 
-        std::vector<int> shape {A_view.m_shape};
+        LinAlg::Small_vector<int, 4> shape {A_view.m_shape};
         shape[max_rank - 1] = B_view.m_shape.back();
         Tensor<T> C {shape};
 
-        std::vector<int> indices(max_rank, 0);
-        std::vector<int> A_indices(max_rank, 0);
-        std::vector<int> B_indices(max_rank, 0);
+        LinAlg::Small_vector<int, 4> indices(max_rank, 0);
+        LinAlg::Small_vector<int, 4> A_indices(max_rank, 0);
+        LinAlg::Small_vector<int, 4> B_indices(max_rank, 0);
 
         do {
             for(std::size_t i {}; i < max_rank; ++i){
