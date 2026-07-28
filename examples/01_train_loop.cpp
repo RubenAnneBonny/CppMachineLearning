@@ -1,6 +1,5 @@
 #include <cml.h>
 #include <iostream>
-#include <iomanip>
 
 int main() {
     // Minimal end-to-end. Initialize model -> train -> test
@@ -25,9 +24,6 @@ int main() {
     std::vector<double> losses {model.train_loop(random, train_X, train_Y, 200, 32)};
     double test_loss {model.test_loop(test_X, test_Y)};
     
-    std::cout << "Train loss: " << losses.back() << '\n';
-    std::cout << "Test loss: " << test_loss << '\n';
-
     // Accuracy helper
     auto accuracy {
         [&](const LinAlg::Tensor<double>& X, const LinAlg::Tensor<double>& Y) {
@@ -42,9 +38,9 @@ int main() {
         }
     };
 
-    std::cout << std::fixed << std::setprecision(1);
-
+    std::cout << "Train loss: " << losses.back() << '\n';
     std::cout << "Train accuracy: " << accuracy(train_X, train_Y) << "%\n";
+    std::cout << "Test loss: " << test_loss << '\n';
     std::cout << "Test accuracy: " << accuracy(test_X, test_Y) << "%\n";
 
     return 0;

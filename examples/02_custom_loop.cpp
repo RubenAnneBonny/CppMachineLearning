@@ -21,10 +21,24 @@ int main() {
 
     Data::Data_loader<double> loader {random, train_X, train_Y, 32};
 
+    // Accuracy helper
+    auto accuracy {
+        [&](const LinAlg::Tensor<double>& X, const LinAlg::Tensor<double>& Y) {
+            LinAlg::Tensor<double> logits {model.forward_pass_stateless(X)};
+            int correct {};
+            for(int i {}; i < X.get_extent(0); ++i) {
+                if(logits.row(i).argmax()[0] == Y.row(i).argmax()[0]) {
+                    ++correct;
+                }
+            }
+            return 100.0 * correct / X.get_extent(0);
+        }
+    };
+
     // X and Y are placeholders, will be replaced by loader
     LinAlg::Tensor<double> X {{1}};
     LinAlg::Tensor<double> Y {{1}};
-    for(int epoch {}; epoch < 200; ++epoch) {
+    for(int epoch {}; epoch < 201; ++epoch) {
         // Custom loop. forward pass -> zero_grad -> backpropagation -> optimizer_step
         while(loader.next_batch(random, X, Y)) {
             model.forward_pass(X);
@@ -33,8 +47,16 @@ int main() {
             model.optimizer_step();
         }
 
-        if(epoch % 20 == 0) {
-            std::cout << "Test loss at epoch " << epoch << ": " << model.test_loop(test_X, test_Y) << '\n';
+        if(epoch % 40 == 0) {
+            double train_loss {model.test_loop(train_X, train_Y)};
+            double test_loss {model.test_loop(test_X, test_Y)};
+            double train_acc {accuracy(train_X, train_Y)};
+            double test_acc {accuracy(test_X, test_Y)};
+
+            std::cout << "Epoch " << epoch << "\n";
+            std::cout << "Train: {Loss: " << train_loss << ", Acc: " << train_acc << "%}\n";
+            std::cout << "Test: {Loss: " << test_loss << ", Acc: " << test_acc << "%}\n";
+            std::cout << "\n";
         }
     }
 

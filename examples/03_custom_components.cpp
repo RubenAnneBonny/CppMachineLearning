@@ -66,6 +66,11 @@ int main() {
     Rand::Random<double> random {42};
     Data::Data_set<double> data {Data::make_moons<double>(random, 1000)};
 
+    LinAlg::Tensor<double> train_X {data.inputs.slice(0, 800)};
+    LinAlg::Tensor<double> train_Y {data.targets.slice(0, 800)};
+    LinAlg::Tensor<double> test_X {data.inputs.slice(800, 1000)};
+    LinAlg::Tensor<double> test_Y {data.targets.slice(800, 1000)};
+
     Func::Softmax_cross_entropy<double> loss_fn {};
     Momentum<double> opt {0.01};
 
@@ -85,7 +90,7 @@ int main() {
         std::cout << "The derivative of the leaky relu activation function matches its numerical value" << std::endl;
     }
     else {
-        std::cout << "The derivative of the leaky relu activation function does not match its numerical value" << std::endl;
+        std::cout << "The derivative of the leaky relu fails numerical tests" << std::endl;
     }
 
     NN::Model<double, Func::Softmax_cross_entropy<double>, Momentum<double>> model {loss_fn, opt};
@@ -95,11 +100,30 @@ int main() {
     model.add_layer(NN::Layer<double, Func::Linear<double>, Func::No_activation<double>>{16, 2});
     model.init(random, data.inputs);
 
-    std::vector<double> losses {model.train_loop(random, data.inputs.slice(0, 800), data.targets.slice(0, 800), 200, 32)};
-    double test_loss {model.test_loop(data.inputs.slice(800, 1000), data.targets.slice(800, 1000))};
+    std::vector<double> losses {model.train_loop(random, train_X, train_Y, 200, 32)};
+    double test_loss {model.test_loop(test_X, test_Y)};
 
-    std::cout << "Final train loss: " << losses.back() << std::endl;
-    std::cout << "Test loss " << test_loss << std::endl;
+    // Accuracy helper
+    auto accuracy {
+        [&](const LinAlg::Tensor<double>& X, const LinAlg::Tensor<double>& Y) {
+            LinAlg::Tensor<double> logits {model.forward_pass_stateless(X)};
+            int correct {};
+            for(int i {}; i < X.get_extent(0); ++i) {
+                if(logits.row(i).argmax()[0] == Y.row(i).argmax()[0]) {
+                    ++correct;
+                }
+            }
+            return 100.0 * correct / X.get_extent(0);
+        }
+    };
+
+    double train_acc {accuracy(train_X, train_Y)};
+    double test_acc {accuracy(test_X, test_Y)};
+
+    std::cout << "Train loss: " << losses.back() << "\n";
+    std::cout << "Train acc: " << train_acc << "%\n";
+    std::cout << "Test loss: " << test_loss << "\n";
+    std::cout << "Test acc: " << test_acc << "%\n";
 
     return 0;
 }
