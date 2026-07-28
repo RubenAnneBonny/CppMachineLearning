@@ -57,9 +57,8 @@ namespace {
             }
 
             void step() {
-                for(auto* param : m_params) {
-                    param->value -= param->grad;
-                    break;
+                if(!m_params.empty()) {
+                    m_params[0]->value -= m_params[0]->grad;
                 }
             }
     };
