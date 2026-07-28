@@ -70,7 +70,7 @@ namespace Data {
     Data_loader<T>::Data_loader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size) 
         : m_inputs {inputs.copy()}
         , m_targets {targets.copy()}
-        , m_permutation(inputs.get_extent(0))
+        , m_permutation(static_cast<std::size_t>(inputs.get_extent(0)))
         , m_batch {}
         , m_batch_size {batch_size}
     {        
@@ -91,8 +91,8 @@ namespace Data {
             );
         }
 
-        for(int i {}; i < static_cast<int>(m_permutation.size()); ++i) {
-            m_permutation[i] = i;
+        for(std::size_t i {}; i < m_permutation.size(); ++i) {
+            m_permutation[i] = static_cast<int>(i);
         }
         shuffle(random);
     }

@@ -9,7 +9,7 @@ TEST(Data_loader, OneEpochDontLoseRows) {
     LinAlg::Tensor<float> targets {{100, 1}};
 
     for(int i {}; i < 100; ++i) {
-        inputs[{i, 0}] = i;
+        inputs[{i, 0}] = static_cast<float>(i);
     }
 
     Rand::Random<float> random {42};
@@ -26,18 +26,18 @@ TEST(Data_loader, OneEpochDontLoseRows) {
     bool one_different {false};
 
     for(int i {}; i < 100; ++i) {
-        EXPECT_FALSE(found[static_cast<int>(input[{i, 0}])]);
+        EXPECT_FALSE(found[static_cast<std::size_t>(input[{i, 0}])]);
 
         if(static_cast<int>(input[{i, 0}]) != i) {
             one_different = true;
         }
 
-        found[static_cast<int>(input[{i, 0}])] = true;
+        found[static_cast<std::size_t>(input[{i, 0}])] = true;
     }
 
     EXPECT_TRUE(one_different);
 
-    for(int i {}; i < 100; ++i) {
+    for(std::size_t i {}; i < 100; ++i) {
         EXPECT_TRUE(found[i]);
     }
 }
@@ -47,8 +47,8 @@ TEST(Data_loader, InputTargetMatch) {
     LinAlg::Tensor<float> targets {{100, 1}};
 
     for(int i {}; i < 100; ++i) {
-        inputs[{i, 0}] = i;
-        targets[{i, 0}] = i;
+        inputs[{i, 0}] = static_cast<float>(i);
+        targets[{i, 0}] = static_cast<float>(i);
     }
 
     Rand::Random<float> random {42};
@@ -82,7 +82,7 @@ TEST(Data_loader, NumBatchesNotDivisible) {
 TEST(Data_loader, Determinism) {
     std::vector<LinAlg::Tensor<float>> X {};
 
-    for(int i {}; i < 2; ++i) {
+    for(std::size_t i {}; i < 2; ++i) {
         LinAlg::Tensor<float> inputs {{100, 1}};
         LinAlg::Tensor<float> targets {{100, 1}};
 
@@ -105,8 +105,8 @@ TEST(Data_loader, TwoEpochsDiffer) {
     LinAlg::Tensor<float> targets {{100, 1}};
 
     for(int i {}; i < 100; ++i) {
-        inputs[{i, 0}] = i;
-        targets[{i, 0}] = i;
+        inputs[{i, 0}] = static_cast<float>(i);
+        targets[{i, 0}] = static_cast<float>(i);
     }
 
     Rand::Random<float> random {42};
@@ -128,18 +128,18 @@ TEST(Data_loader, TwoEpochsDiffer) {
     bool one_different {false};
 
     for(int i {}; i < 100; ++i) {
-        EXPECT_FALSE(found[static_cast<int>(input_2[{i, 0}])]);
+        EXPECT_FALSE(found[static_cast<std::size_t>(input_2[{i, 0}])]);
 
         if(static_cast<int>(input_2[{i, 0}]) != i) {
             one_different = true;
         }
 
-        found[static_cast<int>(input_2[{i, 0}])] = true;
+        found[static_cast<std::size_t>(input_2[{i, 0}])] = true;
     }
 
     EXPECT_TRUE(one_different);
 
-    for(int i {}; i < 100; ++i) {
+    for(std::size_t i {}; i < 100; ++i) {
         EXPECT_TRUE(found[i]);
     }
 }

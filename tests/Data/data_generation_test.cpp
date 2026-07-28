@@ -169,8 +169,8 @@ TEST(DataGeneration, DataSetShuffleSameShape) {
     LinAlg::Tensor<float> B {{10, 1}};
 
     for(int i {}; i < 10; ++i) {
-        A[{i, 0}] = i;
-        B[{i, 0}] = i;
+        A[{i, 0}] = static_cast<float>(i);
+        B[{i, 0}] = static_cast<float>(i);
     }
 
     Rand::Random<float> random {42};
@@ -194,8 +194,8 @@ TEST(DataGeneration, DataSetShufflePairs) {
     LinAlg::Tensor<float> B {{10, 1}};
 
     for(int i {}; i < 10; ++i) {
-        A[{i, 0}] = i;
-        B[{i, 0}] = i;
+        A[{i, 0}] = static_cast<float>(i);
+        B[{i, 0}] = static_cast<float>(i);
     }
 
     Rand::Random<float> random {42};

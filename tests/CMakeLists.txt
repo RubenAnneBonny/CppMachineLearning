@@ -17,7 +17,7 @@ foreach(test_file ${TEST_SOURCES})
 
     add_executable(${test_name} ${test_file})
 
-    target_link_libraries(${test_name} PRIVATE CML GTest::gtest_main)
+    target_link_libraries(${test_name} PRIVATE CML cml_warnings GTest::gtest_main)
 
     gtest_discover_tests(${test_name} DISCOVERY_MODE PRE_TEST)
 endforeach()

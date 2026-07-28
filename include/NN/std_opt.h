@@ -52,7 +52,7 @@ namespace NN {
             int m_t;
 
         public:
-            explicit Adam(T beta_1 = T{0.9}, T beta_2 = T{0.999}, T alpha = T{1e-3}, T eps = T{1e-8})
+            explicit Adam(T beta_1 = static_cast<T>(0.9), T beta_2 = static_cast<T>(0.999), T alpha = static_cast<T>(1e-3), T eps = static_cast<T>(1e-8))
                 : m_beta_1 {beta_1}
                 , m_beta_2 {beta_2}
                 , m_alpha {alpha}
@@ -69,7 +69,7 @@ namespace NN {
                 m_second_moment.clear();
                 m_t = 0;
 
-                for(int i {}; i < static_cast<int>(m_parameters.size()); ++i) {
+                for(std::size_t i {}; i < m_parameters.size(); ++i) {
                     LinAlg::Tensor<T> X {{m_parameters[i]->value.get_extent(0), m_parameters[i]->value.get_extent(1)}};
 
                     m_first_moment.push_back(X.copy());
@@ -80,7 +80,7 @@ namespace NN {
             void step() {
                 ++m_t;
 
-                for(int i {}; i < static_cast<int>(m_parameters.size()); ++i) {
+                for(std::size_t i {}; i < m_parameters.size(); ++i) {
                     auto first{
                         [&](T a, T b)
                         {

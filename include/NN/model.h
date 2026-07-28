@@ -150,7 +150,7 @@ namespace NN {
             /// @param damping Limits the step size towards correct stddev, should be in (0, 1]
             /// @throws std::invalid_argument if no layers were added before init
             /// @throws std::invalid_argument if model was already initialized
-            void init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev = T{1}, int max_iters = 5, T tol = T{0.01}, T damping = T{0.9});
+            void init(Rand::Random<T>& random, const LinAlg::Tensor<T>& samples, T target_stddev = static_cast<T>(1), int max_iters = 5, T tol = static_cast<T>(0.01), T damping = static_cast<T>(0.9));
 
             /// @brief Does a forward pass through the network, saving necessary inputs
             /// @param X The input tensor to the network
@@ -320,7 +320,7 @@ namespace NN {
 
         LinAlg::Tensor<T> layer_input {samples.copy()};
 
-        for(int layer {}; layer < static_cast<int>(m_layers.size()); ++layer) {
+        for(std::size_t layer {}; layer < m_layers.size(); ++layer) {
             for(int iter {}; iter < max_iters; ++iter) {
                 m_layers[layer]->forward_pass(layer_input);
                 LinAlg::Tensor<T> pre_activation {m_layers[layer]->get_pre_activation()};
@@ -517,7 +517,7 @@ namespace NN {
         const std::vector<NN::Parameter<T>*>& params = get_parameters();
         out << params.size() << "\n";
 
-        for(int param {}; param < static_cast<int>(params.size()); ++param) {
+        for(std::size_t param {}; param < params.size(); ++param) {
             const LinAlg::Tensor<T>& W {params[param]->value};
             int rows {W.get_extent(0)};
             int cols {W.get_extent(1)};
@@ -561,7 +561,7 @@ namespace NN {
         }
 
         for(int param {}; param < num_parameters; ++param) {
-            LinAlg::Tensor<T>& W {params[param]->value};
+            LinAlg::Tensor<T>& W {params[static_cast<std::size_t>(param)]->value};
 
             int index {};
             int rows {};
@@ -658,7 +658,7 @@ namespace NN {
                 optimizer_step();
             }
 
-            losses.push_back(epoch_loss / loader.get_num_batches());
+            losses.push_back(epoch_loss / static_cast<T>(loader.get_num_batches()));
         }
 
         return losses;

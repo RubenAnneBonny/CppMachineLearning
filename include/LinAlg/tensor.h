@@ -303,13 +303,13 @@ namespace LinAlg {
                     return false;
                 }
 
-                for(int i {}; i < A.get_rank(); ++i) {
+                for(std::size_t i {}; i < static_cast<std::size_t>(A.get_rank()); ++i) {
                     if(A.m_shape[i] != B.m_shape[i]){
                         return false;
                     }
                 }
 
-                std::vector<int> indices(A.get_rank(), 0);
+                std::vector<int> indices(static_cast<std::size_t>(A.get_rank()), 0);
 
                 do {
                     if(A[indices] != B[indices]) {
@@ -917,13 +917,13 @@ namespace LinAlg {
             return false;
         }
 
-        for(int i {}; i < A.get_rank(); ++i) {
+        for(std::size_t i {}; i < static_cast<std::size_t>(A.get_rank()); ++i) {
             if(A.m_shape[i] != B.m_shape[i]){
                 return false;
             }
         }
 
-        std::vector<int> indices(A.get_rank(), 0);
+        std::vector<int> indices(static_cast<std::size_t>(A.get_rank()), 0);
 
         do {
             if(std::abs(A[indices] - B[indices]) > atol + std::abs(B[indices]) * rtol) {
@@ -939,11 +939,11 @@ namespace LinAlg {
         Tensor<T> A_view {A};
         Tensor<T> B_view {B};
 
-        int A_rank {A.get_rank()};
-        int B_rank {B.get_rank()};
+        std::size_t A_rank {static_cast<std::size_t>(A.get_rank())};
+        std::size_t B_rank {static_cast<std::size_t>(B.get_rank())};
 
-        int max_rank {A_rank > B_rank ? A_rank : B_rank};
-        int min_rank {A_rank > B_rank ? B_rank : A_rank};
+        std::size_t max_rank {A_rank > B_rank ? A_rank : B_rank};
+        std::size_t min_rank {A_rank > B_rank ? B_rank : A_rank};
 
         if(min_rank < 2){
             throw std::invalid_argument(
@@ -976,7 +976,7 @@ namespace LinAlg {
         std::vector<int> B_indices(max_rank, 0);
 
         do {
-            for(int i {}; i < max_rank; ++i){
+            for(std::size_t i {}; i < max_rank; ++i){
                 A_indices[i] = indices[i];
                 B_indices[i] = indices[i];
             }

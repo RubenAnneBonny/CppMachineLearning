@@ -61,7 +61,7 @@ namespace Debug {
             Opt opt {optimizer};
             std::vector<NN::Parameter<double>> params {};
 
-            for(int i {}; i < 5; ++i) {
+            for(std::size_t i {}; i < 5; ++i) {
                 params.push_back(NN::Parameter<double>({3, 4}));
                 params[i].normal(random, 0, 1);
                 LinAlg::Tensor<double> A {{3, 4}};
@@ -71,12 +71,12 @@ namespace Debug {
 
             std::vector<LinAlg::Tensor<double>> before {};
 
-            for(int i {}; i < 5; ++i) {
+            for(std::size_t i {}; i < 5; ++i) {
                 before.push_back(params[i].value.copy());
             }
 
             std::vector<NN::Parameter<double>*> pparams(5);
-            for(int i {}; i < 5; ++i) {
+            for(std::size_t i {}; i < 5; ++i) {
                 pparams[i] = &params[i];
             }
 
@@ -85,7 +85,7 @@ namespace Debug {
 
             result.parameter_coverage = true;
 
-            for(int i {}; i < 5; ++i) {
+            for(std::size_t i {}; i < 5; ++i) {
                 if(params[i].value == before[i]) {
                     result.parameter_coverage = false;
                 }

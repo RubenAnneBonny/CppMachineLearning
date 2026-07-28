@@ -42,7 +42,7 @@ TEST(Random, NormalRoughStats) {
     }
 
     float sum {};
-    for(int i {}; i < 10000; ++i) {
+    for(std::size_t i {}; i < 10000; ++i) {
         sum += elements[i];
     }
 
@@ -51,7 +51,7 @@ TEST(Random, NormalRoughStats) {
     EXPECT_NEAR(mean, 3, 0.1);
 
     float var {};
-    for(int i {}; i < 10000; ++i) {
+    for(std::size_t i {}; i < 10000; ++i) {
         var += (elements[i] - mean) * (elements[i] - mean);
     }
 
@@ -92,7 +92,7 @@ TEST(Random, PermutationIsPermutation) {
         EXPECT_TRUE(p[i] >= 0 && p[i] < 4);
 
         if(p[i] >= 0 && p[i] < 4) {
-            found[p[i]] = 1;
+            found[static_cast<std::size_t>(p[i])] = 1;
         }
     }
 

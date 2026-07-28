@@ -21,7 +21,7 @@ namespace {
                 return 3 * X * X * weights;
             }
 
-            static LinAlg::Tensor<T> weight_derivative(const LinAlg::Tensor<T>& X, const LinAlg::Tensor<T>& weights) {
+            static LinAlg::Tensor<T> weight_derivative(const LinAlg::Tensor<T>& X, [[maybe_unused]] const LinAlg::Tensor<T>& weights) {
                 return X * X * X;
             }
     };

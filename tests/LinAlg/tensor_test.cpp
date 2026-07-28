@@ -599,7 +599,7 @@ TEST(Tensor, AllCloseWithinAtol) {
     LinAlg::Tensor<float> B {A + 1.003f};
     B -= 1.003f;
 
-    EXPECT_TRUE(LinAlg::all_close<float>(A, B, 1e-6, 0));
+    EXPECT_TRUE(LinAlg::all_close<float>(A, B, 1e-6f, 0.0f));
 }
 
 TEST(Tensor, AllCloseOutsideTol) {
@@ -607,17 +607,17 @@ TEST(Tensor, AllCloseOutsideTol) {
 
     LinAlg::Tensor<float> B {A + 1.003f};
 
-    EXPECT_FALSE(LinAlg::all_close<float>(A, B, 1e-6, 0));
+    EXPECT_FALSE(LinAlg::all_close<float>(A, B, 1e-6f, 0.0f));
 }
 
 TEST(Tensor, AllCloseRtolScaling) {
-    LinAlg::Tensor<float> A {{2, 2}, 1e7 + 1.3f};
+    LinAlg::Tensor<float> A {{2, 2}, 1e7f + 1.3f};
 
     LinAlg::Tensor<float> B {A * 52.3f};
 
     B *= (1 / 52.3f);
 
-    EXPECT_TRUE(LinAlg::all_close<float>(A, B, 0, 1e-6));
+    EXPECT_TRUE(LinAlg::all_close<float>(A, B, 0.0f, 1e-6f));
 }
 
 TEST(Tensor, AllCloseShapeMismatch) {
@@ -1017,7 +1017,7 @@ TEST(Tensor, ShuffleRowsShapeUnchanged) {
 TEST(Tensor, ShuffleRowsKeepsAllRows) {
     LinAlg::Tensor<float> A {{8, 1}};
     for(int i {}; i < 8; ++i) {
-        A[{i, 0}] = i;
+        A[{i, 0}] = static_cast<float>(i);
     }
 
     Rand::Random<float> random {42};

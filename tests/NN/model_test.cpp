@@ -12,7 +12,7 @@ TEST(Model, AddLayerSizeMismatchThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> second_layer {3, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -26,7 +26,7 @@ TEST(Model, AddLayerAfterInitThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> second_layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -39,7 +39,7 @@ TEST(Model, AddLayerAfterInitThrows) {
 
 TEST(Model, InitEmptyModelThrows) {
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt}; 
     
@@ -50,7 +50,7 @@ TEST(Model, ForwardBeforeInitThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -65,7 +65,7 @@ TEST(Model, ForwardWrongRankThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -85,7 +85,7 @@ TEST(Model, ForwardWrongShapeThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -101,7 +101,7 @@ TEST(Model, CalculateLossWrongTargetRankThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -124,7 +124,7 @@ TEST(Model, CalculateLossWrongTargteShapeThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -143,7 +143,7 @@ TEST(Model, BackpropagationWrongTargetRankThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -166,7 +166,7 @@ TEST(Model, BackpropagationWrongTargetShapeThrows) {
     NN::Layer<float, Func::Linear<float>, Func::ReLU<float>> layer {2, 2};
 
     Func::MSE<float> loss_fn {};
-    NN::Gradient_descent<float> opt {0.01};
+    NN::Gradient_descent<float> opt {0.01f};
 
     NN::Model<float, Func::MSE<float>, NN::Gradient_descent<float>> model {loss_fn, opt};
 
@@ -379,7 +379,7 @@ TEST(Model, Deterministic) {
         losses.push_back(model.train_loop(random, input, target, 10, 1));
     }
 
-    for(int i {}; i < 10; ++i) {
+    for(std::size_t i {}; i < 10; ++i) {
         EXPECT_EQ(losses[0][i], losses[1][i]);
     }
 }
@@ -470,13 +470,13 @@ namespace {
             sum += value;
         }
 
-        T mean {sum / num_elements};
+        T mean {sum / static_cast<T>(num_elements)};
 
         T variance {};
         for(T value : values) {
             variance += (value - mean) * (value - mean);
         }
-        variance /= num_elements;
+        variance /= static_cast<T>(num_elements);
 
         T stddev {std::sqrt(variance)};
 
@@ -508,7 +508,7 @@ TEST(Model, RandomInitStddevWithinTol) {
     LinAlg::Tensor<float> samples {{100, 1}};
     samples.uniform(random, 5, 6);
 
-    for(int layer {}; layer < 3; ++layer) {
+    for(std::size_t layer {}; layer < 3; ++layer) {
         std::vector<float> values {};
         for(int sample {}; sample < 100; ++sample) {
             LinAlg::Tensor<float> X {samples.row(sample).unsqueeze()};

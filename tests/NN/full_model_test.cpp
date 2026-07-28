@@ -24,8 +24,8 @@ TEST(FullModel, LinearRegression) {
     LinAlg::Tensor<float> targets {{20, 1}};
 
     for(int i {}; i < 20; ++i) {
-        inputs[{i, 0}] = i;
-        targets[{i, 0}] = 2 * i + 1;
+        inputs[{i, 0}] = static_cast<float>(i);
+        targets[{i, 0}] = static_cast<float>(2 * i + 1);
     }
 
     model.train_loop(random, inputs, targets, 200, 2);
@@ -34,7 +34,7 @@ TEST(FullModel, LinearRegression) {
     w_exp[{0, 0}] = 2;
     w_exp[{0, 1}] = 1;
 
-    EXPECT_TRUE(LinAlg::all_close<float>(w_exp, model.get_parameters()[0]->value, 1e-4, 1e-4));
+    EXPECT_TRUE(LinAlg::all_close<float>(w_exp, model.get_parameters()[0]->value, 1e-4f, 1e-4f));
 }
 
 TEST(FullModel, ConvergenceXOR) {
