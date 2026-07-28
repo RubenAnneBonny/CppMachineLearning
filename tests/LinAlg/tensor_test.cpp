@@ -998,3 +998,57 @@ TEST(Tensor, Elementwise) {
     EXPECT_EQ(A, A_exp);
     EXPECT_EQ(&ref, &A);
 }
+
+TEST(Tensor, ShuffleRowsShapeUnchanged) {
+    LinAlg::Tensor<float> A {{4, 8, 1}};
+    Rand::Random<float> random {42};
+
+    LinAlg::Tensor<float> B {A.shuffle_rows(random)};
+
+    EXPECT_EQ(B.get_rank(), 3);
+
+    if(B.get_rank() == 3) {
+        EXPECT_EQ(B.get_extent(0), 4);
+        EXPECT_EQ(B.get_extent(1), 8);
+        EXPECT_EQ(B.get_extent(2), 1);
+    }
+}
+
+TEST(Tensor, ShuffleRowsKeepsAllRows) {
+    LinAlg::Tensor<float> A {{8, 1}};
+    for(int i {}; i < 8; ++i) {
+        A[{i, 0}] = i;
+    }
+
+    Rand::Random<float> random {42};
+
+    LinAlg::Tensor<float> B {A.shuffle_rows(random)};
+
+    std::vector<int> found(8, 0);
+    for(int i {}; i < 8; ++i) {
+        EXPECT_TRUE((B[{i, 0}] >= 0 && B[{i, 0}] < 8));
+
+        if(B[{i, 0}] >= 0 && B[{i, 0}] < 8) {
+            found[static_cast<std::size_t>(B[{i, 0}])] = 1;
+        }
+    }
+
+    for(std::size_t i {}; i < 8; ++i) {
+        EXPECT_EQ(found[i], 1);
+    }
+}
+
+TEST(Tensor, ShuffleRowsDeterminism) {
+    LinAlg::Tensor<float> A {{10, 1}};
+    Rand::Random<float> r_1 {42};
+    A.normal(r_1, 0, 2);
+
+    Rand::Random<float> r_2 {42};
+    Rand::Random<float> r_3 {42};
+    LinAlg::Tensor<float> B {A.shuffle_rows(r_2)};
+    LinAlg::Tensor<float> C {A.shuffle_rows(r_3)};
+
+    for(int i {}; i < 8; ++i) {
+        EXPECT_EQ((B[{i, 0}]), (C[{i, 0}]));
+    }
+}
