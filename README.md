@@ -48,7 +48,7 @@ int main() {
     std::vector<double> losses {model.train_loop(random, train_X, train_Y, 200, 32)};
     double test_loss {model.test_loop(test_X, test_Y)};
 
-    std::cout << "Final train loss: " << losses.back() << '\n';
+    std::cout << "Train loss: " << losses.back() << '\n';
     std::cout << "Test loss: " << test_loss << '\n';
 }
 ```
