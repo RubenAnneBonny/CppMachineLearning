@@ -1,3 +1,4 @@
 build/
 .vscode/
 CMLConfig.cmake
+docs/html/

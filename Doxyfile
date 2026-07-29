@@ -1,0 +1,9 @@
+PROJECT_NAME            = CppMachineLearning
+PROJECT_BRIEF           = "A machine learning library written from scratch in C++"
+OUTPUT_DIRECTORY        = docs
+INPUT                   = include README.md
+FILE_PATTERNS           = *.h
+RECURSIVE               = YES
+USE_MDFILE_AS_MAINPAGE  = README.md
+EXTRACT_ALL             = YES
+GENERATE_LATEX          = NO
