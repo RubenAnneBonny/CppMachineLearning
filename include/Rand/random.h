@@ -77,7 +77,7 @@ namespace Rand{
             /// @brief A Fisher-Yates shuffled permutation of [0, length)
             /// @param length The length of the permutation
             /// @return The permutation
-            /// @throws std::invalid_argument if lenght is less than 0
+            /// @throws std::invalid_argument if length is less than 0
             std::vector<int> permutation(int length) {
                 if(length < 0) {
                     throw std::invalid_argument(

@@ -675,7 +675,7 @@ TEST(Model, LoadTruncatedFileThrows) {
     std::filesystem::remove(path);
 }
 
-TEST(Model, BackpropMathcesNumericGradient) {
+TEST(Model, BackpropMatchesNumericGradient) {
     Func::MSE<float> loss_fn {};
     NN::Gradient_descent<float> opt {0.01f};
     NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {2, 1};
@@ -790,7 +790,7 @@ TEST(Model, BatchMatchesSingle) {
     EXPECT_TRUE(LinAlg::all_close<float>(model_batch.get_parameters()[0]->value, model_single.get_parameters()[0]->value, 1e-5f, 1e-5f));
 }
 
-TEST(Model, TestLoopMathcesCalculateLoss) {
+TEST(Model, TestLoopMatchesCalculateLoss) {
     Func::MSE<float> loss_fn {};
     NN::Gradient_descent<float> opt {0.01f};
     NN::Layer<float, Func::Linear<float>, Func::No_activation<float>> layer {2, 1};

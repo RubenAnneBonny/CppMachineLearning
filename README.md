@@ -164,7 +164,7 @@ The library's tests and examples only build when CppMachineLearning is the top-l
 ## A few design decisions
 
 - Tensors are handles over shared storage, so copies are cheap and views are $\mathcal O(1)$. Use `.copy()` when you want the real new memory.
-- Tensor shapes, strides and index buffers hold only a handful of entries, so they sit in a fixed inline buffer and only fall back to the heap if they ever grow past it. Indexing a tnesor doesn't hit the allocator.
+- Tensor shapes, strides and index buffers hold only a handful of entries, so they sit in a fixed inline buffer and only fall back to the heap if they ever grow past it. Indexing a tensor doesn't hit the allocator.
 - Functions, activations and losses work on one sample at a time. The model handles the batch loop and averaging. This keeps each component's concept small.
 - `Softmax_cross_entropy` takes raw logits and does the softmax itself, which is why the output layer before it uses `No_activation`. It is steadier numerically than a separate softmax step.
 - `init(random, samples, ...)` scales each layer's weights to hit a target pre-activation spread on real input data instead of using a fixed rule.

@@ -13,7 +13,7 @@ namespace Data {
      * mini-batching and shuffling. 
      *
      * @details Iterates all samples, as one mini-batch at a time. Using
-     * next_batch() give next batch and if all bathces have been iterated it
+     * next_batch() give next batch and if all batches have been iterated it
      * reshuffles. next_batch() uses gather() from tensor.h so each batch is a
      * fresh storage rather than view to the stored tensors.
      *
@@ -47,7 +47,7 @@ namespace Data {
             /// @param targets The tensor to batch as target
             /// @param batch_size The batch size to use when loading 
             /// @throws std::invalid_argument if batch_size is less than 1 
-            /// @throws std::invalid_argument if the extents of the first axises of targets and inputs don't match
+            /// @throws std::invalid_argument if the extents of the first axes of targets and inputs don't match
             Data_loader(Rand::Random<T>& random, const LinAlg::Tensor<T>& inputs, const LinAlg::Tensor<T>& targets, int batch_size);
        
             int get_num_batches(bool drop_last = false) {
@@ -62,7 +62,7 @@ namespace Data {
             /// @param inputs The tensor to put the batched inputs in 
             /// @param targets The tensor to put the batched targets in 
             /// @param drop_last If last batch will be incomplete, drop it or not 
-            /// @return True if it hasn't iterated through the all smamples, false if it has
+            /// @return True if it hasn't iterated through all the samples, false if it has
             bool next_batch(Rand::Random<T>& random, LinAlg::Tensor<T>& inputs, LinAlg::Tensor<T>& targets, bool drop_last = false);
     };
 
@@ -76,15 +76,15 @@ namespace Data {
     {        
         if(batch_size < 1) {
             throw std::invalid_argument(
-                "Cannot get next batch, since batch size is " + 
+                "Cannot create data loader with an batch size of " + 
                 std::to_string(batch_size) + 
-                " which is less than 1"
+                " since it is less than one"
             );
         }
 
         if(inputs.get_extent(0) != targets.get_extent(0)) {
             throw std::invalid_argument(
-                "The extents of the first axises must match on input and target tensors, currently inputs has shape " + 
+                "The extents of the first axes must match on input and target tensors, currently inputs has shape " + 
                 static_cast<std::string>(inputs) + 
                 " and targets have shape " + 
                 static_cast<std::string>(targets)

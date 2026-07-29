@@ -232,7 +232,7 @@ namespace LinAlg {
             /// @throws std::invalid_argument if axis is outside the rank of the tensor
             Tensor squeeze(int axis = 0) const;
 
-            /// @brief Transposes the last two axises of the tensor
+            /// @brief Transposes the last two axes of the tensor
             /// @return A tensor-view of the transposed tensor
             /// @throws std::invalid_argument if rank of tensor is less than 2
             Tensor t() const;

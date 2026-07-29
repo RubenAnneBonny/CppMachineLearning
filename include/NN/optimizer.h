@@ -11,7 +11,7 @@ namespace NN {
     /**
      * @brief Defines the concept for an optimizer
      *
-     * @details Init should save parameters internally and do neccessary
+     * @details Init should save parameters internally and do necessary
      * initialization. Step should update the values of all parameters
      *
      * @note init should reset all member variables, do not assume init is only

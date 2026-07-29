@@ -118,7 +118,7 @@ TEST(Random, PermutationZeroIsEmpty) {
     EXPECT_TRUE(p.empty());
 }
 
-TEST(Random, PermutationLenghtLessThanOneThrows) {
+TEST(Random, PermutationLengthLessThanOneThrows) {
     Rand::Random<float> random {42};
 
     EXPECT_THROW(random.permutation(-1), std::invalid_argument);
