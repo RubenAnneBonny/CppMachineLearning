@@ -10,35 +10,35 @@ TEST(SmallVector, DefaultConstructor) {
 TEST(SmallVector, CountConstructor) {
     LinAlg::Small_vector<int, 4> sv(2);
 
+    ASSERT_EQ(sv.size(), 2);
     EXPECT_EQ(sv[0], 0);
     EXPECT_EQ(sv[1], 0);
-    EXPECT_EQ(sv.size(), 2);
 }
 
 TEST(SmallVector, CountValueConstructor) {
     LinAlg::Small_vector<int, 4> sv(2, 5);
 
+    ASSERT_EQ(sv.size(), 2);
     EXPECT_EQ(sv[0], 5);
     EXPECT_EQ(sv[1], 5);
-    EXPECT_EQ(sv.size(), 2);
 }
 
 TEST(SmallVector, InitializerListConstructor) {
     LinAlg::Small_vector<int, 4> sv {1, -4, 2};
 
+    ASSERT_EQ(sv.size(), 3);
     EXPECT_EQ(sv[0], 1);
     EXPECT_EQ(sv[1], -4);
     EXPECT_EQ(sv[2], 2);
-    EXPECT_EQ(sv.size(), 3);
 }
 
 TEST(SmallVector, VectorConstructor) {
     std::vector<int> v {3, 1};
     LinAlg::Small_vector<int, 6> sv {v};
     
+    ASSERT_EQ(sv.size(), 2);
     EXPECT_EQ(sv[0], 3);
     EXPECT_EQ(sv[1], 1);
-    EXPECT_EQ(sv.size(), 2);
 }
 
 TEST(SmallVector, AccessOperator) {
@@ -87,7 +87,7 @@ TEST(SmallVector, PushBackManyPreservesOrder) {
         sv.push_back(i);
     }
 
-    EXPECT_EQ(sv.size(), 100);
+    ASSERT_EQ(sv.size(), 100);
     for(std::size_t i {}; i < 100; ++i) {
         EXPECT_EQ(sv[i], static_cast<int>(i));
     }
@@ -141,13 +141,13 @@ TEST(SmallVector, MoveConstructorHeapAndResetSource) {
 
     LinAlg::Small_vector<int, 4> moved {std::move(source)};
 
-    EXPECT_EQ(moved.size(), 10);
+    ASSERT_EQ(moved.size(), 10);
     EXPECT_EQ(moved[9], 9);
 
     EXPECT_EQ(source.size(), 0);
     EXPECT_TRUE(source.empty());
     source.push_back(1);
-    EXPECT_EQ(source.size(), 1);
+    ASSERT_EQ(source.size(), 1);
     EXPECT_EQ(source[0], 1);
 }
 
@@ -155,7 +155,7 @@ TEST(SmallVector, MoveConstructorInline) {
     LinAlg::Small_vector<int, 4> source {1, 2, 5};
     LinAlg::Small_vector<int, 4> moved {std::move(source)};
 
-    EXPECT_EQ(moved.size(), 3);
+    ASSERT_EQ(moved.size(), 3);
     EXPECT_EQ(moved[0], 1);;
     EXPECT_EQ(moved[1], 2);
     EXPECT_EQ(moved[2], 5);
@@ -171,7 +171,7 @@ TEST(SmallVector, MoveAssignmentTransfersHeap) {
     LinAlg::Small_vector<int, 4> target {4, 7};
     target = std::move(source);
 
-    EXPECT_EQ(target.size(), 10);
+    ASSERT_EQ(target.size(), 10);
     EXPECT_EQ(target[9], 9);
     EXPECT_EQ(source.size(), 0);
 }
@@ -184,7 +184,7 @@ TEST(SmallVector, MoveAssignmentSelfIsSafe) {
     LinAlg::Small_vector<int, 4>& sv_ref = sv;
     sv = std::move(sv_ref);
 
-    EXPECT_EQ(sv.size(), 10);
+    ASSERT_EQ(sv.size(), 10);
     EXPECT_EQ(sv[9], 9);
 }
 
@@ -192,7 +192,7 @@ TEST(SmallVector, AssignReplacesContents) {
     LinAlg::Small_vector<int, 4> sv {1, 2, 3};
     sv.assign(5, 8);
 
-    EXPECT_EQ(sv.size(), 5);
+    ASSERT_EQ(sv.size(), 5);
     for(std::size_t i {}; i < 5; ++i) {
         EXPECT_EQ(sv[i], 8);
     }
@@ -206,7 +206,7 @@ TEST(SmallVector, ClearResetsSizeKeepsUsable) {
     EXPECT_TRUE(sv.empty());
 
     sv.push_back(101);
-    EXPECT_EQ(sv.size(), 1);
+    ASSERT_EQ(sv.size(), 1);
     EXPECT_EQ(sv[0], 101);
 }
 
@@ -214,7 +214,7 @@ TEST(SmallVector, InsertSingleElement) {
     LinAlg::Small_vector<int, 4> sv {1, 2, 4};
     sv.insert(sv.begin() + 2, 3);
 
-    EXPECT_EQ(sv.size(), 4);
+    ASSERT_EQ(sv.size(), 4);
     for(std::size_t i {}; i < 4; ++i) {
         EXPECT_EQ(sv[i], i + 1);
     }
@@ -224,7 +224,7 @@ TEST(SmallVector, InsertMultipleShiftsRight) {
     LinAlg::Small_vector<int, 8> sv {1, 4};
     sv.insert(sv.begin() + 1, 2, -9);
 
-    EXPECT_EQ(sv.size(), 4);
+    ASSERT_EQ(sv.size(), 4);
     EXPECT_EQ(sv[0], 1);
     EXPECT_EQ(sv[1], -9);
     EXPECT_EQ(sv[2], -9);
@@ -235,7 +235,7 @@ TEST(SmallVector, InsertCausingReallocation) {
     LinAlg::Small_vector<int, 4> sv {1, 2, 3};
     sv.insert(sv.begin() + 1, 2, 0);
 
-    EXPECT_EQ(sv.size(), 5);
+    ASSERT_EQ(sv.size(), 5);
     EXPECT_EQ(sv[0], 1);
     EXPECT_EQ(sv[1], 0);
     EXPECT_EQ(sv[2], 0);
@@ -247,7 +247,7 @@ TEST(SmallVector, EraseRangeShiftsDown) {
     LinAlg::Small_vector<int, 8> sv {1, 2, 3, 4, 5};
     sv.erase(sv.begin() + 1, sv.begin() + 3);
 
-    EXPECT_EQ(sv.size(), 3);
+    ASSERT_EQ(sv.size(), 3);
     EXPECT_EQ(sv[0], 1);
     EXPECT_EQ(sv[1], 4);
     EXPECT_EQ(sv[2], 5);
@@ -257,7 +257,7 @@ TEST(SmallVector, EraseSingleElement) {
     LinAlg::Small_vector<int, 8> sv {1, 2, 3};
     sv.erase(sv.begin() + 1);
 
-    EXPECT_EQ(sv.size(), 2);
+    ASSERT_EQ(sv.size(), 2);
     EXPECT_EQ(sv[0], 1);
     EXPECT_EQ(sv[1], 3);
 }
@@ -281,7 +281,7 @@ TEST(SmallVector, EqualityAcrossStorageModes) {
         sv_heap.push_back(i);
     }
 
-    EXPECT_EQ(sv_inline.size(), sv_heap.size());
+    ASSERT_EQ(sv_inline.size(), sv_heap.size());
     for(std::size_t i {}; i < sv_inline.size(); ++i) {
         EXPECT_EQ(sv_inline[i], sv_heap[i]);
     }
@@ -299,9 +299,9 @@ TEST(SmallVector, RangeForIteration) {
 TEST(SmallVector, ConstAccessors) {
     const LinAlg::Small_vector<int, 4> sv {1, 2, 3};
 
+    ASSERT_EQ(sv.size(), 3);
     EXPECT_EQ(sv[0], 1);
     EXPECT_EQ(sv.back(), 3);
-    EXPECT_EQ(sv.size(), 3);
 
     int sum {};
     for(const int* it {sv.begin()}; it != sv.end(); ++it) {

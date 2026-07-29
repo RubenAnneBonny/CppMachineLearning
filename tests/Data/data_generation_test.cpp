@@ -177,16 +177,12 @@ TEST(DataGeneration, DataSetShuffleSameShape) {
     Data::Data_set<float> data {A, B};
     data.shuffle(random);
 
-    EXPECT_EQ(data.inputs.get_rank(), 2);
-    EXPECT_EQ(data.targets.get_rank(), 2);
-    if(data.inputs.get_rank() == 2) {
-        EXPECT_EQ(data.inputs.get_extent(0), 10);
-        EXPECT_EQ(data.inputs.get_extent(1), 1);
-    }
-    if(data.targets.get_rank() == 2) {
-        EXPECT_EQ(data.targets.get_extent(0), 10);
-        EXPECT_EQ(data.targets.get_extent(1), 1);
-    }
+    ASSERT_EQ(data.inputs.get_rank(), 2);
+    ASSERT_EQ(data.targets.get_rank(), 2);
+    EXPECT_EQ(data.inputs.get_extent(0), 10);
+    EXPECT_EQ(data.inputs.get_extent(1), 1);
+    EXPECT_EQ(data.targets.get_extent(0), 10);
+    EXPECT_EQ(data.targets.get_extent(1), 1);
 }
 
 TEST(DataGeneration, DataSetShufflePairs) {

@@ -89,11 +89,8 @@ TEST(Random, PermutationIsPermutation) {
     std::vector<int> found(4, 0);
 
     for(std::size_t i {}; i < 4; ++i) {
-        EXPECT_TRUE(p[i] >= 0 && p[i] < 4);
-
-        if(p[i] >= 0 && p[i] < 4) {
-            found[static_cast<std::size_t>(p[i])] = 1;
-        }
+        ASSERT_TRUE(p[i] >= 0 && p[i] < 4);
+        found[static_cast<std::size_t>(p[i])] = 1;
     }
 
     for(std::size_t i {}; i < 4; ++i) {

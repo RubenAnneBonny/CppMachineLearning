@@ -327,7 +327,7 @@ TEST(Model, TrainLoopReturnsPerEpochLosses) {
 
     std::vector<float> losses {model.train_loop(random, input, target, 20, 1)};
 
-    EXPECT_EQ(static_cast<int>(losses.size()), 20);
+    ASSERT_EQ(static_cast<int>(losses.size()), 20);
 
     EXPECT_LT(losses.back(), losses[0]);
 }
@@ -379,6 +379,9 @@ TEST(Model, Deterministic) {
         losses.push_back(model.train_loop(random, input, target, 10, 1));
     }
 
+    ASSERT_EQ(losses.size(), 2);
+    ASSERT_EQ(losses[0].size(), 10);
+    ASSERT_EQ(losses[1].size(), 10);
     for(std::size_t i {}; i < 10; ++i) {
         EXPECT_EQ(losses[0][i], losses[1][i]);
     }

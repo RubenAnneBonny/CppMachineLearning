@@ -1005,13 +1005,10 @@ TEST(Tensor, ShuffleRowsShapeUnchanged) {
 
     LinAlg::Tensor<float> B {A.shuffle_rows(random)};
 
-    EXPECT_EQ(B.get_rank(), 3);
-
-    if(B.get_rank() == 3) {
-        EXPECT_EQ(B.get_extent(0), 4);
-        EXPECT_EQ(B.get_extent(1), 8);
-        EXPECT_EQ(B.get_extent(2), 1);
-    }
+    ASSERT_EQ(B.get_rank(), 3);
+    EXPECT_EQ(B.get_extent(0), 4);
+    EXPECT_EQ(B.get_extent(1), 8);
+    EXPECT_EQ(B.get_extent(2), 1);
 }
 
 TEST(Tensor, ShuffleRowsKeepsAllRows) {
@@ -1026,11 +1023,8 @@ TEST(Tensor, ShuffleRowsKeepsAllRows) {
 
     std::vector<int> found(8, 0);
     for(int i {}; i < 8; ++i) {
-        EXPECT_TRUE((B[{i, 0}] >= 0 && B[{i, 0}] < 8));
-
-        if(B[{i, 0}] >= 0 && B[{i, 0}] < 8) {
-            found[static_cast<std::size_t>(B[{i, 0}])] = 1;
-        }
+        ASSERT_TRUE((B[{i, 0}] >= 0 && B[{i, 0}] < 8));
+        found[static_cast<std::size_t>(B[{i, 0}])] = 1;
     }
 
     for(std::size_t i {}; i < 8; ++i) {

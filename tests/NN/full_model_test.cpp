@@ -67,6 +67,8 @@ TEST(FullModel, ConvergenceXOR) {
     model.init();
 
     std::vector<float> losses = model.train_loop(random, inputs, targets, 500, 1);
+    
+    ASSERT_EQ(losses.size(), 500);
     EXPECT_LT(losses.back(), 0.05f);
 
     for(int i {}; i < 4; ++i) {
