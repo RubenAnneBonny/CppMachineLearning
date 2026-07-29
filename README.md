@@ -6,8 +6,11 @@
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)
 ![Header-only](https://img.shields.io/badge/header--only-yes-success.svg)
 ![Tests](https://img.shields.io/badge/tests-228%20passing-brightgreen.svg)
+[![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://rubenannebonny.github.io/CppMachineLearning)
 
 There are no external dependencies and nothing to build for the library itself. You include the headers and use it. The tests pull in GoogleTest, but only when you build with them.
+
+Full API documentation is generated from the source with Doxygen and is available online at [the project page](https://rubenannebonny.github.io/CppMachineLearning/).
 
 ## What's in it
 
