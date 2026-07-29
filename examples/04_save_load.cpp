@@ -1,5 +1,6 @@
 #include <cml.h>
 #include <iostream>
+#include <filesystem>
 
 int main() {
     Rand::Random<double> random {42};
@@ -11,7 +12,7 @@ int main() {
     LinAlg::Tensor<double> test_Y {data.targets.slice(800, 1000)};
 
     // Saving part:
-    std::string path {"model_04.weights"};
+    std::string path {(std::filesystem::temp_directory_path() / "model_04.weights").string()};
     Func::Softmax_cross_entropy<double> loss_fn {};
     NN::Adam<double> opt {};
     NN::Model<double, Func::Softmax_cross_entropy<double>, NN::Adam<double>> model_save {loss_fn, opt};
