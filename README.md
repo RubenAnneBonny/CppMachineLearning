@@ -5,7 +5,7 @@
 [![CI](https://github.com/RubenAnneBonny/CppMachineLearning/actions/workflows/ci.yml/badge.svg)](https://github.com/RubenAnneBonny/CppMachineLearning/actions/workflows/ci.yml)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)
 ![Header-only](https://img.shields.io/badge/header--only-yes-success.svg)
-![Tests](https://img.shields.io/badge/tests-199%20passing-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-228%20passing-brightgreen.svg)
 
 There are no external dependencies and nothing to build for the library itself. You include the headers and use it. The tests pull in GoogleTest, but only when you build with them.
 
@@ -54,7 +54,7 @@ int main() {
 
 ## Tests
 
-The library is checked by 199 tests that run on Ubuntu and Windows through GitHub Actions. Every `throw` in the library has a test that triggers it, and the numerical routines (optimizer steps, loss gradients, forward passes) are checked against values worked out by hand rather than just checked for not crashing.
+The library is checked by 228 tests that run on Ubuntu and Windows through GitHub Actions. Every `throw` in the library has a test that triggers it, and the numerical routines (optimizer steps, loss gradients, forward passes) are checked against values worked out by hand rather than just checked for not crashing.
 
 The whole thing compiles clean under `-Wall -Wextra -Wconversion -Wsign-conversion -Werror` on GCC and Clang, and `/W4 /WX` on MSVC. CI treats warnings as errors, so it stays that way. 
 
@@ -164,6 +164,7 @@ The library's tests and examples only build when CppMachineLearning is the top-l
 ## A few design decisions
 
 - Tensors are handles over shared storage, so copies are cheap and views are $\mathcal O(1)$. Use `.copy()` when you want the real new memory.
+- Tensor shapes, strides and index buffers hold only a handful of entries, so they sit in a fixed inline buffer and only fall back to the heap if they ever grow past it. Indexing a tnesor doesn't hit the allocator.
 - Functions, activations and losses work on one sample at a time. The model handles the batch loop and averaging. This keeps each component's concept small.
 - `Softmax_cross_entropy` takes raw logits and does the softmax itself, which is why the output layer before it uses `No_activation`. It is steadier numerically than a separate softmax step.
 - `init(random, samples, ...)` scales each layer's weights to hit a target pre-activation spread on real input data instead of using a fixed rule.
