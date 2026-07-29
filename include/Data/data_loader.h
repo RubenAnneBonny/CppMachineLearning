@@ -76,7 +76,7 @@ namespace Data {
     {        
         if(batch_size < 1) {
             throw std::invalid_argument(
-                "Cannot create data loader with an batch size of " + 
+                "Cannot create data loader with a batch size of " + 
                 std::to_string(batch_size) + 
                 " since it is less than one"
             );
