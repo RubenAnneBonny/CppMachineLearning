@@ -70,5 +70,7 @@ int main() {
     std::cout << "Test loss: " << test_loss_after << "\n";
     std::cout << "Test acc: " << test_acc_after << "%\n";
 
+    std::filesystem::remove(path);
+
     return 0;
 }
