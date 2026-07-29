@@ -2,6 +2,7 @@
 #define CML_H
 
 #include <LinAlg/tensor.h>
+#include <LinAlg/small_vector.h>
 #include <Rand/random.h>
 #include <Func/std_func.h>
 #include <NN/std_opt.h>

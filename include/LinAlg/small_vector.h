@@ -184,6 +184,12 @@ namespace LinAlg {
                 return m_size == 0;
             }
 
+            /// @brief Calculates the capacity of the small vector
+            /// @return The capacity
+            std::size_t capacity() {
+                return m_cap;
+            }
+
             /// @brief Gets the pointer to the beginning of the small vector
             /// @return The pointer
             T* begin() {
