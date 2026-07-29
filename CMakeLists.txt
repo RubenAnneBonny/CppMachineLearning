@@ -9,6 +9,8 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(GNUInstallDirs)
+
 add_library(CML INTERFACE)
 add_library(CML::CML ALIAS CML)
 
@@ -50,7 +52,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     
     configure_package_config_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMLConfig.cmake.in
-        ${CMAKE_CURRENT_SOURCE_DIR}/CMLConfig.cmake
+        ${CMAKE_BINARY_DIR}/CMLConfig.cmake
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CML)
     
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMLConfig.cmake
